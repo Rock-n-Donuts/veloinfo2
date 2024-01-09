@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Vélo info</title>
+        <link rel="icon" href="pub/favicon.ico" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+        <script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
+        <link href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" rel="stylesheet" />
+        <link href="/pub/index.css" rel="stylesheet" />
+        <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+        <style>
+            body { margin: 0; padding: 0; }
+            #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        </style>
+    </head>
+<div id="map">
+    <button class="bg-sky-800 p-2 rounded-xl shadow-lg text-white" style="position: absolute; bottom: 10px; right: 10px; z-index: 10;">éditer la piste</button>
+</div>
+
+
+<script>
+    var map = new maplibregl.Map({
+        container: 'map', 
+        style: 'http://localhost:3000/pub/style.json'
+    });
+
+    map.on("click", function(e) {
+        var features = map.queryRenderedFeatures(e.point, {
+            layers: ["velo"]
+        });
+        if (!features.length) {
+            return;
+        }
+        var feature = features[0];
+        var popup = new maplibregl.Popup({ offset: [0, -15] })
+            .setLngLat(feature.geometry.coordinates)
+            .setHTML('<h3>' + feature.properties.name + '</h3><p>' + feature.properties.description + '</p>')
+            .addTo(map);
+    });
+</script>
+
+</html>
