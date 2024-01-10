@@ -25,8 +25,7 @@
         style: 'http://localhost:3000/pub/style.json'
     });
 
-    map.on("click", function(e) {
-        console.log(e.point);
+    map.on("click", async function(e) {
         let width = 20;
         var features = map.queryRenderedFeatures(
             [
@@ -38,10 +37,33 @@
             return;
         }
         var feature = features[0];
-        // var popup = new maplibregl.Popup({ offset: [0, -15] })
-        //     .setLngLat(feature.geometry.coordinates)
-        //     .setHTML('<h3>' + feature.properties.name + '</h3><p>' + feature.properties.way_id + '</p>')
-        //     .addTo(map);
+        response = await fetch('/cycleway/' + feature.properties.way_id);
+        response = (await response.json());
+        console.log(response);
+        map.addSource(response.way_id+"", {
+            "type": "geojson",
+            "data": {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": response.line_string.points
+                }
+            }
+        })
+        map.addLayer({
+            "id": response.way_id+"",
+            "type": "line",
+            "source": response.way_id+"",
+            "layout": {
+                "line-join": "round",
+                "line-cap": "round"
+            },
+            "paint": {
+                "line-width": 5,
+                "line-color": "#f00"
+            }
+        });
     });
 </script>
 
