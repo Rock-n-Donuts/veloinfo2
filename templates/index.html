@@ -1,31 +1,43 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Vélo info</title>
-        <link rel="icon" href="pub/favicon.ico" />
-        <meta charset="utf-8" />
-        <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
-        <script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
-        <link href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" rel="stylesheet" />
-        <link href="/pub/index.css" rel="stylesheet" />
-        <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
-        <style>
-            body { margin: 0; padding: 0; }
-            #map { position: absolute; top: 0; bottom: 0; width: 100%; }
-        </style>
-    </head>
+
+<head>
+    <title>Vélo info</title>
+    <link rel="icon" href="pub/favicon.ico" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" rel="stylesheet" />
+    <link href="/pub/index.css" rel="stylesheet" />
+    <script src="https://unpkg.com/htmx.org@1.9.10"
+        integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC"
+        crossorigin="anonymous"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
 <div id="map">
-    {{ edit_buttons}}    
+    {{ edit_buttons}}
 </div>
 
 
 <script>
     var map = new maplibregl.Map({
-        container: 'map', 
+        container: 'map',
         style: 'http://localhost:3000/pub/style.json'
     });
 
-    map.on("click", async function(e) {
+    map.on("click", async function (e) {
         let width = 20;
         var features = map.queryRenderedFeatures(
             [
@@ -40,7 +52,7 @@
         response = await fetch('/cycleway/' + feature.properties.way_id);
         response = (await response.json());
         console.log(response);
-        map.addSource(response.way_id+"", {
+        map.addSource(response.way_id + "", {
             "type": "geojson",
             "data": {
                 "type": "Feature",
@@ -52,16 +64,17 @@
             }
         })
         map.addLayer({
-            "id": response.way_id+"",
+            "id": response.way_id + "",
             "type": "line",
-            "source": response.way_id+"",
+            "source": response.way_id + "",
             "layout": {
                 "line-join": "round",
                 "line-cap": "round"
             },
             "paint": {
-                "line-width": 5,
-                "line-color": "#f00"
+                "line-width": 10,
+                "line-color": "#f00",
+                "line-blur": 10,
             }
         });
     });
