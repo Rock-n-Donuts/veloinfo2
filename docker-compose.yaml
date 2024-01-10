@@ -9,7 +9,8 @@ services:
     ports:
       - 3000:3000
     environment:
-      - PGPASSWORD=postgres 
+      - PGUSER=postgres
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/carte
   martin:
     image: ghcr.io/maplibre/martin:v0.11.2
     environment:
