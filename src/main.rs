@@ -1,15 +1,15 @@
 use askama::Template;
 use axum::response::Html;
 use axum::routing::{get, Router};
+use cycleway::cycleway;
 use edit_buttons::{get_edit_buttons, get_start_buttons};
 use tower_http::services::ServeDir;
 use tower_livereload::LiveReloadLayer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
-use cycleway::cycleway;
 
-mod edit_buttons;
 mod cycleway;
+mod edit_buttons;
 
 #[tokio::main]
 async fn main() {
@@ -45,4 +45,3 @@ async fn root() -> Html<String> {
     let body = template.render().unwrap();
     Html(body)
 }
-
