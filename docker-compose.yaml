@@ -5,7 +5,7 @@ services:
       dockerfile: dockerfile
     volumes:
       - .:/app:z
-      - root:/root:z
+      - root:/root/.local:z
     ports:
       - 3000:3000
     environment:
@@ -32,8 +32,8 @@ services:
     image: postgis/postgis
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
       POSTGRES_DB: carte
+      POSTGRES_PASSWORD: postgres
     volumes:
       - db:/var/lib/postgresql/data:z
     ports:

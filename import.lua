@@ -32,8 +32,11 @@ local designated = osm2pgsql.define_way_table("designated", {
 })
 
 function osm2pgsql.process_way(object)
-    if object.tags.highway == 'cycleway' or 
-        object.tags.cycleway == "track" then
+    if object.tags.highway == 'cycleway' 
+        or object.tags.cycleway == "track"
+        or object.tags["cycleway:left"]  == "track"
+        or object.tags["cycleway:right"] =="track" 
+        or object.tags["cycleway:both"] =="track" then
         cycleway:insert({
             name = object.tags.name,
             winter_service = object.tags.winter_service,
@@ -45,9 +48,6 @@ function osm2pgsql.process_way(object)
         object.tags["cycleway:left"] == "share_busway" or 
         object.tags["cycleway:right"] == "share_busway" or
         object.tags["cycleway:both"] == "share_busway" or
-        object.tags["cycleway:left"] == "shared_lane" or 
-        object.tags["cycleway:right"] == "shared_lane" or
-        object.tags["cycleway:both"] == "shared_lane" or
         object.tags["cycleway:right"] == "lane" or
         object.tags["cycleway:left"] == "lane" or
         object.tags["cycleway:both"] == "lane" then
@@ -58,7 +58,10 @@ function osm2pgsql.process_way(object)
     end
 
     if object.tags.cycleway == "shared_lane" or 
-        object.tags.cycleway == "lane" then
+        object.tags.cycleway == "lane" or
+        object.tags["cycleway:left"] == "shared_lane" or 
+        object.tags["cycleway:right"] == "shared_lane" or
+        object.tags["cycleway:both"] == "shared_lane" then
         shared:insert({
             name = object.tags.name,
             geom = object:as_linestring()
