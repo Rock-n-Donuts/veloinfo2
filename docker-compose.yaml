@@ -6,6 +6,7 @@ services:
     volumes:
       - .:/app:z
       - root:/root/.local:z
+      - target:/app/target
     ports:
       - 3000:3000
     environment:
@@ -41,3 +42,4 @@ services:
 volumes:
   root:
   db:
+  target:
