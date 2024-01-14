@@ -22,7 +22,7 @@ services:
     depends_on:
       - db
   db:
-    image: postgis/postgis
+    image: pgrouting/pgrouting
     environment:
       POSTGRES_USER: postgres
       POSTGRES_DB: carte

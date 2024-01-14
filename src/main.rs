@@ -1,8 +1,11 @@
+use std::env;
+
 use askama::Template;
 use axum::response::Html;
-use axum::routing::{get, Router};
+use axum::routing::{get, post, Router};
 use cycleway::cycleway;
 use edit_buttons::{get_edit_buttons, get_start_buttons};
+use sqlx::PgPool;
 use tower_http::services::ServeDir;
 use tower_livereload::LiveReloadLayer;
 use tracing_subscriber::layer::SubscriberExt;
@@ -13,6 +16,14 @@ mod edit_buttons;
 
 #[tokio::main]
 async fn main() {
+    let pool = PgPool::connect(format!("{}", env::var("DATABASE_URL").unwrap()).as_str())
+    .await
+    .unwrap();
+    
+    sqlx::migrate!()
+    .run(&pool)
+    .await.unwrap();
+
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env()
@@ -24,7 +35,7 @@ async fn main() {
     let app = Router::new()
         .route("/", get(root))
         .route("/edit_buttons/:edit", get(get_edit_buttons)) // Fix: Call get_edit_buttons() inside get()
-        .route("/cycleway/:way_id", get(cycleway))
+        .route("/cycleway/:way_id", post(cycleway))
         .layer(LiveReloadLayer::new())
         .nest_service("/pub/", ServeDir::new("pub"));
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();

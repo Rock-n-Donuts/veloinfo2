@@ -1,4 +1,4 @@
-var layers_showned = new Set();
+var response = {geom: null, source: null, target: null};
 var map = new maplibregl.Map({
     container: 'map',
     style: 'http://localhost:3000/pub/style.json'
@@ -16,39 +16,51 @@ map.on("click", async function (e) {
     }
     var feature = features[0];
 
-    if (layers_showned.has(feature.properties.way_id)) {
-        map.removeLayer(feature.properties.way_id + "");
-        map.removeSource(feature.properties.way_id + "");
-        layers_showned.delete(feature.properties.way_id);
-        return;
-    }
-    layers_showned.add(feature.properties.way_id);
+    console.log(response);
+    fetch_response = await fetch('/cycleway/' + feature.properties.way_id, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(response)
+    });
+    response = await fetch_response.json();
 
-    response = await fetch('/cycleway/' + feature.properties.way_id);
-    response = (await response.json());
-    map.addSource(response.way_id + "", {
-        "type": "geojson",
-        "data": {
+    if (map.getLayer("selected")) {
+        console.log("update");
+        map.getSource("selected").setData({
             "type": "Feature",
             "properties": {},
             "geometry": {
                 "type": "LineString",
-                "coordinates": response.line_string.points
+                "coordinates": response.geom
             }
-        }
-    })
-    map.addLayer({
-        "id": response.way_id + "",
-        "type": "line",
-        "source": response.way_id + "",
-        "layout": {
-            "line-join": "round",
-            "line-cap": "round"
-        },
-        "paint": {
-            "line-width": 10,
-            "line-color": "#f00",
-            "line-blur": 10,
-        }
-    });
+        })
+    } else {
+        map.addSource("selected", {
+            "type": "geojson",
+            "data": {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": response.geom
+                }
+            }
+        })
+        map.addLayer({
+            "id": "selected",
+            "type": "line",
+            "source": "selected",
+            "layout": {
+                "line-join": "round",
+                "line-cap": "round"
+            },
+            "paint": {
+                "line-width": 10,
+                "line-color": "#f00",
+                "line-blur": 10,
+            }
+        });    }
+
 });

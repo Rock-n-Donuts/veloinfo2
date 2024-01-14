@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     
 RUN chsh -s $(which fish)
 RUN cargo install cargo-watch
+RUN cargo install sqlx-cli --no-default-features --features postgres
 RUN rustup component add rustfmt
 
 RUN install -d tailwindcss
