@@ -3,26 +3,24 @@ use std::env;
 use askama::Template;
 use axum::response::Html;
 use axum::routing::{get, post, Router};
-use segment::segment;
 use edit_buttons::{get_edit_buttons, get_start_buttons};
+use segment::segment;
 use sqlx::PgPool;
 use tower_http::services::ServeDir;
 use tower_livereload::LiveReloadLayer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
-mod segment;
 mod edit_buttons;
+mod segment;
 
 #[tokio::main]
 async fn main() {
     let pool = PgPool::connect(format!("{}", env::var("DATABASE_URL").unwrap()).as_str())
-    .await
-    .unwrap();
-    
-    sqlx::migrate!()
-    .run(&pool)
-    .await.unwrap();
+        .await
+        .unwrap();
+
+    sqlx::migrate!().run(&pool).await.unwrap();
 
     tracing_subscriber::registry()
         .with(

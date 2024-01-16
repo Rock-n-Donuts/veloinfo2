@@ -1,4 +1,4 @@
-var response = {geom: null, source: null, target: null, node: null};
+var response = { geom: null, source: null, target: null, node: null };
 var map = new maplibregl.Map({
     container: 'map',
     style: 'http://localhost:3000/pub/style.json'
@@ -26,7 +26,6 @@ map.on("click", async function (e) {
     response = await fetch_response.json();
 
     if (map.getLayer("selected")) {
-        console.log("update");
         map.getSource("selected").setData({
             "type": "Feature",
             "properties": {},
@@ -60,6 +59,7 @@ map.on("click", async function (e) {
                 "line-color": "#f00",
                 "line-blur": 10,
             }
-        });    }
+        });
+    }
 
 });

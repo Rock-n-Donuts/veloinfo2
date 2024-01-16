@@ -156,20 +156,18 @@ pub async fn segment(
         segments.iter().for_each(|segment| {
             println!("{:?}", segment);
         });
-        let segment= segments
-        .iter()
-        .max_by(|x, y| {
-            x.geom
-                .as_ref()
-                .unwrap()
-                .len()
-                .cmp(&y.geom.as_ref().unwrap().len())
-        })
-        .unwrap()
-        .clone();
+        let segment = segments
+            .iter()
+            .max_by(|x, y| {
+                x.geom
+                    .as_ref()
+                    .unwrap()
+                    .len()
+                    .cmp(&y.geom.as_ref().unwrap().len())
+            })
+            .unwrap()
+            .clone();
         println!("{:?}", segment);
-        Ok(Json(
-            segment
-        ))
+        Ok(Json(segment))
     }
 }
