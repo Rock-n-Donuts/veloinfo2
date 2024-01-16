@@ -1,8 +1,11 @@
+use askama_axum::IntoResponse;
 use axum::{extract::Path, http::StatusCode, Json};
+use axum::response::Response;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, Postgres};
-use std::{borrow::Borrow, env};
+use std::env;
+use anyhow::Result;
 
 #[derive(Debug, sqlx::FromRow)]
 struct ResponseDb {
@@ -19,7 +22,7 @@ pub struct Segment {
 }
 
 impl Segment {
-    async fn get(way_id: i64, conn: sqlx::Pool<Postgres>) -> Segment {
+    async fn get(way_id: i64, conn: sqlx::Pool<Postgres>) -> Result<Segment> {
         let response: ResponseDb = sqlx::query_as(
             r#"select  
                 source,
@@ -30,11 +33,11 @@ impl Segment {
         .bind(way_id)
         .fetch_one(&conn)
         .await
-        .unwrap();
-        response.borrow().into()
+        ?;
+        Ok(response.into())
     }
 
-    async fn route(source: i64, target: i64, conn: sqlx::Pool<Postgres>) -> Segment {
+    async fn route(source: i64, target: i64, conn: sqlx::Pool<Postgres>) -> Result<Segment> {
         let responses: Vec<ResponseDb> = sqlx::query_as(
             r#"select $1 as source,
                         $2 as target, 
@@ -59,7 +62,7 @@ impl Segment {
         .fetch_all(&conn)
         .await
         .unwrap();
-        responses.iter().fold(
+        let segment: Segment= responses.iter().fold(
             Segment {
                 geom: Some(vec![]),
                 source: Some(source),
@@ -73,13 +76,20 @@ impl Segment {
                     .extend(this_segement.geom.unwrap());
                 acc
             },
-        )
+        );
+        Ok(segment)
+    }
+}
+
+impl From<ResponseDb> for Segment {
+    fn from(response: ResponseDb) -> Self {
+        Segment::from(&response)
     }
 }
 
 impl From<&ResponseDb> for Segment {
     fn from(response: &ResponseDb) -> Self {
-        match response.geom.clone() {
+        match response.geom.as_ref() {
             Some(str) => {
                 let re = Regex::new(r"(-?\d+\.*\d*) (-?\d+\.*\d*)").unwrap();
                 let points = re
@@ -106,16 +116,34 @@ impl From<&ResponseDb> for Segment {
     }
 }
 
+pub struct SegmentError(anyhow::Error);
+
+// Tell axum how to convert `AppError` into a response.
+impl IntoResponse for SegmentError {
+    fn into_response(self) -> Response {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Something went wrong: {}", self.0),
+        )
+            .into_response()
+    }
+}
+
+impl From<anyhow::Error> for SegmentError {
+    fn from(error: anyhow::Error) -> Self {
+        SegmentError(error)
+    }
+}
+
 pub async fn segment(
     Path(way_id): Path<i64>,
     Json(start_segment): Json<Segment>,
-) -> Result<Json<Segment>, StatusCode> {
+) -> Result<Json<Segment>, SegmentError> {
     let conn = PgPool::connect(format!("{}", env::var("DATABASE_URL").unwrap()).as_str())
         .await
         .unwrap();
 
-    // We get the segment from the database
-    let searched_segment: Segment = Segment::get(way_id, conn.clone()).await;
+    let searched_segment: Segment = Segment::get(way_id, conn.clone()).await?;
 
     if start_segment.geom.is_none() {
         Ok(Json(searched_segment))
@@ -127,7 +155,7 @@ pub async fn segment(
                 searched_segment.target.unwrap(),
                 conn.clone(),
             )
-            .await,
+            .await?,
         );
         segments.push(
             Segment::route(
@@ -135,7 +163,7 @@ pub async fn segment(
                 searched_segment.source.unwrap(),
                 conn.clone(),
             )
-            .await,
+            .await?,
         );
         segments.push(
             Segment::route(
@@ -143,7 +171,7 @@ pub async fn segment(
                 searched_segment.source.unwrap(),
                 conn.clone(),
             )
-            .await,
+            .await?,
         );
         segments.push(
             Segment::route(
@@ -151,7 +179,7 @@ pub async fn segment(
                 searched_segment.target.unwrap(),
                 conn.clone(),
             )
-            .await,
+            .await?,
         );
         segments.iter().for_each(|segment| {
             println!("{:?}", segment);

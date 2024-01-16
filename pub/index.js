@@ -55,9 +55,8 @@ map.on("click", async function (e) {
                 "line-cap": "round"
             },
             "paint": {
-                "line-width": 10,
+                "line-width": 8,
                 "line-color": "#f00",
-                "line-blur": 10,
             }
         });
     }
