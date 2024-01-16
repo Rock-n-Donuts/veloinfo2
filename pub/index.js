@@ -1,4 +1,4 @@
-var response = {geom: null, source: null, target: null};
+var response = {geom: null, source: null, target: null, node: null};
 var map = new maplibregl.Map({
     container: 'map',
     style: 'http://localhost:3000/pub/style.json'
@@ -16,7 +16,6 @@ map.on("click", async function (e) {
     }
     var feature = features[0];
 
-    console.log(response);
     fetch_response = await fetch('/cycleway/' + feature.properties.way_id, {
         method: 'POST',
         headers: {

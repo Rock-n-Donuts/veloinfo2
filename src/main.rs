@@ -3,7 +3,7 @@ use std::env;
 use askama::Template;
 use axum::response::Html;
 use axum::routing::{get, post, Router};
-use cycleway::cycleway;
+use segment::segment;
 use edit_buttons::{get_edit_buttons, get_start_buttons};
 use sqlx::PgPool;
 use tower_http::services::ServeDir;
@@ -11,7 +11,7 @@ use tower_livereload::LiveReloadLayer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
-mod cycleway;
+mod segment;
 mod edit_buttons;
 
 #[tokio::main]
@@ -35,7 +35,7 @@ async fn main() {
     let app = Router::new()
         .route("/", get(root))
         .route("/edit_buttons/:edit", get(get_edit_buttons)) // Fix: Call get_edit_buttons() inside get()
-        .route("/cycleway/:way_id", post(cycleway))
+        .route("/cycleway/:way_id", post(segment))
         .layer(LiveReloadLayer::new())
         .nest_service("/pub/", ServeDir::new("pub"));
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
