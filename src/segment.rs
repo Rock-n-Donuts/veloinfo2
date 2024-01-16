@@ -149,6 +149,8 @@ pub async fn segment(
         Ok(Json(searched_segment))
     } else {
         let mut segments: Vec<Segment> = vec![];
+        // We try to find the longest path between the 4 possible combinations
+        // It is not the best way to do it, but it is the simplest
         segments.push(
             Segment::route(
                 start_segment.source.unwrap(),
@@ -184,6 +186,8 @@ pub async fn segment(
         segments.iter().for_each(|segment| {
             println!("{:?}", segment);
         });
+
+        // We keep the longest segment
         let segment = segments
             .iter()
             .max_by(|x, y| {
