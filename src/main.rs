@@ -37,7 +37,7 @@ async fn main() {
         .init();
 
     let app = Router::new()
-        .route("/", get(root))
+        .route("/", get(index))
         .route("/edit_buttons/:edit", get(get_edit_buttons)) // Fix: Call get_edit_buttons() inside get()
         .route("/cycleway/:way_id", post(segment))
         .with_state(state)
@@ -53,7 +53,7 @@ struct IndexTemplate {
     edit_buttons: String,
 }
 
-async fn root() -> Html<String> {
+async fn index() -> Html<String> {
     let edit_buttons = get_start_buttons();
     let template = IndexTemplate {
         edit_buttons: edit_buttons.render().unwrap().to_string(),
