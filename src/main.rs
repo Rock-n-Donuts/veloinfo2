@@ -1,6 +1,9 @@
 use std::env;
 
 use askama::Template;
+use askama_axum::IntoResponse;
+use axum::http::StatusCode;
+use axum::response::Response;
 use axum::response::Html;
 use axum::routing::{get, post, Router};
 use edit_buttons::{get_edit_buttons, get_start_buttons};
@@ -10,6 +13,7 @@ use tower_http::services::ServeDir;
 use tower_livereload::LiveReloadLayer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
+use anyhow::Result;
 
 mod edit_buttons;
 mod segment;
@@ -53,11 +57,36 @@ struct IndexTemplate {
     edit_buttons: String,
 }
 
-async fn index() -> Html<String> {
+struct VIError(anyhow::Error);
+impl From<anyhow::Error> for VIError {
+    fn from(error: anyhow::Error) -> Self {
+        VIError(error)
+    }
+}
+
+impl From <askama::Error> for VIError {
+    fn from(error: askama::Error) -> Self {
+        VIError(anyhow::Error::from(error))
+    }
+}
+
+impl IntoResponse for VIError {
+    fn into_response(self) -> Response{
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Something went wrong: {}", self.0),
+        )
+            .into_response()
+    }
+}
+
+
+
+async fn index() -> Result<Html<String>, VIError> {
     let edit_buttons = get_start_buttons();
     let template = IndexTemplate {
-        edit_buttons: edit_buttons.render().unwrap().to_string(),
+        edit_buttons: edit_buttons.render()?.to_string(),
     };
-    let body = template.render().unwrap();
-    Html(body)
+    let body = template.render()?;
+    Ok(Html(body))
 }
