@@ -14,13 +14,19 @@ use tracing_subscriber::util::SubscriberInitExt;
 mod edit_buttons;
 mod segment;
 
+#[derive(Clone)]
+struct VeloinfoState {
+    conn: PgPool,
+}
+
 #[tokio::main]
 async fn main() {
-    let pool = PgPool::connect(format!("{}", env::var("DATABASE_URL").unwrap()).as_str())
+    let conn = PgPool::connect(format!("{}", env::var("DATABASE_URL").unwrap()).as_str())
         .await
         .unwrap();
 
-    sqlx::migrate!().run(&pool).await.unwrap();
+    sqlx::migrate!().run(&conn).await.unwrap();
+    let state = VeloinfoState { conn: conn.clone() };
 
     tracing_subscriber::registry()
         .with(
@@ -34,6 +40,7 @@ async fn main() {
         .route("/", get(root))
         .route("/edit_buttons/:edit", get(get_edit_buttons)) // Fix: Call get_edit_buttons() inside get()
         .route("/cycleway/:way_id", post(segment))
+        .with_state(state)
         .layer(LiveReloadLayer::new())
         .nest_service("/pub/", ServeDir::new("pub"));
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();

@@ -1,11 +1,13 @@
 use askama_axum::IntoResponse;
+use axum::extract::State;
 use axum::{extract::Path, http::StatusCode, Json};
 use axum::response::Response;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use sqlx::{PgPool, Postgres};
-use std::env;
+use sqlx::Postgres;
 use anyhow::Result;
+
+use crate::VeloinfoState;
 
 #[derive(Debug, sqlx::FromRow)]
 struct ResponseDb {
@@ -32,8 +34,7 @@ impl Segment {
         )
         .bind(way_id)
         .fetch_one(&conn)
-        .await
-        ?;
+        .await?;
         Ok(response.into())
     }
 
@@ -60,8 +61,7 @@ impl Segment {
         .bind(source)
         .bind(target)
         .fetch_all(&conn)
-        .await
-        .unwrap();
+        .await?;
         let segment: Segment= responses.iter().fold(
             Segment {
                 geom: Some(vec![]),
@@ -134,15 +134,19 @@ impl From<anyhow::Error> for SegmentError {
         SegmentError(error)
     }
 }
-
+impl From<sqlx::Error> for SegmentError {
+    fn from(error: sqlx::Error) -> Self {
+        // Votre logique de conversion ici
+        // Par exemple, si SegmentError est une énumération avec une variante Sqlx :
+        SegmentError(anyhow::Error::from(error))
+    }
+}
 pub async fn segment(
+    State(state): State<VeloinfoState>,
     Path(way_id): Path<i64>,
     Json(start_segment): Json<Segment>,
 ) -> Result<Json<Segment>, SegmentError> {
-    let conn = PgPool::connect(format!("{}", env::var("DATABASE_URL").unwrap()).as_str())
-        .await
-        .unwrap();
-
+    let conn = state.conn;
     let searched_segment: Segment = Segment::get(way_id, conn.clone()).await?;
 
     if start_segment.geom.is_none() {
@@ -196,10 +200,7 @@ pub async fn segment(
                     .unwrap()
                     .len()
                     .cmp(&y.geom.as_ref().unwrap().len())
-            })
-            .unwrap()
-            .clone();
-        println!("{:?}", segment);
+            }).expect("no bigger segment").to_owned();
         Ok(Json(segment))
     }
 }
