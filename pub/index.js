@@ -10,7 +10,7 @@ map.on("click", async function (e) {
         [
             [e.point.x - width / 2, e.point.y - width / 2],
             [e.point.x + width / 2, e.point.y + width / 2]
-        ], { layers: ['cycleway'] });
+        ], { layers: ['cycleway', "designated", "shared_lane"] });
     if (!features.length) {
         return;
     }

@@ -21,7 +21,7 @@
         },
         "veloinfo": {
             "type": "vector",
-            "url": "http://localhost:3001/cycleway,shared,designated"
+            "url": "http://localhost:3001/bike_path"
         }
     },
     "layers": [
@@ -1811,35 +1811,78 @@
             ]
         },
         {
-            "id": "shared",
+            "id": "cycleway",
             "source": "veloinfo",
-            "source-layer": "shared",
+            "source-layer": "bike_path",
             "type": "line",
             "paint": {
                 "line-color": "#050",
-                "line-width": 2
-            }
+                "line-width": 3
+            },
+            "filter": [
+                "all",
+                [
+                    "==",
+                    "kind",
+                    "cycleway"
+                ]
+            ]
+        },
+        {
+            "id": "cycleway1",
+            "source": "veloinfo",
+            "source-layer": "bike_path",
+            "type": "line",
+            "paint": {
+                "line-color": "#f50",
+                "line-width": 3
+            },
+            "filter": [
+                "all",
+                [
+                    "==",
+                    "kind",
+                    "cycleway"
+                ],
+                [
+                    "==",
+                    "score",
+                    1
+                ]
+            ]
         },
         {
             "id": "designated",
             "source": "veloinfo",
-            "source-layer": "designated",   
+            "source-layer": "bike_path",
+            "type": "line",
+            "paint": {
+                "line-color": "#050",
+                "line-width": 2
+            },
+            "filter": [
+                "all",
+                [
+                    "==",
+                    "kind",
+                    "designated"
+                ]
+            ]
+        },
+        {
+            "id": "shared_lane",
+            "source": "veloinfo",
+            "source-layer": "bike_path",
             "type": "line",
             "paint": {
                 "line-color": "#050",
                 "line-width": 1
-            }
-        },
-        {
-            "id": "cycleway",
-            "source": "veloinfo",
-            "source-layer": "cycleway",
-            "type": "line",
-
-            "paint": {
-                "line-color": "#050",
-                "line-width": 3
-            }
+            },
+            "filter": [
+                "==",
+                "kind",
+                "shared_lane"
+            ]
         },
         {
             "id": "Ocean labels",

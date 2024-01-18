@@ -58,6 +58,7 @@ struct IndexTemplate {
 }
 
 struct VIError(anyhow::Error);
+
 impl From<anyhow::Error> for VIError {
     fn from(error: anyhow::Error) -> Self {
         VIError(error)

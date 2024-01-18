@@ -13,22 +13,11 @@ local cycleway = osm2pgsql.define_way_table("cycleway", { {
 }, {
     column = 'target',
     type = 'int8'
-} })
-local shared = osm2pgsql.define_way_table("shared", { {
-    column = 'name',
-    type = 'text'
-}, {
-    column = 'geom',
-    type = 'LineString'
-} })
+},{
+    column = 'kind',
+    type = 'text'} 
 
-local designated = osm2pgsql.define_way_table("designated", { {
-    column = 'name',
-    type = 'text'
-}, {
-    column = 'geom',
-    type = 'LineString'
-} })
+})
 
 function osm2pgsql.process_way(object)
     if object.tags.highway == 'cycleway' or object.tags.cycleway == "track" or object.tags["cycleway:left"] == "track" or
@@ -39,25 +28,30 @@ function osm2pgsql.process_way(object)
             winter_service = object.tags.winter_service,
             geom = object:as_linestring(),
             source = object.nodes[1],
-            target = object.nodes[#object.nodes]
+            target = object.nodes[#object.nodes],
+            kind = 'cycleway'
         })
-    end
-
-    if object.tags.bicycle == "designated" or object.tags["cycleway:left"] == "share_busway" or
+    elseif object.tags.bicycle == "designated" or object.tags["cycleway:left"] == "share_busway" or
         object.tags["cycleway:right"] == "share_busway" or object.tags["cycleway:both"] == "share_busway" or
         object.tags["cycleway:right"] == "lane" or object.tags["cycleway:left"] == "lane" or
         object.tags["cycleway:both"] == "lane" then
-        designated:insert({
-            name = object.tags.name,
-            geom = object:as_linestring()
-        })
-    end
+            cycleway:insert({
+                name = object.tags.name,
+                winter_service = object.tags.winter_service,
+                geom = object:as_linestring(),
+                source = object.nodes[1],
+                target = object.nodes[#object.nodes],
 
-    if object.tags.cycleway == "shared_lane" or object.tags.cycleway == "lane" or object.tags["cycleway:left"] ==
-        "shared_lane" or object.tags["cycleway:right"] == "shared_lane" or object.tags["cycleway:both"] == "shared_lane" then
-        shared:insert({
-            name = object.tags.name,
-            geom = object:as_linestring()
-        })
+                kind = 'designated'
+    })
+    elseif object.tags.cycleway == "shared_lane" or object.tags.cycleway == "lane" or object.tags["cycleway:left"] == "shared_lane" or object.tags["cycleway:right"] == "shared_lane" or object.tags["cycleway:both"] == "shared_lane" then
+            cycleway:insert({
+                name = object.tags.name,
+                winter_service = object.tags.winter_service,
+                geom = object:as_linestring(),
+                source = object.nodes[1],
+                target = object.nodes[#object.nodes],
+                kind = 'shared_lane'
+            })
     end
 end
