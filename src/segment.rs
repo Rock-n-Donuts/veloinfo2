@@ -141,7 +141,17 @@ impl From<sqlx::Error> for SegmentError {
         SegmentError(anyhow::Error::from(error))
     }
 }
-pub async fn segment(
+pub async fn select(
+    State(state): State<VeloinfoState>,
+    Path(way_id): Path<i64>
+) -> Result<Json<Segment>, SegmentError> {
+    let conn = state.conn;
+    let searched_segment: Segment = Segment::get(way_id, conn.clone()).await?;
+
+        Ok(Json(searched_segment))
+}
+
+pub async fn merge(
     State(state): State<VeloinfoState>,
     Path(way_id): Path<i64>,
     Json(start_segment): Json<Segment>,

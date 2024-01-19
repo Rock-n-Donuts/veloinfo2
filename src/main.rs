@@ -7,7 +7,8 @@ use axum::response::Response;
 use axum::response::Html;
 use axum::routing::{get, post, Router};
 use edit_buttons::{get_edit_buttons, get_start_buttons};
-use segment::segment;
+use segment::merge;
+use segment::select;
 use sqlx::PgPool;
 use tower_http::services::ServeDir;
 use tower_livereload::LiveReloadLayer;
@@ -43,7 +44,8 @@ async fn main() {
     let app = Router::new()
         .route("/", get(index))
         .route("/edit_buttons/:edit", get(get_edit_buttons)) // Fix: Call get_edit_buttons() inside get()
-        .route("/cycleway/:way_id", post(segment))
+        .route("/cycleway/select/:way_id", get(select))
+        .route("/cycleway/merge/:way_id", post(merge))
         .with_state(state)
         .layer(LiveReloadLayer::new())
         .nest_service("/pub/", ServeDir::new("pub"));

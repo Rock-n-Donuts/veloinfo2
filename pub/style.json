@@ -1817,7 +1817,7 @@
             "type": "line",
             "paint": {
                 "line-color": "#050",
-                "line-width": 3
+                "line-width": 5
             },
             "filter": [
                 "all",
@@ -1835,7 +1835,7 @@
             "type": "line",
             "paint": {
                 "line-color": "#f50",
-                "line-width": 3
+                "line-width": 5
             },
             "filter": [
                 "all",
@@ -1847,7 +1847,7 @@
                 [
                     "==",
                     "score",
-                    1
+                    0.2
                 ]
             ]
         },
@@ -1858,7 +1858,7 @@
             "type": "line",
             "paint": {
                 "line-color": "#050",
-                "line-width": 2
+                "line-width": 3
             },
             "filter": [
                 "all",
@@ -2962,10 +2962,5 @@
     ],
     "glyphs": "https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=STFS4MYo3i7OemN8CY5b",
     "bearing": 0,
-    "pitch": 0,
-    "center": [
-        -73.6,
-        45.55
-    ],
-    "zoom": 11
+    "pitch": 0
 }

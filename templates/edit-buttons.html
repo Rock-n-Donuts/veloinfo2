@@ -1,11 +1,12 @@
 <div id="buttons" style="position: absolute; bottom: 10px; right: 10px; z-index: 10;">
     {% if !editing %}
-        <button class="bg-sky-800 p-2 rounded-xl shadow-lg text-white"
-            hx-get="/edit_buttons/true" hx-swap="outerHTML" hx-target="#buttons">
+        <button id="edit_buttons" class="bg-sky-800 p-2 rounded-xl shadow-lg text-white"
+            hx-get="/edit_buttons/true" hx-swap="outerHTML" hx-target="#buttons"
+            hx-trigger="selected">
             éditer la piste
         </button>
     {% else %}
-        <button class="bg-sky-800 p-2 rounded-xl shadow-lg text-white"
+        <button id="edit_buttons" class="bg-sky-800 p-2 rounded-xl shadow-lg text-white"
         hx-get="/edit_buttons/false" hx-swap="outerHTML" hx-target="#buttons">
         Annuler
     </button>
