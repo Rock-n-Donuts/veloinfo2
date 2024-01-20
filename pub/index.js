@@ -28,16 +28,19 @@ select = async (e) => {
     }
     var feature = features[0];
 
-    fetch_response = await fetch('/cycleway/select/' + feature.properties.way_id);
+    fetch_response = await fetch('/segment/select/' + feature.properties.way_id);
     response = await fetch_response.json();
+    display_segment(response.geom, response.way_id);
+}
 
+display_segment = async(geom, way_id) => {
     if (map.getLayer("selected")) {
         map.getSource("selected").setData({
             "type": "Feature",
             "properties": {},
             "geometry": {
                 "type": "LineString",
-                "coordinates": response.geom
+                "coordinates": geom
             }
         })
     } else {
@@ -48,7 +51,7 @@ select = async (e) => {
                 "properties": {},
                 "geometry": {
                     "type": "LineString",
-                    "coordinates": response.geom
+                    "coordinates": geom
                 }
             }
         })
@@ -56,20 +59,25 @@ select = async (e) => {
             "id": "selected",
             "type": "line",
             "source": "selected",
-            "layout": {
-                "line-join": "round",
-                "line-cap": "round"
-            },
             "paint": {
                 "line-width": 8,
-                "line-color": "#f00",
+                "line-color": "#000",
+                "line-opacity": 0.3
             }
         });
     }
-    buttons = document.getElementById("edit_buttons");
-    const event = new CustomEvent('selected', { bubbles: true, detail: response });
-    buttons.dispatchEvent(event);
 
+    // Display info panel
+    var info_panel = document.getElementById("info_panel");
+    const response = await fetch("/info_panel/" +way_id);
+    const html = await response.text();
+    info_panel.outerHTML = html;
+    info_panel = document.getElementById("info_panel");
+    htmx.process(info_panel);
+}
+
+reset = async () => {
+    map.getSource("veloinfo").setUrl("http://localhost:3001/bike_path");
 }
 
 function getCookie(name) {

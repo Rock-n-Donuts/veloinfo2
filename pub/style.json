@@ -1834,7 +1834,7 @@
             "source-layer": "bike_path",
             "type": "line",
             "paint": {
-                "line-color": "#f50",
+                "line-color": "#f00",
                 "line-width": 5
             },
             "filter": [
@@ -1845,9 +1845,121 @@
                     "cycleway"
                 ],
                 [
-                    "==",
+                    "<=",
                     "score",
                     0.2
+                ]
+            ]
+        },
+        {
+            "id": "cycleway2",
+            "source": "veloinfo",
+            "source-layer": "bike_path",
+            "type": "line",
+            "paint": {
+                "line-color": "#f90",
+                "line-width": 5
+            },
+            "filter": [
+                "all",
+                [
+                    "==",
+                    "kind",
+                    "cycleway"
+                ],
+                [
+                    "<=",
+                    "score",
+                    0.4
+                ],
+                [
+                    ">",
+                    "score",
+                    0.2
+                ]
+            ]
+        },
+        {
+            "id": "cycleway3",
+            "source": "veloinfo",
+            "source-layer": "bike_path",
+            "type": "line",
+            "paint": {
+                "line-color": "#ff0",
+                "line-width": 5
+            },
+            "filter": [
+                "all",
+                [
+                    "==",
+                    "kind",
+                    "cycleway"
+                ],
+                [
+                    "<=",
+                    "score",
+                    0.6
+                ],
+                [
+                    ">",
+                    "score",
+                    0.4
+                ]
+            ]
+        },
+        {
+            "id": "cycleway4",
+            "source": "veloinfo",
+            "source-layer": "bike_path",
+            "type": "line",
+            "paint": {
+                "line-color": "#0f0",
+                "line-width": 5
+            },
+            "filter": [
+                "all",
+                [
+                    "==",
+                    "kind",
+                    "cycleway"
+                ],
+                [
+                    "<=",
+                    "score",
+                    0.8
+                ],
+                [
+                    ">",
+                    "score",
+                    0.6
+                ]
+            ]
+        },
+        {
+            "id": "cycleway5",
+            "source": "veloinfo",
+            "source-layer": "bike_path",
+            "type": "line",
+            "paint": {
+                "line-color": "#00f",
+                "line-width": 5
+            },
+            "filter": [
+                "all",
+                [
+                    "==",
+                    "kind",
+                    "cycleway"
+                ],
+                [
+                    "<=",
+                    "score",
+                    1
+                ],
+                [
+                    ">",
+                    "score",
+                    0.8
                 ]
             ]
         },

@@ -6,7 +6,7 @@ use axum::http::StatusCode;
 use axum::response::Response;
 use axum::response::Html;
 use axum::routing::{get, post, Router};
-use edit_buttons::{get_edit_buttons, get_start_buttons};
+use info_panel::{info_panel, get_panel, info_panel_post};
 use segment::merge;
 use segment::select;
 use sqlx::PgPool;
@@ -15,9 +15,11 @@ use tower_livereload::LiveReloadLayer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use anyhow::Result;
+use tower_http::trace::TraceLayer;
 
-mod edit_buttons;
+mod info_panel;
 mod segment;
+mod bike_path;
 
 #[derive(Clone)]
 struct VeloinfoState {
@@ -26,13 +28,6 @@ struct VeloinfoState {
 
 #[tokio::main]
 async fn main() {
-    let conn = PgPool::connect(format!("{}", env::var("DATABASE_URL").unwrap()).as_str())
-        .await
-        .unwrap();
-
-    sqlx::migrate!().run(&conn).await.unwrap();
-    let state = VeloinfoState { conn: conn.clone() };
-
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env()
@@ -40,23 +35,30 @@ async fn main() {
         )
         .with(tracing_subscriber::fmt::layer())
         .init();
+    
+    let conn = PgPool::connect(format!("{}", env::var("DATABASE_URL").unwrap()).as_str())
+        .await
+        .unwrap();
+    let state = VeloinfoState { conn: conn.clone() };
+
+    sqlx::migrate!().run(&conn).await.unwrap();
+
+    // Prepare bike path because is is destroyed by the import
+    bike_path::prepare_bp(conn.clone()).await.unwrap();
 
     let app = Router::new()
         .route("/", get(index))
-        .route("/edit_buttons/:edit", get(get_edit_buttons)) // Fix: Call get_edit_buttons() inside get()
-        .route("/cycleway/select/:way_id", get(select))
-        .route("/cycleway/merge/:way_id", post(merge))
+        .route("/info_panel", get(get_panel))
+        .route("/info_panel/:way_id", get(info_panel).post(info_panel_post)) // Fix: Call get_edit_buttons() inside get()
+        .route("/segment/select/:way_id", get(select))
+        .route("/segment/merge/:way_id", post(merge))
+        .nest_service("/pub/", ServeDir::new("pub"))
         .with_state(state)
         .layer(LiveReloadLayer::new())
-        .nest_service("/pub/", ServeDir::new("pub"));
+        .layer(TraceLayer::new_for_http());
+
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
-}
-
-#[derive(Template)]
-#[template(path = "index.html", escape = "none")]
-struct IndexTemplate {
-    edit_buttons: String,
 }
 
 struct VIError(anyhow::Error);
@@ -83,13 +85,43 @@ impl IntoResponse for VIError {
     }
 }
 
-
+#[derive(Template)]
+#[template(path = "index.html", escape = "none")]
+struct IndexTemplate {
+    info_panel: String,
+}
 
 async fn index() -> Result<Html<String>, VIError> {
-    let edit_buttons = get_start_buttons();
+    let info_panel = get_panel().await;
     let template = IndexTemplate {
-        edit_buttons: edit_buttons.render()?.to_string(),
+        info_panel: info_panel,
     };
     let body = template.render()?;
     Ok(Html(body))
+}
+
+pub struct VeloInfoError(anyhow::Error);
+
+// Tell axum how to convert `AppError` into a response.
+impl IntoResponse for VeloInfoError {
+    fn into_response(self) -> Response {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Something went wrong: {}", self.0),
+        )
+            .into_response()
+    }
+}
+
+impl From<anyhow::Error> for VeloInfoError {
+    fn from(error: anyhow::Error) -> Self {
+        VeloInfoError(error)
+    }
+}
+impl From<sqlx::Error> for VeloInfoError {
+    fn from(error: sqlx::Error) -> Self {
+        // Votre logique de conversion ici
+        // Par exemple, si SegmentError est une énumération avec une variante Sqlx :
+        VeloInfoError(anyhow::Error::from(error))
+    }
 }

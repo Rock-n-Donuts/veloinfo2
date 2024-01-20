@@ -1,16 +1,15 @@
-use askama_axum::IntoResponse;
 use axum::extract::State;
-use axum::{extract::Path, http::StatusCode, Json};
-use axum::response::Response;
+use axum::{extract::Path, Json};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use sqlx::Postgres;
 use anyhow::Result;
 
-use crate::VeloinfoState;
+use crate::{VeloinfoState, VeloInfoError};
 
 #[derive(Debug, sqlx::FromRow)]
 struct ResponseDb {
+    way_id: Option<i64>,
     geom: Option<String>,
     source: Option<i64>,
     target: Option<i64>,
@@ -18,15 +17,17 @@ struct ResponseDb {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Segment {
-    geom: Option<Vec<[f64; 2]>>,
-    source: Option<i64>,
-    target: Option<i64>,
+    pub way_id: Option<i64>,
+    pub geom: Option<Vec<[f64; 2]>>,
+    pub source: Option<i64>,
+    pub target: Option<i64>,
 }
 
 impl Segment {
-    async fn get(way_id: i64, conn: sqlx::Pool<Postgres>) -> Result<Segment> {
+    pub async fn get(way_id: i64, conn: sqlx::Pool<Postgres>) -> Result<Segment> {
         let response: ResponseDb = sqlx::query_as(
             r#"select  
+                way_id,
                 source,
                 target,
                 ST_AsText(ST_Transform(geom, 4326)) as geom  
@@ -64,6 +65,7 @@ impl Segment {
         .await?;
         let segment: Segment= responses.iter().fold(
             Segment {
+                way_id: None,
                 geom: Some(vec![]),
                 source: Some(source),
                 target: Some(target),
@@ -102,12 +104,14 @@ impl From<&ResponseDb> for Segment {
                     })
                     .collect::<Vec<[f64; 2]>>();
                 Segment {
+                    way_id: response.way_id,
                     geom: Some(points),
                     source: response.source,
                     target: response.target,
                 }
             }
             None => Segment {
+                way_id: None,
                 geom: None,
                 source: None,
                 target: None,
@@ -116,35 +120,10 @@ impl From<&ResponseDb> for Segment {
     }
 }
 
-pub struct SegmentError(anyhow::Error);
-
-// Tell axum how to convert `AppError` into a response.
-impl IntoResponse for SegmentError {
-    fn into_response(self) -> Response {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Something went wrong: {}", self.0),
-        )
-            .into_response()
-    }
-}
-
-impl From<anyhow::Error> for SegmentError {
-    fn from(error: anyhow::Error) -> Self {
-        SegmentError(error)
-    }
-}
-impl From<sqlx::Error> for SegmentError {
-    fn from(error: sqlx::Error) -> Self {
-        // Votre logique de conversion ici
-        // Par exemple, si SegmentError est une énumération avec une variante Sqlx :
-        SegmentError(anyhow::Error::from(error))
-    }
-}
 pub async fn select(
     State(state): State<VeloinfoState>,
     Path(way_id): Path<i64>
-) -> Result<Json<Segment>, SegmentError> {
+) -> Result<Json<Segment>, VeloInfoError> {
     let conn = state.conn;
     let searched_segment: Segment = Segment::get(way_id, conn.clone()).await?;
 
@@ -155,7 +134,7 @@ pub async fn merge(
     State(state): State<VeloinfoState>,
     Path(way_id): Path<i64>,
     Json(start_segment): Json<Segment>,
-) -> Result<Json<Segment>, SegmentError> {
+) -> Result<Json<Segment>, VeloInfoError> {
     let conn = state.conn;
     let searched_segment: Segment = Segment::get(way_id, conn.clone()).await?;
 
