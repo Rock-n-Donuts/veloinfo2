@@ -1,4 +1,3 @@
-var response = { geom: null, source: null, target: null, node: null };
 var way_ids = "";
 var map = new maplibregl.Map({
     container: 'map',
@@ -30,19 +29,23 @@ select = async (event) => {
     }
     var feature = features[0];
 
-    var fetch_response;
-    const info_panel = document.getElementById("select_score");
 
     var fetch_response = await fetch('/segment/select/' + feature.properties.way_id);
-    
     var response = await fetch_response.json();
-    if(info_panel) {
-        fetch_response = await fetch('/segment/route/' + feature.properties.way_id + "/" +way_ids);
+
+    const info_panel = document.getElementById("select_score");
+    if (info_panel) {
+        fetch_response = await fetch('/segment/route/' + feature.properties.way_id + "/" + way_ids);
         response = await fetch_response.json();
+        console.log(response);
+        if (response.way_ids.length == 0){
+            return;
+        }
         way_ids = response.way_ids;
-    }else{
+    } else {
         way_ids = feature.properties.way_id;
     }
+    console.log("way_ids " + way_ids);
     display_segment(response.geom, response.way_id);
 }
 
@@ -80,18 +83,20 @@ display_segment = async (geom, way_id) => {
         });
     }
 
-    // Display info panel
-    var info_panel = document.getElementById("info_panel");
-    const response = await fetch("/info_panel/" + way_ids);
-    const html = await response.text();
-    info_panel.outerHTML = html;
-    // reprocess htmx for the new info panel
-    info_panel = document.getElementById("info_panel");
-    htmx.process(info_panel);
+    if (way_id) {
+        // Display info panel
+        var info_panel = document.getElementById("info_panel");
+        const response = await fetch("/info_panel/" + way_ids);
+        const html = await response.text();
+        info_panel.outerHTML = html;
+        // reprocess htmx for the new info panel
+        info_panel = document.getElementById("info_panel");
+        console.log("info_panel " + info_panel);
+        htmx.process(info_panel);
+    }
 }
 
 clear = async () => {
-    way_ids = "";
     map.getSource("selected").setData({
         "type": "Feature",
         "properties": {},
