@@ -10,6 +10,7 @@ use crate::{VeloInfoError, VeloinfoState};
 
 #[derive(Debug, sqlx::FromRow)]
 struct ResponseDb {
+    name: Option<String>,
     way_id: Option<i64>,
     geom: Option<String>,
     source: Option<i64>,
@@ -18,6 +19,7 @@ struct ResponseDb {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Segment {
+    pub name: Option<String>,
     pub way_id: Option<i64>,
     pub geom: Option<Vec<[f64; 2]>>,
     pub source: Option<i64>,
@@ -55,7 +57,8 @@ impl From<&RouteDB> for Route {
 impl Segment {
     pub async fn get(way_id: i64, conn: sqlx::Pool<Postgres>) -> Result<Segment> {
         let response: ResponseDb = sqlx::query_as(
-            r#"select  
+            r#"select
+                name,  
                 way_id,
                 source,
                 target,
@@ -68,30 +71,38 @@ impl Segment {
         Ok(response.into())
     }
 
-    async fn route(source: i64, target: i64, conn: sqlx::Pool<Postgres>) -> Result<Route> {
-        println!("source: {}, target: {}", source, target);
+    async fn route(name: &str, source: i64, target: i64, conn: sqlx::Pool<Postgres>) -> Result<Route> {
+        println!("name: {}, source: {}, target: {}",name, source, target);
         let responses: Vec<RouteDB> = sqlx::query_as(
             r#"select   way_id,
-                        $1 as source,
-                        $2 as target, 
+                        $2 as source,
+                        $3 as target, 
                         ST_AsText(ST_Transform(geom, 4326)) as geom,
                         path_seq
                 from pgr_bdastar(
-                'select  way_id as id, 
-                        source, 
-                        target, 
-                        st_length(geom) as cost, 
-                        st_length(geom) as reverse_cost, 
-                        st_x(st_startpoint(geom)) as x1,
-                        st_y(st_startpoint(geom)) as y1,
-                        st_x(st_endpoint(geom)) as x2,
-                        st_y(st_endpoint(geom)) as y2
-                FROM cycleway ', 
-                $1, 
-                $2
+                    FORMAT(
+                        $FORMAT$
+                        select  way_id as id, 
+                            source, 
+                            target, 
+                            st_length(geom) as cost, 
+                            st_length(geom) as reverse_cost, 
+                            st_x(st_startpoint(geom)) as x1,
+                            st_y(st_startpoint(geom)) as y1,
+                            st_x(st_endpoint(geom)) as x2,
+                            st_y(st_endpoint(geom)) as y2
+                        FROM cycleway
+                        WHERE name = '%1$s'
+                        $FORMAT$,
+                        $1
+                    )
+                , 
+                $2, 
+                $3
                 ) as pa join cycleway c on pa.edge = c.way_id
                 order by path_seq asc"#,
         )
+        .bind(name)
         .bind(source)
         .bind(target)
         .fetch_all(&conn)
@@ -137,6 +148,7 @@ impl From<&ResponseDb> for Segment {
                     })
                     .collect::<Vec<[f64; 2]>>();
                 Segment {
+                    name: response.name.clone(),
                     way_id: response.way_id,
                     geom: Some(points),
                     source: response.source,
@@ -144,6 +156,7 @@ impl From<&ResponseDb> for Segment {
                 }
             }
             None => Segment {
+                name: None,
                 way_id: None,
                 geom: None,
                 source: None,
@@ -207,12 +220,14 @@ pub async fn route(
         );
     println!("start_segment: {:?}", start_segment);
     println!("searched_segment: {:?}", searched_segments);
+    let name = start_segment.name.unwrap();
 
     let mut routes: Vec<Route> = vec![];
     // We try to find the longest path between the 4 possible combinations
     // It is not the best way to do it, but it is the simplest
     routes.push(
         Segment::route(
+            name.as_str(),
             start_segment.source.unwrap(),
             searched_segments.target,
             conn.clone(),
@@ -221,6 +236,7 @@ pub async fn route(
     );
     routes.push(
         Segment::route(
+            name.as_str(),
             start_segment.target.unwrap(),
             searched_segments.source,
             conn.clone(),
@@ -229,6 +245,7 @@ pub async fn route(
     );
     routes.push(
         Segment::route(
+            name.as_str(),
             start_segment.source.unwrap(),
             searched_segments.source,
             conn.clone(),
@@ -237,6 +254,7 @@ pub async fn route(
     );
     routes.push(
         Segment::route(
+            name.as_str(),
             start_segment.target.unwrap(),
             searched_segments.target,
             conn.clone(),
