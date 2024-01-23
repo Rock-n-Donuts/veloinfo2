@@ -6,7 +6,7 @@
             <select id="select_score"
                     name="score"
                     class="bg-white m-2" 
-                    hx-post="/info_panel/{{way_id}}" 
+                    hx-post="/info_panel/{{way_ids}}" 
                     hx-target="#info_panel" 
                     hx-swap="outerHTML"
                     hx-on:change="setTimeout(reset, 100)">

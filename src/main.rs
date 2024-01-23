@@ -5,9 +5,9 @@ use askama_axum::IntoResponse;
 use axum::http::StatusCode;
 use axum::response::Response;
 use axum::response::Html;
-use axum::routing::{get, post, Router};
+use axum::routing::{get, Router};
 use info_panel::{info_panel, get_panel, info_panel_post};
-use segment::merge;
+use segment::route;
 use segment::select;
 use sqlx::PgPool;
 use tower_http::services::ServeDir;
@@ -49,9 +49,9 @@ async fn main() {
     let app = Router::new()
         .route("/", get(index))
         .route("/info_panel", get(get_panel))
-        .route("/info_panel/:way_id", get(info_panel).post(info_panel_post)) // Fix: Call get_edit_buttons() inside get()
+        .route("/info_panel/:way_ids", get(info_panel).post(info_panel_post)) // Fix: Call get_edit_buttons() inside get()
         .route("/segment/select/:way_id", get(select))
-        .route("/segment/merge/:way_id", post(merge))
+        .route("/segment/route/:way_id1/:way_ids", get(route))
         .nest_service("/pub/", ServeDir::new("pub"))
         .with_state(state)
         .layer(LiveReloadLayer::new())

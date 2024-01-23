@@ -1,11 +1,12 @@
+use anyhow::Result;
 use axum::extract::State;
 use axum::{extract::Path, Json};
+use futures::future::join_all;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use sqlx::Postgres;
-use anyhow::Result;
 
-use crate::{VeloinfoState, VeloInfoError};
+use crate::{VeloInfoError, VeloinfoState};
 
 #[derive(Debug, sqlx::FromRow)]
 struct ResponseDb {
@@ -21,6 +22,34 @@ pub struct Segment {
     pub geom: Option<Vec<[f64; 2]>>,
     pub source: Option<i64>,
     pub target: Option<i64>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, sqlx::FromRow)]
+struct RouteDB {
+    way_id: i64,
+    source: i64,
+    target: i64,
+    geom: String,
+}
+
+impl From<&RouteDB> for Route {
+    fn from(response: &RouteDB) -> Self {
+        let re = Regex::new(r"(-?\d+\.*\d*) (-?\d+\.*\d*)").unwrap();
+        let points = re
+            .captures_iter(response.geom.as_str())
+            .map(|cap| {
+                let x = cap[1].parse::<f64>().unwrap();
+                let y = cap[2].parse::<f64>().unwrap();
+                [x, y]
+            })
+            .collect::<Vec<[f64; 2]>>();
+        Route {
+            way_ids: vec![response.way_id],
+            geom: points,
+            source: response.source,
+            target: response.target,
+        }
+    }
 }
 
 impl Segment {
@@ -39,11 +68,14 @@ impl Segment {
         Ok(response.into())
     }
 
-    async fn route(source: i64, target: i64, conn: sqlx::Pool<Postgres>) -> Result<Segment> {
-        let responses: Vec<ResponseDb> = sqlx::query_as(
-            r#"select $1 as source,
+    async fn route(source: i64, target: i64, conn: sqlx::Pool<Postgres>) -> Result<Route> {
+        println!("source: {}, target: {}", source, target);
+        let responses: Vec<RouteDB> = sqlx::query_as(
+            r#"select   way_id,
+                        $1 as source,
                         $2 as target, 
-                        ST_AsText(ST_Transform(geom, 4326)) as geom 
+                        ST_AsText(ST_Transform(geom, 4326)) as geom,
+                        path_seq
                 from pgr_bdastar(
                 'select  way_id as id, 
                         source, 
@@ -57,25 +89,26 @@ impl Segment {
                 FROM cycleway ', 
                 $1, 
                 $2
-                ) as pa join cycleway c on pa.edge = c.way_id"#,
+                ) as pa join cycleway c on pa.edge = c.way_id
+                order by path_seq asc"#,
         )
         .bind(source)
         .bind(target)
         .fetch_all(&conn)
-        .await?;
-        let segment: Segment= responses.iter().fold(
-            Segment {
-                way_id: None,
-                geom: Some(vec![]),
-                source: Some(source),
-                target: Some(target),
+        .await
+        .unwrap();
+        println!("responses: {:?}", responses);
+        let segment: Route = responses.iter().fold(
+            Route {
+                way_ids: Vec::new(),
+                geom: vec![],
+                source: source,
+                target: target,
             },
             |mut acc, response| {
-                let this_segement: Segment = response.into();
-                acc.geom
-                    .as_mut()
-                    .unwrap()
-                    .extend(this_segement.geom.unwrap());
+                let this_merge: Route = response.into();
+                acc.way_ids.extend(this_merge.way_ids);
+                acc.geom.extend(this_merge.geom);
                 acc
             },
         );
@@ -122,74 +155,101 @@ impl From<&ResponseDb> for Segment {
 
 pub async fn select(
     State(state): State<VeloinfoState>,
-    Path(way_id): Path<i64>
+    Path(way_id): Path<i64>,
 ) -> Result<Json<Segment>, VeloInfoError> {
     let conn = state.conn;
     let searched_segment: Segment = Segment::get(way_id, conn.clone()).await?;
 
-        Ok(Json(searched_segment))
+    Ok(Json(searched_segment))
 }
 
-pub async fn merge(
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Route {
+    pub way_ids: Vec<i64>,
+    pub geom: Vec<[f64; 2]>,
+    pub source: i64,
+    pub target: i64,
+}
+
+pub async fn route(
     State(state): State<VeloinfoState>,
-    Path(way_id): Path<i64>,
-    Json(start_segment): Json<Segment>,
-) -> Result<Json<Segment>, VeloInfoError> {
+    Path((way_id1, way_ids)): Path<(i64, String)>,
+) -> Result<Json<Route>, VeloInfoError> {
+    let re = Regex::new(r"\d+").unwrap();
+    let way_ids_i64 = re.find_iter(&way_ids)
+        .map(|m| m.as_str().parse::<i64>().unwrap()).collect::<Vec<i64>>();
+    println!("way_ids_i64: {:?}", way_ids_i64);
     let conn = state.conn;
-    let searched_segment: Segment = Segment::get(way_id, conn.clone()).await?;
+    let start_segment: Segment = Segment::get(way_id1, conn.clone()).await?;
+    let searched_segments: Route = join_all(way_ids_i64
+        .iter()
+        .map(|way_id| { 
+            Segment::get(*way_id, conn.clone())
+        })).await.iter()
+        .fold(
+            Route {
+                way_ids: vec![],
+                geom: vec![],
+                source: 0,
+                target: 0,
+            },
+            |acc, segment| {
+                let segment = segment.as_ref().unwrap();
+                let mut acc = acc;
+                acc.way_ids.push(segment.way_id.unwrap());
+                acc.geom.extend(segment.geom.as_ref().unwrap());
+                if acc.source == 0 {
+                    acc.source = segment.source.unwrap();
+                }
+                acc.target = segment.target.unwrap();
+                acc
+            },
+        );
+    println!("start_segment: {:?}", start_segment);
+    println!("searched_segment: {:?}", searched_segments);
 
-    if start_segment.geom.is_none() {
-        Ok(Json(searched_segment))
-    } else {
-        let mut segments: Vec<Segment> = vec![];
-        // We try to find the longest path between the 4 possible combinations
-        // It is not the best way to do it, but it is the simplest
-        segments.push(
-            Segment::route(
-                start_segment.source.unwrap(),
-                searched_segment.target.unwrap(),
-                conn.clone(),
-            )
-            .await?,
-        );
-        segments.push(
-            Segment::route(
-                start_segment.target.unwrap(),
-                searched_segment.source.unwrap(),
-                conn.clone(),
-            )
-            .await?,
-        );
-        segments.push(
-            Segment::route(
-                start_segment.source.unwrap(),
-                searched_segment.source.unwrap(),
-                conn.clone(),
-            )
-            .await?,
-        );
-        segments.push(
-            Segment::route(
-                start_segment.target.unwrap(),
-                searched_segment.target.unwrap(),
-                conn.clone(),
-            )
-            .await?,
-        );
-        segments.iter().for_each(|segment| {
-            println!("{:?}", segment);
-        });
+    let mut routes: Vec<Route> = vec![];
+    // We try to find the longest path between the 4 possible combinations
+    // It is not the best way to do it, but it is the simplest
+    routes.push(
+        Segment::route(
+            start_segment.source.unwrap(),
+            searched_segments.target,
+            conn.clone(),
+        )
+        .await?,
+    );
+    routes.push(
+        Segment::route(
+            start_segment.target.unwrap(),
+            searched_segments.source,
+            conn.clone(),
+        )
+        .await?,
+    );
+    routes.push(
+        Segment::route(
+            start_segment.source.unwrap(),
+            searched_segments.source,
+            conn.clone(),
+        )
+        .await?,
+    );
+    routes.push(
+        Segment::route(
+            start_segment.target.unwrap(),
+            searched_segments.target,
+            conn.clone(),
+        )
+        .await?,
+    );
+    println!("segments: {:?}", routes);
 
-        // We keep the longest segment
-        let segment = segments
-            .iter()
-            .max_by(|x, y| {
-                x.geom
-                    .as_ref()
-                    .unwrap()
-                    .len()
-                    .cmp(&y.geom.as_ref().unwrap().len())
-            }).expect("no bigger segment").to_owned();
-        Ok(Json(segment))
-    }
+    // We keep the longest segment
+    let merge = routes
+        .iter()
+        .max_by(|x, y| x.geom.len().cmp(&y.geom.len()))
+        .expect("no bigger segment")
+        .to_owned();
+    Ok(Json(merge))
 }

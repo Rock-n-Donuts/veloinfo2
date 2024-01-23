@@ -1,21 +1,25 @@
 use anyhow::Result;
 use askama::Template;
-use axum::{extract::{Path, State}, Form};
-use serde::{Serialize, Deserialize};
+use axum::{
+    extract::{Path, State},
+    Form,
+};
+use regex::Regex;
+use serde::{Deserialize, Serialize};
 use sqlx::Postgres;
-
+use futures::future::join_all;
 use crate::{VeloInfoError, VeloinfoState};
 
 #[derive(Template)]
 #[template(path = "info_panel.html", escape = "none")]
 pub struct InfoPanel {
-    way_id: i64,
+    way_ids: String,
     status: String,
     segment_name: String,
     options: String,
 }
 
-#[derive(Debug, sqlx::FromRow)]
+#[derive(Debug, sqlx::FromRow, Clone)]
 struct WayInfo {
     way_id: i64,
     name: Option<String>,
@@ -23,8 +27,9 @@ struct WayInfo {
 }
 
 impl WayInfo {
-    pub async fn get(way_id: i64, conn: sqlx::Pool<Postgres>) -> Result<WayInfo> {
-        let response: WayInfo = sqlx::query_as(
+    pub async fn get(way_id: i64, conn: sqlx::Pool<Postgres>) -> Result<WayInfo, sqlx::Error> {
+        println!("get way_id: {}", way_id);
+        sqlx::query_as(
             r#"select  
                 c.way_id,
                 c.name,
@@ -37,22 +42,18 @@ impl WayInfo {
         .bind(way_id)
         .fetch_one(&conn)
         .await
-        .unwrap_or(WayInfo {
-            way_id: 0,
-            name: None,
-            score: None,
-        });
-        Ok(response.into())
     }
 }
 
 pub async fn get_panel() -> String {
     InfoPanel {
-        way_id: 0,
+        way_ids: "".to_string(),
         status: "none".to_string(),
         segment_name: "".to_string(),
         options: "".to_string(),
-    }.render().unwrap()
+    }
+    .render()
+    .unwrap()
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -62,52 +63,83 @@ pub struct PostValue {
 
 pub async fn info_panel_post(
     State(state): State<VeloinfoState>,
-    Path(way_id): Path<i64>,
+    Path(way_ids): Path<String>,
     Form(post): Form<PostValue>,
 ) -> Result<String, VeloInfoError> {
+    let re = Regex::new(r"\d*").unwrap();
+    let way_ids_i64 = re
+        .find_iter(way_ids.as_str())
+        .map(|m| m.as_str().parse::<i64>().unwrap())
+        .collect::<Vec<i64>>();
     println!("post: {:?}", post);
     let conn = state.conn.clone();
-    sqlx::query(
-        r#"INSERT INTO cyclability_score 
-            (way_id, score) 
-            VALUES ($1, $2)"#,
-    ).bind(way_id).bind(post.score).execute(&conn).await?;
+    join_all(way_ids_i64.iter().map(|way_id| {
+            sqlx::query(
+                r#"INSERT INTO cyclability_score 
+                    (way_id, score) 
+                    VALUES ($1, $2)"#,
+            )
+            .bind(way_id)
+            .bind(post.score)
+            .execute(&conn)
+    })).await;
 
-    info_panel(State(state), Path(way_id)).await
+    info_panel(State(state), Path(way_ids)).await
 }
 
 pub async fn info_panel(
     State(state): State<VeloinfoState>,
-    Path(way_id): Path<i64>,
+    Path(way_ids): Path<String>,
 ) -> Result<String, VeloInfoError> {
-    let way = WayInfo::get(way_id, state.conn.clone()).await?;
-    let s = vec![
-        (0.2, "🔴 Impossible"),
-        (0.4, "🟠 mauvais"),
-        (0.6, "🟡 difficile"),
-        (0.8, "🟢 bon"),
-        (1., "🔵 excellent"),
-    ];
+    let re = Regex::new(r"\d+").unwrap();
+    let way_ids_i64 = re
+        .find_iter(way_ids.as_str())
+        .map(|cap| cap.as_str().parse::<i64>().unwrap())
+        .collect::<Vec<i64>>();
+    let ways = join_all(way_ids_i64
+        .iter()
+        .map(|way_id| {
+            let conn = state.conn.clone();
+            let a = WayInfo::get(*way_id, conn);
+            a
+        })).await;
+    let all_same_score = ways.iter().all(|way| way.as_ref().unwrap().score == ways[0].as_ref().unwrap().score);
+    let mut way = ways[0].as_ref().unwrap().clone();
     println!("way: {:?}", way);
+    if !all_same_score {
+        way.score = Some(-1.);
+    }
+    let s = vec![
+        (-1., "⚪ inconnu", "disabled"),
+        (0.2, "🔴 Impossible", ""),
+        (0.4, "🟠 mauvais", ""),
+        (0.6, "🟡 difficile", ""),
+        (0.8, "🟢 bon", ""),
+        (1., "🔵 excellent", ""),
+    ];
     let options = s
         .iter()
-        .map(|(score, color)| {
+        .map(|(score, color, disabled)| {
             ScoreOption {
                 score: *score,
-                good_score: way.score.unwrap_or(0.8),
+                selected: if way.score == Some(*score) {
+                    "selected".to_string()
+                } else {
+                    "".to_string()
+                },
                 color: color.to_string(),
+                disabled: disabled.to_string(),
             }
             .render()
             .unwrap()
         })
         .collect::<Vec<String>>()
         .join(" ");
-
     let segment_name =
         way.name.unwrap_or("nom inconnu".to_string()) + format!(" ({})", way.way_id).as_str();
 
     let info_panel = InfoPanel {
-        way_id,
+        way_ids,
         status: "segment".to_string(),
         segment_name,
         options,
@@ -120,9 +152,10 @@ pub async fn info_panel(
 }
 
 #[derive(Template)]
-#[template(path = "score_option.html", escape = "none")]
+#[template(source = r#"<option value="{{score}}" {{selected}} {{disabled}}>{{color}}</option>"#, escape = "none", ext = "txt")]
 struct ScoreOption {
     score: f64,
-    good_score: f64,
+    selected: String,
     color: String,
+    disabled: String,
 }
