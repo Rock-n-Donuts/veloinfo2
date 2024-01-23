@@ -1,4 +1,12 @@
 var way_ids = "";
+
+getCookie = (name) => {
+    let matches = document.cookie.match(new RegExp(
+        "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+    ));
+    return matches ? decodeURIComponent(matches[1]) : undefined;
+}
+
 var map = new maplibregl.Map({
     container: 'map',
     style: 'http://localhost:3000/pub/style.json',
@@ -37,7 +45,6 @@ select = async (event) => {
     if (info_panel) {
         fetch_response = await fetch('/segment/route/' + feature.properties.way_id + "/" + way_ids);
         response = await fetch_response.json();
-        console.log(response);
         if (response.way_ids.length == 0){
             return;
         }
@@ -45,7 +52,6 @@ select = async (event) => {
     } else {
         way_ids = feature.properties.way_id;
     }
-    console.log("way_ids " + way_ids);
     display_segment(response.geom, response.way_id);
 }
 
@@ -83,7 +89,7 @@ display_segment = async (geom, way_id) => {
         });
     }
 
-    if (way_id) {
+    if (way_ids) {
         // Display info panel
         var info_panel = document.getElementById("info_panel");
         const response = await fetch("/info_panel/" + way_ids);
@@ -91,7 +97,6 @@ display_segment = async (geom, way_id) => {
         info_panel.outerHTML = html;
         // reprocess htmx for the new info panel
         info_panel = document.getElementById("info_panel");
-        console.log("info_panel " + info_panel);
         htmx.process(info_panel);
     }
 }
@@ -119,9 +124,5 @@ reset = async () => {
     map.getSource("veloinfo").setUrl("http://localhost:3001/bike_path");
 }
 
-function getCookie(name) {
-    let matches = document.cookie.match(new RegExp(
-        "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
-    ));
-    return matches ? decodeURIComponent(matches[1]) : undefined;
-}
+
+
