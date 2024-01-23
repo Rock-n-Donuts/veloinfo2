@@ -92,7 +92,6 @@ impl Segment {
                             st_x(st_endpoint(geom)) as x2,
                             st_y(st_endpoint(geom)) as y2
                         FROM cycleway
-                        WHERE name = '%1$s'
                         $FORMAT$,
                         $1
                     )
@@ -220,7 +219,7 @@ pub async fn route(
         );
     println!("start_segment: {:?}", start_segment);
     println!("searched_segment: {:?}", searched_segments);
-    let name = start_segment.name.unwrap();
+    let name = start_segment.name.unwrap_or("Non inconnu".to_string());
 
     let mut routes: Vec<Route> = vec![];
     // We try to find the longest path between the 4 possible combinations

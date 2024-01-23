@@ -21,7 +21,6 @@ pub struct InfoPanel {
 
 #[derive(Debug, sqlx::FromRow, Clone)]
 struct WayInfo {
-    way_id: i64,
     name: Option<String>,
     score: Option<f64>,
 }
