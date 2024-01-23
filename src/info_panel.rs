@@ -136,7 +136,7 @@ pub async fn info_panel(
         .collect::<Vec<String>>()
         .join(" ");
     let segment_name =
-        way.name.unwrap_or("nom inconnu".to_string()) + format!(" ({})", way.way_id).as_str();
+        way.name.unwrap_or("nom inconnu".to_string()) + format!(" ({})", way_ids).as_str();
 
     let info_panel = InfoPanel {
         way_ids,

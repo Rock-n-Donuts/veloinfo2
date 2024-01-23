@@ -25,6 +25,7 @@ select = async (event) => {
             [event.point.x + width / 2, event.point.y + width / 2]
         ], { layers: ['cycleway', "designated", "shared_lane"] });
     if (!features.length) {
+        clear();
         return;
     }
     var feature = features[0];
@@ -82,6 +83,26 @@ display_segment = async (geom, way_id) => {
     // Display info panel
     var info_panel = document.getElementById("info_panel");
     const response = await fetch("/info_panel/" + way_ids);
+    const html = await response.text();
+    info_panel.outerHTML = html;
+    // reprocess htmx for the new info panel
+    info_panel = document.getElementById("info_panel");
+    htmx.process(info_panel);
+}
+
+clear = async () => {
+    way_ids = "";
+    map.getSource("selected").setData({
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+            "type": "LineString",
+            "coordinates": []
+        }
+    })
+    // Display info panel
+    var info_panel = document.getElementById("info_panel");
+    const response = await fetch("/info_panel");
     const html = await response.text();
     info_panel.outerHTML = html;
     // reprocess htmx for the new info panel

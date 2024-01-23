@@ -49,7 +49,7 @@ async fn main() {
     let app = Router::new()
         .route("/", get(index))
         .route("/info_panel", get(get_panel))
-        .route("/info_panel/:way_ids", get(info_panel).post(info_panel_post)) // Fix: Call get_edit_buttons() inside get()
+        .route("/info_panel/:way_ids", get(info_panel).post(info_panel_post)) 
         .route("/segment/select/:way_id", get(select))
         .route("/segment/route/:way_id1/:way_ids", get(route))
         .nest_service("/pub/", ServeDir::new("pub"))

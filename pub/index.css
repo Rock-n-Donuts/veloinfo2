@@ -548,8 +548,20 @@ video {
   position: absolute;
 }
 
+.right-2 {
+  right: 0.5rem;
+}
+
 .m-2 {
   margin: 0.5rem;
+}
+
+.mt-4 {
+  margin-top: 1rem;
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
 
 .rounded-xl {
