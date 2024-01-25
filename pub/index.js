@@ -9,7 +9,7 @@ getCookie = (name) => {
 
 var map = new maplibregl.Map({
     container: 'map',
-    style: 'http://localhost:3000/pub/style.json',
+    style: '/pub/style.json',
     center: [getCookie("lng") ? getCookie("lng") : -72.45272261855519, getCookie("lat") ? getCookie("lat") : 45.924806212523265],
     zoom: getCookie("zoom") ? getCookie("zoom") : 6
 });
