@@ -1,12 +1,11 @@
 use std::env;
-
 use askama::Template;
 use askama_axum::IntoResponse;
 use axum::http::StatusCode;
 use axum::response::Response;
 use axum::response::Html;
 use axum::routing::{get, Router};
-use info_panel::{info_panel, get_panel, info_panel_post};
+use info_panel::{info_panel, get_panel, info_panel_post, info_panel_score_id};
 use segment::route;
 use segment::select;
 use sqlx::PgPool;
@@ -16,7 +15,9 @@ use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use anyhow::Result;
 use tower_http::trace::TraceLayer;
+use public::style;
 
+mod public;
 mod info_panel;
 mod segment;
 mod bike_path;
@@ -50,8 +51,10 @@ async fn main() {
         .route("/", get(index))
         .route("/info_panel", get(get_panel))
         .route("/info_panel/:way_ids", get(info_panel).post(info_panel_post)) 
+        .route("/info_panel_score/:score_id", get(info_panel_score_id)) 
         .route("/segment/select/:way_id", get(select))
         .route("/segment/route/:way_id1/:way_ids", get(route))
+        .route("/style.json", get(style))
         .nest_service("/pub/", ServeDir::new("pub"))
         .with_state(state)
         .layer(LiveReloadLayer::new())

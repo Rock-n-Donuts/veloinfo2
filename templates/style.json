@@ -21,7 +21,7 @@
         },
         "veloinfo": {
             "type": "vector",
-            "url": "http://localhost:3001/bike_path"
+            "url": "{{martin_url}}/bike_path"
         }
     },
     "layers": [
