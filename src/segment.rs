@@ -26,7 +26,7 @@ pub struct Segment {
     pub target: Option<i64>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, sqlx::FromRow)]
+#[derive(Debug, sqlx::FromRow)]
 struct RouteDB {
     way_id: i64,
     source: i64,

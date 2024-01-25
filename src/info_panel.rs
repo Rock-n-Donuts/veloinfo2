@@ -1,14 +1,14 @@
+use crate::{VeloInfoError, VeloinfoState};
 use anyhow::Result;
 use askama::Template;
 use axum::{
     extract::{Path, State},
     Form,
 };
+use futures::future::join_all;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use sqlx::Postgres;
-use futures::future::join_all;
-use crate::{VeloInfoError, VeloinfoState};
 
 #[derive(Template)]
 #[template(path = "info_panel.html", escape = "none")]
@@ -73,15 +73,16 @@ pub async fn info_panel_post(
     println!("post: {:?}", post);
     let conn = state.conn.clone();
     join_all(way_ids_i64.iter().map(|way_id| {
-            sqlx::query(
-                r#"INSERT INTO cyclability_score 
+        sqlx::query(
+            r#"INSERT INTO cyclability_score 
                     (way_id, score) 
                     VALUES ($1, $2)"#,
-            )
-            .bind(way_id)
-            .bind(post.score)
-            .execute(&conn)
-    })).await;
+        )
+        .bind(way_id)
+        .bind(post.score)
+        .execute(&conn)
+    }))
+    .await;
 
     info_panel(State(state), Path(way_ids)).await
 }
@@ -95,14 +96,15 @@ pub async fn info_panel(
         .find_iter(way_ids.as_str())
         .map(|cap| cap.as_str().parse::<i64>().unwrap())
         .collect::<Vec<i64>>();
-    let ways = join_all(way_ids_i64
+    let ways = join_all(way_ids_i64.iter().map(|way_id| {
+        let conn = state.conn.clone();
+        let a = WayInfo::get(*way_id, conn);
+        a
+    }))
+    .await;
+    let all_same_score = ways
         .iter()
-        .map(|way_id| {
-            let conn = state.conn.clone();
-            let a = WayInfo::get(*way_id, conn);
-            a
-        })).await;
-    let all_same_score = ways.iter().all(|way| way.as_ref().unwrap().score == ways[0].as_ref().unwrap().score);
+        .all(|way| way.as_ref().unwrap().score == ways[0].as_ref().unwrap().score);
     let mut way = ways[0].as_ref().unwrap().clone();
     println!("way: {:?}", way);
     if !all_same_score {
@@ -116,12 +118,16 @@ pub async fn info_panel(
         (0.8, "🟢 bon", ""),
         (1., "🔵 excellent", ""),
     ];
+    let way_score = match way.score {
+        Some(score) => score,
+        None => 0.8,
+    };
     let options = s
         .iter()
         .map(|(score, color, disabled)| {
             ScoreOption {
                 score: *score,
-                selected: if way.score == Some(*score) {
+                selected: if way_score == *score {
                     "selected".to_string()
                 } else {
                     "".to_string()
@@ -151,7 +157,11 @@ pub async fn info_panel(
 }
 
 #[derive(Template)]
-#[template(source = r#"<option value="{{score}}" {{selected}} {{disabled}}>{{color}}</option>"#, escape = "none", ext = "txt")]
+#[template(
+    source = r#"<option value="{{score}}" {{selected}} {{disabled}}>{{color}}</option>"#,
+    escape = "none",
+    ext = "txt"
+)]
 struct ScoreOption {
     score: f64,
     selected: String,
