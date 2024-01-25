@@ -34,7 +34,7 @@ impl WayInfo {
                 c.name,
                 cs.score
                from cycleway c
-               left join cyclability_score cs on cs.way_id = c.way_id
+               left join cyclability_score cs on c.way_id = any(cs.way_ids)
                where c.way_id = $1
                order by created_at desc"#,
         )
@@ -72,17 +72,15 @@ pub async fn info_panel_post(
         .collect::<Vec<i64>>();
     println!("post: {:?}", post);
     let conn = state.conn.clone();
-    join_all(way_ids_i64.iter().map(|way_id| {
-        sqlx::query(
-            r#"INSERT INTO cyclability_score 
-                    (way_id, score) 
+
+    sqlx::query(
+        r#"INSERT INTO cyclability_score 
+                    (way_ids, score) 
                     VALUES ($1, $2)"#,
-        )
-        .bind(way_id)
-        .bind(post.score)
-        .execute(&conn)
-    }))
-    .await;
+    )
+    .bind(way_ids_i64)
+    .bind(post.score)
+    .execute(&conn).await?;
 
     info_panel(State(state), Path(way_ids)).await
 }

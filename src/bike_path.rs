@@ -8,12 +8,12 @@ pub async fn prepare_bp(conn: sqlx::Pool<Postgres>) -> Result<()> {
     left join (
         SELECT *
         FROM cyclability_score
-        WHERE (way_id, created_at) IN (
-            SELECT way_id, MAX(created_at)
+        WHERE (way_ids, created_at) IN (
+            SELECT way_ids, MAX(created_at)
             FROM cyclability_score
-            GROUP BY way_id
+            GROUP BY way_ids
         )
         order by created_at desc
-    )AS recent_cyclability_score ON cycleway.way_id = recent_cyclability_score.way_id;"#).execute(&conn).await?;
+    )AS recent_cyclability_score ON cycleway.way_id = any(recent_cyclability_score.way_ids);"#).execute(&conn).await?;
     Ok(())
 }
