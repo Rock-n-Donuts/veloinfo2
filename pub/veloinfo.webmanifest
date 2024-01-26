@@ -1,23 +1,13 @@
 {
-    "name": "Google I/O 2015",
-    "short_name": "I/O 2015",
-    "start_url": "./?utm_source=web_app_manifest",
+    "name": "Veloinfo",
+    "short_name": "Veloinfo",
+    "start_url": "http://vps-d57bd196.vps.ovh.ca:3000/",
     "display": "standalone",
     "icons": [
-      {
-        "src": "pub/favicon.ico",
-        "sizes": "48x48",
-        "type": "image/png"
-      }
-    ],
-    "related_applications": [
-      {
-        "platform": "web"
-      },
-      {
-        "platform": "play",
-        "url": "http://vps-d57bd196.vps.ovh.ca:3000/"
-      }
+        {
+            "src": "pub/favicon.ico",
+            "sizes": "48x48",
+            "type": "image/png"
+        }
     ]
-  }
-  
+}
