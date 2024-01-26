@@ -121,7 +121,7 @@ clear = async () => {
 }
 
 reset = async () => {
-    map.getSource("veloinfo").setUrl("http://localhost:3001/bike_path");
+    map.getSource("veloinfo").setUrl("{{martin_url}}/bike_path");
 }
 
 
