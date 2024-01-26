@@ -41,8 +41,8 @@ select = async (event) => {
     var fetch_response = await fetch('/segment/select/' + feature.properties.way_id);
     var response = await fetch_response.json();
 
-    const info_panel = document.getElementById("select_score");
-    if (info_panel) {
+    const segment_panel = document.getElementById("select_score");
+    if (segment_panel) {
         fetch_response = await fetch('/segment/route/' + feature.properties.way_id + "/" + way_ids);
         response = await fetch_response.json();
         if (response.way_ids.length == 0){
@@ -91,13 +91,13 @@ display_segment = async (geom, way_id) => {
 
     if (way_ids) {
         // Display info panel
-        var info_panel = document.getElementById("info_panel");
-        const response = await fetch("/info_panel/" + way_ids);
+        var segment_panel = document.getElementById("segment_panel");
+        const response = await fetch("/segment_panel/" + way_ids);
         const html = await response.text();
-        info_panel.outerHTML = html;
+        segment_panel.outerHTML = html;
         // reprocess htmx for the new info panel
-        info_panel = document.getElementById("info_panel");
-        htmx.process(info_panel);
+        segment_panel = document.getElementById("segment_panel");
+        htmx.process(segment_panel);
     }
 }
 
@@ -111,13 +111,13 @@ clear = async () => {
         }
     })
     // Display info panel
-    var info_panel = document.getElementById("info_panel");
-    const response = await fetch("/info_panel");
+    var segment_panel = document.getElementById("segment_panel");
+    const response = await fetch("/segment_panel");
     const html = await response.text();
-    info_panel.outerHTML = html;
+    segment_panel.outerHTML = html;
     // reprocess htmx for the new info panel
-    info_panel = document.getElementById("info_panel");
-    htmx.process(info_panel);
+    segment_panel = document.getElementById("segment_panel");
+    htmx.process(segment_panel);
 }
 
 reset = async () => {

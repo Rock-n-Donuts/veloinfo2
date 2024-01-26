@@ -11,8 +11,8 @@ use serde::{Deserialize, Serialize};
 use sqlx::Postgres;
 
 #[derive(Template)]
-#[template(path = "info_panel.html", escape = "none")]
-pub struct InfoPanel {
+#[template(path = "segment_panel.html", escape = "none")]
+pub struct SegmentPanel {
     score_id: String,
     way_ids: String,
     status: String,
@@ -69,7 +69,7 @@ impl Score {
 }
 
 pub async fn get_panel() -> String {
-    InfoPanel {
+    SegmentPanel {
         score_id: "".to_string(),
         way_ids: "".to_string(),
         status: "none".to_string(),
@@ -87,7 +87,7 @@ pub struct PostValue {
     pub comment: Option<String>,
 }
 
-pub async fn info_panel_post(
+pub async fn segment_panel_post(
     State(state): State<VeloinfoState>,
     Path(way_ids): Path<String>,
     Form(post): Form<PostValue>,
@@ -111,10 +111,10 @@ pub async fn info_panel_post(
     .execute(&conn)
     .await?;
 
-    info_panel(State(state), Path(way_ids)).await
+    segment_panel(State(state), Path(way_ids)).await
 }
 
-pub async fn info_panel_score_id(
+pub async fn segment_panel_score_id(
     State(state): State<VeloinfoState>,
     Path(score_id): Path<String>,
 ) -> Result<String, VeloInfoError> {
@@ -131,7 +131,7 @@ pub async fn info_panel_score_id(
         )
         .as_str();
 
-    let info_panel = InfoPanel {
+    let info_panel = SegmentPanel {
         score_id: score.id.to_string(),
         way_ids: score
             .way_ids
@@ -175,7 +175,7 @@ fn get_options(score: f64) -> String {
         .join(" ")
 }
 
-pub async fn info_panel(
+pub async fn segment_panel(
     State(state): State<VeloinfoState>,
     Path(way_ids): Path<String>,
 ) -> Result<String, VeloInfoError> {
@@ -205,7 +205,7 @@ pub async fn info_panel(
     let segment_name =
         way.name.unwrap_or("nom inconnu".to_string());
 
-    let info_panel = InfoPanel {
+    let info_panel = SegmentPanel {
         score_id: "".to_string(),
         way_ids,
         status: "segment".to_string(),

@@ -5,7 +5,7 @@ use axum::http::StatusCode;
 use axum::response::Response;
 use axum::response::Html;
 use axum::routing::{get, Router};
-use info_panel::{info_panel, get_panel, info_panel_post, info_panel_score_id};
+use segment_panel::{segment_panel, get_panel, segment_panel_post, segment_panel_score_id};
 use segment::route;
 use segment::select;
 use sqlx::PgPool;
@@ -18,7 +18,7 @@ use tower_http::trace::TraceLayer;
 use public::style;
 
 mod public;
-mod info_panel;
+mod segment_panel;
 mod segment;
 mod bike_path;
 
@@ -49,9 +49,9 @@ async fn main() {
 
     let app = Router::new()
         .route("/", get(index))
-        .route("/info_panel", get(get_panel))
-        .route("/info_panel/:way_ids", get(info_panel).post(info_panel_post)) 
-        .route("/info_panel_score/:score_id", get(info_panel_score_id)) 
+        .route("/segment_panel", get(get_panel))
+        .route("/segment_panel/:way_ids", get(segment_panel).post(segment_panel_post)) 
+        .route("/segment_panel_score/:score_id", get(segment_panel_score_id)) 
         .route("/segment/select/:way_id", get(select))
         .route("/segment/route/:way_id1/:way_ids", get(route))
         .route("/style.json", get(style))
@@ -91,13 +91,13 @@ impl IntoResponse for VIError {
 #[derive(Template)]
 #[template(path = "index.html", escape = "none")]
 struct IndexTemplate {
-    info_panel: String,
+    segment_panel: String,
 }
 
 async fn index() -> Result<Html<String>, VIError> {
-    let info_panel = get_panel().await;
+    let segment_panel = get_panel().await;
     let template = IndexTemplate {
-        info_panel: info_panel,
+        segment_panel: segment_panel,
     };
     let body = template.render()?;
     Ok(Html(body))
