@@ -24,8 +24,8 @@ services:
       - db
   db:
     build:
-      context: .
-      dockerfile: db/dockerfile
+      context: ./db
+      dockerfile: Dockerfile
     image: pgrouting/pgrouting
     environment:
       POSTGRES_USER: postgres

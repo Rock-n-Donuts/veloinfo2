@@ -10,3 +10,6 @@ RUN apt-get update \
            postgresql-16-postgis-3 \
            postgresql-16-pgrouting
 
+RUN mkdir -p /docker-entrypoint-initdb.d
+COPY ./initdb-postgis.sh /docker-entrypoint-initdb.d/10_postgis.sh
+COPY ./update-postgis.sh /usr/local/bin
