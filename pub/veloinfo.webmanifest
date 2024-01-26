@@ -1,7 +1,7 @@
 {
     "name": "Veloinfo",
     "short_name": "Veloinfo",
-    "start_url": "http://vps-d57bd196.vps.ovh.ca:3000/",
+    "start_url": ".",
     "display": "standalone",
     "icons": [
         {
