@@ -23,6 +23,9 @@ services:
     depends_on:
       - db
   db:
+    build:
+      context: .
+      dockerfile: db/dockerfile
     image: pgrouting/pgrouting
     environment:
       POSTGRES_USER: postgres
