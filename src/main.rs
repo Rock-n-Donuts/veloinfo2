@@ -1,26 +1,27 @@
-use std::env;
+use anyhow::Result;
 use askama::Template;
 use askama_axum::IntoResponse;
 use axum::http::StatusCode;
-use axum::response::Response;
 use axum::response::Html;
+use axum::response::Response;
 use axum::routing::{get, Router};
-use segment_panel::{segment_panel, get_panel, segment_panel_post, segment_panel_score_id};
+use public::indexjs;
+use public::style;
 use segment::route;
 use segment::select;
+use segment_panel::{get_panel, segment_panel, segment_panel_post, segment_panel_score_id};
 use sqlx::PgPool;
+use std::env;
 use tower_http::services::ServeDir;
+use tower_http::trace::TraceLayer;
 use tower_livereload::LiveReloadLayer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
-use anyhow::Result;
-use tower_http::trace::TraceLayer;
-use public::style;
 
-mod public;
-mod segment_panel;
-mod segment;
 mod bike_path;
+mod public;
+mod segment;
+mod segment_panel;
 
 #[derive(Clone)]
 struct VeloinfoState {
@@ -36,7 +37,7 @@ async fn main() {
         )
         .with(tracing_subscriber::fmt::layer())
         .init();
-    
+
     let conn = PgPool::connect(format!("{}", env::var("DATABASE_URL").unwrap()).as_str())
         .await
         .unwrap();
@@ -50,11 +51,18 @@ async fn main() {
     let app = Router::new()
         .route("/", get(index))
         .route("/segment_panel", get(get_panel))
-        .route("/segment_panel/:way_ids", get(segment_panel).post(segment_panel_post)) 
-        .route("/segment_panel_score/:score_id", get(segment_panel_score_id)) 
+        .route(
+            "/segment_panel/:way_ids",
+            get(segment_panel).post(segment_panel_post),
+        )
+        .route(
+            "/segment_panel_score/:score_id",
+            get(segment_panel_score_id),
+        )
         .route("/segment/select/:way_id", get(select))
         .route("/segment/route/:way_id1/:way_ids", get(route))
         .route("/style.json", get(style))
+        .route("/index.js", get(indexjs))
         .nest_service("/pub/", ServeDir::new("pub"))
         .with_state(state)
         .layer(LiveReloadLayer::new())
@@ -72,14 +80,14 @@ impl From<anyhow::Error> for VIError {
     }
 }
 
-impl From <askama::Error> for VIError {
+impl From<askama::Error> for VIError {
     fn from(error: askama::Error) -> Self {
         VIError(anyhow::Error::from(error))
     }
 }
 
 impl IntoResponse for VIError {
-    fn into_response(self) -> Response{
+    fn into_response(self) -> Response {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
             format!("Something went wrong: {}", self.0),
