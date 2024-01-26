@@ -194,7 +194,6 @@ pub async fn info_panel(
         .iter()
         .all(|way| way.as_ref().unwrap().score == ways[0].as_ref().unwrap().score);
     let mut way = ways[0].as_ref().unwrap().clone();
-    println!("way: {:?}", way);
     if !all_same_score {
         way.score = Some(-1.);
     }
@@ -204,7 +203,7 @@ pub async fn info_panel(
     };
     let options = get_options(way_score);
     let segment_name =
-        way.name.unwrap_or("nom inconnu".to_string()) + format!(" ({})", way_ids).as_str();
+        way.name.unwrap_or("nom inconnu".to_string());
 
     let info_panel = InfoPanel {
         score_id: "".to_string(),
