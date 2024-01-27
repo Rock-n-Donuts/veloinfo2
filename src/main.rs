@@ -12,7 +12,6 @@ use segment::select;
 use segment_panel::{get_panel, segment_panel, segment_panel_post, segment_panel_score_id};
 use sqlx::PgPool;
 use std::env;
-use std::os::unix::raw::dev_t;
 use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
 use tower_livereload::LiveReloadLayer;

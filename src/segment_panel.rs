@@ -13,7 +13,6 @@ use sqlx::Postgres;
 #[derive(Template)]
 #[template(path = "segment_panel.html", escape = "none")]
 pub struct SegmentPanel {
-    score_id: String,
     way_ids: String,
     status: String,
     segment_name: String,
@@ -48,17 +47,15 @@ impl WayInfo {
 
 #[derive(Debug, sqlx::FromRow, Clone)]
 struct Score {
-    id: i64,
     score: f64,
     comment: String,
-    created_at: String,
     way_ids: Vec<i64>,
 }
 
 impl Score {
     pub async fn get(id: i64, conn: sqlx::Pool<Postgres>) -> Result<Score, sqlx::Error> {
         sqlx::query_as(
-            r#"select *
+            r#"select score, comment, way_ids
                from cyclability_score
                where $1 = id"#,
         )
@@ -70,7 +67,6 @@ impl Score {
 
 pub async fn get_panel() -> String {
     SegmentPanel {
-        score_id: "".to_string(),
         way_ids: "".to_string(),
         status: "none".to_string(),
         segment_name: "".to_string(),
@@ -132,7 +128,6 @@ pub async fn segment_panel_score_id(
         .as_str();
 
     let info_panel = SegmentPanel {
-        score_id: score.id.to_string(),
         way_ids: score
             .way_ids
             .iter()
@@ -206,7 +201,6 @@ pub async fn segment_panel(
         way.name.unwrap_or("nom inconnu".to_string());
 
     let info_panel = SegmentPanel {
-        score_id: "".to_string(),
         way_ids,
         status: "segment".to_string(),
         segment_name,
