@@ -70,7 +70,7 @@ async fn main() {
         .layer(TraceLayer::new_for_http());
 
     if dev {
-        app = app.clone().layer(LiveReloadLayer::new());
+        app = app.layer(LiveReloadLayer::new());
     }    
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
