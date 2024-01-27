@@ -12,6 +12,7 @@ use segment::select;
 use segment_panel::{get_panel, segment_panel, segment_panel_post, segment_panel_score_id};
 use sqlx::PgPool;
 use std::env;
+use std::os::unix::raw::dev_t;
 use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
 use tower_livereload::LiveReloadLayer;
@@ -30,6 +31,7 @@ struct VeloinfoState {
 
 #[tokio::main]
 async fn main() {
+    let dev = env::var("ENV").unwrap().as_str().contains("dev");
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env()
@@ -48,7 +50,7 @@ async fn main() {
     // Prepare bike path because is is destroyed by the import
     bike_path::prepare_bp(conn.clone()).await.unwrap();
 
-    let app = Router::new()
+    let mut app = Router::new()
         .route("/", get(index))
         .route("/segment_panel", get(get_panel))
         .route(
@@ -65,8 +67,11 @@ async fn main() {
         .route("/index.js", get(indexjs))
         .nest_service("/pub/", ServeDir::new("pub"))
         .with_state(state)
-        .layer(LiveReloadLayer::new())
         .layer(TraceLayer::new_for_http());
+
+    if dev {
+        app = app.clone().layer(LiveReloadLayer::new());
+    }    
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
