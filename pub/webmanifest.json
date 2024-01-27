@@ -3,6 +3,7 @@
     "short_name": "Veloinfo",
     "start_url": ".",
     "display": "standalone",
+    "background_color": "#fff",
     "icons": [
         {
             "src": "pub/favicon.ico",
