@@ -9,7 +9,7 @@ use public::indexjs;
 use public::style;
 use segment::route;
 use segment::select;
-use segment_panel::{get_panel, segment_panel, segment_panel_post, segment_panel_score_id};
+use segment_panel::{get_empty_segment_panel, segment_panel, segment_panel_post, segment_panel_score_id};
 use sqlx::PgPool;
 use std::env;
 use tower_http::services::ServeDir;
@@ -51,7 +51,7 @@ async fn main() {
 
     let mut app = Router::new()
         .route("/", get(index))
-        .route("/segment_panel", get(get_panel))
+        .route("/segment_panel", get(get_empty_segment_panel))
         .route(
             "/segment_panel/:way_ids",
             get(segment_panel).post(segment_panel_post),
@@ -107,7 +107,7 @@ struct IndexTemplate {
 }
 
 async fn index() -> Result<Html<String>, VIError> {
-    let segment_panel = get_panel().await;
+    let segment_panel = get_empty_segment_panel().await;
     let template = IndexTemplate {
         segment_panel: segment_panel,
     };

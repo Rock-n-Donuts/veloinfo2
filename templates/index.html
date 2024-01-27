@@ -1,36 +1,34 @@
 <!DOCTYPE html>
 <html>
+    <head>
+        <title>Vélo info</title>
+        <link rel="icon" href="pub/favicon.ico" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+        <script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
+        <link href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" rel="stylesheet" />
+        <link href="/pub/index.css" rel="stylesheet" />
+        <link href="/pub/webmanifest.json" rel="manifest" />
+        <script src="https://unpkg.com/htmx.org@1.9.10"
+            integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC"
+            crossorigin="anonymous"></script>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+            }
 
-<head>
-    <title>Vélo info</title>
-    <link rel="icon" href="pub/favicon.ico" />
-    <meta charset="utf-8" />
-    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
-    <script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
-    <link href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" rel="stylesheet" />
-    <link href="/pub/index.css" rel="stylesheet" />
-    <link href="/pub/webmanifest.json" rel="manifest" />
-    <script src="https://unpkg.com/htmx.org@1.9.10"
-        integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC"
-        crossorigin="anonymous"></script>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-        }
+            #map {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                width: 100%;
+            }
+        </style>
+    </head>
+    <div id="map">
+        {{ segment_panel }}
+    </div>
 
-        #map {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 100%;
-        }
-    </style>
-</head>
-<div id="map">
-    {{ segment_panel }}
-</div>
-
-<script src="/index.js"></script>
-
+    <script src="/index.js"></script>
 </html>

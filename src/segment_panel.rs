@@ -65,7 +65,7 @@ impl Score {
     }
 }
 
-pub async fn get_panel() -> String {
+pub async fn get_empty_segment_panel() -> String {
     SegmentPanel {
         way_ids: "".to_string(),
         status: "none".to_string(),
