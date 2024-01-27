@@ -1,3 +1,6 @@
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/pub/service-worker.js");
+}
 var way_ids = "";
 
 getCookie = (name) => {
