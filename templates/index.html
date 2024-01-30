@@ -27,7 +27,7 @@
         </style>
     </head>
     <div id="map">
-        {{ info_panel }}
+        <div hx-get="/info_panel/up" hx-swap="outerHTML" hx-trigger="load"></div>
         {{ segment_panel }}
     </div>
 

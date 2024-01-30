@@ -113,15 +113,12 @@ impl IntoResponse for VIError {
 #[template(path = "index.html", escape = "none")]
 struct IndexTemplate {
     segment_panel: String,
-    info_panel: String,
 }
 
 async fn index(State(state): State<VeloinfoState>) -> Result<Html<String>, VIError> {
     let segment_panel = get_empty_segment_panel().await;
-    let info_panel = info_panel::get_empty_info_panel(state.conn).await;
     let template = IndexTemplate {
         segment_panel,
-        info_panel,
     };
     let body = template.render()?;
     Ok(Html(body))
