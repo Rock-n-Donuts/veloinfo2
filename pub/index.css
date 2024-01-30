@@ -544,8 +544,22 @@ video {
   --tw-backdrop-sepia:  ;
 }
 
+.spinner {
+  opacity: 0;
+  transition: opacity 0.5s ease-in;
+}
+
+.fixed {
+  position: fixed;
+}
+
 .absolute {
   position: absolute;
+}
+
+.inset-x-0 {
+  left: 0px;
+  right: 0px;
 }
 
 .bottom-0 {
@@ -554,6 +568,10 @@ video {
 
 .bottom-1 {
   bottom: 0.25rem;
+}
+
+.bottom-8 {
+  bottom: 2rem;
 }
 
 .right-1 {
@@ -568,6 +586,10 @@ video {
   z-index: 10;
 }
 
+.z-30 {
+  z-index: 30;
+}
+
 .m-2 {
   margin: 0.5rem;
 }
@@ -575,6 +597,11 @@ video {
 .mx-2 {
   margin-left: 0.5rem;
   margin-right: 0.5rem;
+}
+
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .mr-1 {
