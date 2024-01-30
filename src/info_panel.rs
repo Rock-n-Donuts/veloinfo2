@@ -60,13 +60,13 @@ async fn get_name(way_ids: &Vec<i64>, conn: sqlx::Pool<Postgres>) -> String {
 }
 
 fn get_score_string(score: f64) -> String {
-    if score > 0.0 {
+    if score < 0.3 {
         "🔴".to_string()
-    } else if score < 0.3 {
-        "🟠".to_string()
     } else if score < 0.5 {
-        "🟡".to_string()
+        "🟠".to_string()
     } else if score < 0.7 {
+        "🟡".to_string()
+    } else if score < 0.9 {
         "🟢".to_string()
     } else {
         "🔵".to_string()

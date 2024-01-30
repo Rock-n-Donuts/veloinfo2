@@ -26,7 +26,8 @@ impl CyclabilityScore {
         sqlx::query_as(
             r#"select id, score, comment, way_ids, created_at
                from cyclability_score
-               order by created_at desc"#,
+               order by created_at desc
+               limit 20"#,
         )
         .fetch_all(&conn)
         .await

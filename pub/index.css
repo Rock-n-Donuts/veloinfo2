@@ -572,6 +572,11 @@ video {
   margin: 0.5rem;
 }
 
+.mx-2 {
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+}
+
 .mt-4 {
   margin-top: 1rem;
 }
@@ -604,6 +609,10 @@ video {
   justify-content: center;
 }
 
+.overflow-auto {
+  overflow: auto;
+}
+
 .rounded-lg {
   border-radius: 0.5rem;
 }
@@ -624,6 +633,11 @@ video {
 
 .p-2 {
   padding: 0.5rem;
+}
+
+.text-3xl {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
 }
 
 .font-bold {
