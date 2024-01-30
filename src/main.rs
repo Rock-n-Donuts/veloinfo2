@@ -1,15 +1,20 @@
 use anyhow::Result;
 use askama::Template;
 use askama_axum::IntoResponse;
+use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::Html;
 use axum::response::Response;
 use axum::routing::{get, Router};
+use info_panel::info_panel_down;
+use info_panel::info_panel_up;
 use public::indexjs;
 use public::style;
 use segment::route;
 use segment::select;
-use segment_panel::{get_empty_segment_panel, segment_panel, segment_panel_post, segment_panel_score_id};
+use segment_panel::{
+    get_empty_segment_panel, segment_panel, segment_panel_post, segment_panel_score_id,
+};
 use sqlx::PgPool;
 use std::env;
 use tower_http::services::ServeDir;
@@ -19,9 +24,11 @@ use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
 mod bike_path;
+mod info_panel;
 mod public;
-mod segment;
 mod segment_panel;
+mod db;
+mod segment;
 
 #[derive(Clone)]
 struct VeloinfoState {
@@ -62,6 +69,8 @@ async fn main() {
         )
         .route("/segment/select/:way_id", get(select))
         .route("/segment/route/:way_id1/:way_ids", get(route))
+        .route("/info_panel/down", get(info_panel_down))
+        .route("/info_panel/up", get(info_panel_up))
         .route("/style.json", get(style))
         .route("/index.js", get(indexjs))
         .nest_service("/pub/", ServeDir::new("pub"))
@@ -70,7 +79,7 @@ async fn main() {
 
     if dev {
         app = app.layer(LiveReloadLayer::new());
-    }    
+    }
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
@@ -104,12 +113,15 @@ impl IntoResponse for VIError {
 #[template(path = "index.html", escape = "none")]
 struct IndexTemplate {
     segment_panel: String,
+    info_panel: String,
 }
 
-async fn index() -> Result<Html<String>, VIError> {
+async fn index(State(state): State<VeloinfoState>) -> Result<Html<String>, VIError> {
     let segment_panel = get_empty_segment_panel().await;
+    let info_panel = info_panel::get_empty_info_panel(state.conn).await;
     let template = IndexTemplate {
-        segment_panel: segment_panel,
+        segment_panel,
+        info_panel,
     };
     let body = template.render()?;
     Ok(Html(body))
@@ -135,8 +147,6 @@ impl From<anyhow::Error> for VeloInfoError {
 }
 impl From<sqlx::Error> for VeloInfoError {
     fn from(error: sqlx::Error) -> Self {
-        // Votre logique de conversion ici
-        // Par exemple, si SegmentError est une énumération avec une variante Sqlx :
         VeloInfoError(anyhow::Error::from(error))
     }
 }

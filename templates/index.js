@@ -1,14 +1,14 @@
-if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("/pub/service-worker.js");
-}
-var way_ids = "";
-
 getCookie = (name) => {
     let matches = document.cookie.match(new RegExp(
         "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
     ));
     return matches ? decodeURIComponent(matches[1]) : undefined;
 }
+
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/pub/service-worker.js");
+}
+var way_ids = "";
 
 var map = new maplibregl.Map({
     container: 'map',
