@@ -2,6 +2,8 @@ use anyhow::Result;
 use askama::Template;
 use askama_axum::IntoResponse;
 use axum::extract::State;
+use axum::http::HeaderMap;
+use axum::http::HeaderValue;
 use axum::http::StatusCode;
 use axum::response::Html;
 use axum::response::Response;
@@ -115,13 +117,18 @@ struct IndexTemplate {
     segment_panel: String,
 }
 
-async fn index(State(state): State<VeloinfoState>) -> Result<Html<String>, VIError> {
+async fn index() -> Result<impl IntoResponse, VIError> {
     let segment_panel = get_empty_segment_panel().await;
     let template = IndexTemplate {
         segment_panel,
     };
     let body = template.render()?;
-    Ok(Html(body))
+    let mut headers = HeaderMap::new();
+    headers.insert(
+        "Content-Type",
+        HeaderValue::from_static("text/html; charset=utf-8"),
+    );
+    Ok((headers, Html(body)))
 }
 
 pub struct VeloInfoError(anyhow::Error);

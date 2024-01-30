@@ -1,4 +1,6 @@
 use askama::Template;
+use askama_axum::IntoResponse;
+use axum::http::{HeaderMap, HeaderValue};
 use std::env;
 
 #[derive(Template)]
@@ -19,8 +21,14 @@ struct IndexJs {
     martin_url: String,
 }
 
-pub async fn indexjs() -> String {
+pub async fn indexjs() -> impl IntoResponse {
     let martin_url = env::var("MARTIN_URL").unwrap();
 
-    IndexJs { martin_url }.render().unwrap()
+    let mut headers = HeaderMap::new();
+    headers.insert(
+        "Content-Type",
+        HeaderValue::from_static("application/javascript"),
+    );
+    let resp = IndexJs { martin_url }.render().unwrap();
+    (headers, resp)
 }
