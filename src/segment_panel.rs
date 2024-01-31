@@ -138,8 +138,7 @@ pub async fn segment_panel(
         .collect::<Vec<i64>>();
     let ways = join_all(way_ids_i64.iter().map(|way_id| {
         let conn = state.conn.clone();
-        let a = WayInfo::get(*way_id, conn);
-        a
+        WayInfo::get(*way_id, conn)
     }))
     .await;
     let all_same_score = ways

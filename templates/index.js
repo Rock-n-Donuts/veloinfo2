@@ -28,7 +28,7 @@ map.on("move", function (e) {
 });
 
 select = async (event) => {
-    let width = 20;
+    let width = 40;
     var features = map.queryRenderedFeatures(
         [
             [event.point.x - width / 2, event.point.y - width / 2],
