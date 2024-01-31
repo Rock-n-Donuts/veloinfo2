@@ -94,12 +94,12 @@ display_segment = async (geom, way_id) => {
 
     if (way_ids) {
         // Display info panel
-        var segment_panel = document.getElementById("segment_panel");
+        var segment_panel = document.getElementById("info");
         const response = await fetch("/segment_panel/" + way_ids);
         const html = await response.text();
         segment_panel.outerHTML = html;
         // reprocess htmx for the new info panel
-        segment_panel = document.getElementById("segment_panel");
+        segment_panel = document.getElementById("info");
         htmx.process(segment_panel);
 
         // find the largest bounds
@@ -109,7 +109,7 @@ display_segment = async (geom, way_id) => {
                 [Math.max(coord[0], currentBounds[1][0]), Math.max(coord[1], currentBounds[1][1])]  // max coordinates
             ];
         }, [[Infinity, Infinity], [-Infinity, -Infinity]]);
-        map.fitBounds(bounds, {padding: 40});
+        map.fitBounds(bounds, {padding: 120});
     }
 }
 
@@ -123,12 +123,12 @@ clear = async () => {
         }
     })
     // Display info panel
-    var segment_panel = document.getElementById("segment_panel");
+    var segment_panel = document.getElementById("info");
     const response = await fetch("/segment_panel");
     const html = await response.text();
     segment_panel.outerHTML = html;
     // reprocess htmx for the new info panel
-    segment_panel = document.getElementById("segment_panel");
+    segment_panel = document.getElementById("info");
     htmx.process(segment_panel);
 }
 

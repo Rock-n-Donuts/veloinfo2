@@ -1,4 +1,4 @@
-use crate::{VeloInfoError, VeloinfoState};
+use crate::{info_panel::{info_panel_down, InfoPanelTemplate}, VeloInfoError, VeloinfoState};
 use anyhow::Result;
 use askama::Template;
 use axum::{
@@ -18,6 +18,7 @@ pub struct SegmentPanel {
     segment_name: String,
     options: String,
     comment: String,
+    info_panel_template: InfoPanelTemplate,
 }
 
 #[derive(Debug, sqlx::FromRow, Clone)]
@@ -66,12 +67,19 @@ impl Score {
 }
 
 pub async fn get_empty_segment_panel() -> String {
+    let info_panel_template = InfoPanelTemplate {
+        arrow: "▲".to_string(),
+        direction: "up".to_string(),
+        contributions: Vec::new(),
+    };
+
     SegmentPanel {
         way_ids: "".to_string(),
         status: "none".to_string(),
         segment_name: "".to_string(),
         options: "".to_string(),
         comment: "".to_string(),
+        info_panel_template
     }
     .render()
     .unwrap()
@@ -167,7 +175,16 @@ pub async fn segment_panel(
     };
     let options = get_options(way_score);
     let segment_name =
-        way.name.unwrap_or("nom inconnu".to_string());
+        ways.iter()
+            .fold("".to_string(), |acc, way| match way.as_ref().unwrap().name.as_ref() {
+                Some(name) => {
+                    if acc.find(name) != None {
+                        return acc;
+                    }
+                    format!("{} {}", acc, name)
+                }
+                None => acc,
+            });
 
     let info_panel = SegmentPanel {
         way_ids,
@@ -175,6 +192,11 @@ pub async fn segment_panel(
         segment_name,
         options,
         comment: "".to_string(),
+        info_panel_template: InfoPanelTemplate {
+            arrow: "▲".to_string(),
+            direction: "up".to_string(),
+            contributions: Vec::new(),
+        }
     }
     .render()
     .unwrap()

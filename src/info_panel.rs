@@ -8,15 +8,15 @@ use crate::VeloinfoState;
 
 #[derive(Template)]
 #[template(path = "info_panel.html", escape = "none")]
-struct InfoPanelTemplate {
-    arrow: String,
-    direction: String,
-    contributions: Vec<InfopanelContribution>,
+pub struct InfoPanelTemplate {
+    pub arrow: String,
+    pub direction: String,
+    pub contributions: Vec<InfopanelContribution>,
 }
 
 #[derive(Template)]
 #[template(path = "info_panel_contribution.html")]
-struct InfopanelContribution {
+pub struct InfopanelContribution {
     created_at: String,
     score: String,
     comment: String,

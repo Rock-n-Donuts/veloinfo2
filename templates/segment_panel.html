@@ -1,3 +1,4 @@
+<div id="info">
 <div id="segment_panel" class="absolute bottom-1 right-1 z-10">
     {% if status == "segment" %}
     <div class="bg-gray-100 p-2 rounded-xl shadow-lg">
@@ -9,7 +10,7 @@
             {{ segment_name }}
             <div>
                 <select id="select_score" name="score" class="bg-white m-2" hx-post="/segment_panel/{{way_ids}}"
-                    hx-target="#segment_panel" hx-swap="outerHTML" hx-on:change="reset()">
+                    hx-target="#info" hx-swap="outerHTML" hx-on:change="reset()">
                     {{options}}
                 </select>
             </div>
@@ -19,4 +20,6 @@
         </div>
     </div>
     {% endif %}
+</div>
+ {{ info_panel_template }}
 </div>
