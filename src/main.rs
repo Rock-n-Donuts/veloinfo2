@@ -14,7 +14,7 @@ use public::style;
 use segment::route;
 use segment::select;
 use segment_panel::{
-    get_empty_segment_panel, segment_panel, segment_panel_post, segment_panel_score_id,
+    get_empty_segment_panel, segment_panel, segment_panel_post,
 };
 use sqlx::PgPool;
 use std::env;
@@ -78,10 +78,6 @@ async fn main() {
         .route(
             "/segment_panel/:way_ids",
             get(segment_panel).post(segment_panel_post),
-        )
-        .route(
-            "/segment_panel_score/:score_id",
-            get(segment_panel_score_id),
         )
         .route("/segment/select/:way_id", get(select))
         .route("/segment/route/:way_id1/:way_ids", get(route))

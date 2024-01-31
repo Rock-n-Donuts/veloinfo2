@@ -110,37 +110,6 @@ pub async fn segment_panel_post(
     segment_panel(State(state), Path(way_ids)).await
 }
 
-pub async fn segment_panel_score_id(
-    State(state): State<VeloinfoState>,
-    Path(score_id): Path<String>,
-) -> Result<String, VeloInfoError> {
-    let score = Score::get(score_id.parse::<i64>().unwrap(), state.conn.clone()).await?;
-    let way_info = WayInfo::get(score.way_ids[0], state.conn.clone()).await?;
-    let segment_name = way_info.name.unwrap_or("nom inconnu".to_string())
-        + format!(
-            " ({})",
-            score
-                .way_ids
-                .iter()
-                .fold("".to_string(), |acc, id| acc.to_string()
-                    + id.to_string().as_str())
-        )
-        .as_str();
-
-    let info_panel = SegmentPanel {
-        way_ids: score
-            .way_ids
-            .iter()
-            .map(|id| id.to_string())
-            .collect::<Vec<String>>()
-            .join(" "),
-        status: "segment".to_string(),
-        segment_name,
-        options: get_options(score.score),
-        comment: score.comment,
-    };
-    Ok(info_panel.render().unwrap().to_string())
-}
 
 fn get_options(score: f64) -> String {
     let s = vec![
