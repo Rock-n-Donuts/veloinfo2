@@ -109,7 +109,7 @@ display_segment = async (geom, way_id) => {
                 [Math.max(coord[0], currentBounds[1][0]), Math.max(coord[1], currentBounds[1][1])]  // max coordinates
             ];
         }, [[Infinity, Infinity], [-Infinity, -Infinity]]);
-        map.fitBounds(bounds, {padding: 120});
+        map.fitBounds(bounds, { padding: window.innerWidth * .10 });
     }
 }
 
