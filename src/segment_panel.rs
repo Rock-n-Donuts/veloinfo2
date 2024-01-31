@@ -1,4 +1,4 @@
-use crate::{info_panel::{info_panel_down, InfoPanelTemplate}, VeloInfoError, VeloinfoState};
+use crate::{info_panel::InfoPanelTemplate, VeloInfoError, VeloinfoState};
 use anyhow::Result;
 use askama::Template;
 use axum::{
@@ -41,26 +41,6 @@ impl WayInfo {
                order by created_at desc"#,
         )
         .bind(way_id)
-        .fetch_one(&conn)
-        .await
-    }
-}
-
-#[derive(Debug, sqlx::FromRow, Clone)]
-struct Score {
-    score: f64,
-    comment: String,
-    way_ids: Vec<i64>,
-}
-
-impl Score {
-    pub async fn get(id: i64, conn: sqlx::Pool<Postgres>) -> Result<Score, sqlx::Error> {
-        sqlx::query_as(
-            r#"select score, comment, way_ids
-               from cyclability_score
-               where $1 = id"#,
-        )
-        .bind(id)
         .fetch_one(&conn)
         .await
     }

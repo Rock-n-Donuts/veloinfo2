@@ -13,9 +13,7 @@ use public::indexjs;
 use public::style;
 use segment::route;
 use segment::select;
-use segment_panel::{
-    get_empty_segment_panel, segment_panel, segment_panel_post,
-};
+use segment_panel::{get_empty_segment_panel, segment_panel, segment_panel_post};
 use sqlx::PgPool;
 use std::env;
 use std::process::Command;
@@ -123,13 +121,10 @@ impl IntoResponse for VIError {
 
 #[derive(Template)]
 #[template(path = "index.html", escape = "none")]
-struct IndexTemplate {
-    segment_panel: String,
-}
+struct IndexTemplate {}
 
 async fn index() -> Result<impl IntoResponse, VIError> {
-    let segment_panel = get_empty_segment_panel().await;
-    let template = IndexTemplate { segment_panel };
+    let template = IndexTemplate {};
     let body = template.render()?;
     let mut headers = HeaderMap::new();
     headers.insert(
