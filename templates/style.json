@@ -1988,7 +1988,7 @@
             "type": "line",
             "paint": {
                 "line-color": "#f00",
-                "line-width": 5
+                "line-width": 3
             },
             "filter": [
                 "all",
@@ -2011,7 +2011,7 @@
             "type": "line",
             "paint": {
                 "line-color": "#f90",
-                "line-width": 5
+                "line-width": 3
             },
             "filter": [
                 "all",
@@ -2039,7 +2039,7 @@
             "type": "line",
             "paint": {
                 "line-color": "#ff0",
-                "line-width": 5
+                "line-width": 3
             },
             "filter": [
                 "all",
@@ -2067,7 +2067,7 @@
             "type": "line",
             "paint": {
                 "line-color": "#0f0",
-                "line-width": 5
+                "line-width": 3
             },
             "filter": [
                 "all",
@@ -2095,7 +2095,7 @@
             "type": "line",
             "paint": {
                 "line-color": "#00f",
-                "line-width": 5
+                "line-width": 3
             },
             "filter": [
                 "all",
@@ -2139,7 +2139,7 @@
             "type": "line",
             "paint": {
                 "line-color": "#f00",
-                "line-width": 5
+                "line-width": 1
             },
             "filter": [
                 "all",
@@ -2162,7 +2162,7 @@
             "type": "line",
             "paint": {
                 "line-color": "#f90",
-                "line-width": 5
+                "line-width": 1
             },
             "filter": [
                 "all",
@@ -2190,7 +2190,7 @@
             "type": "line",
             "paint": {
                 "line-color": "#ff0",
-                "line-width": 5
+                "line-width": 1
             },
             "filter": [
                 "all",
@@ -2218,7 +2218,7 @@
             "type": "line",
             "paint": {
                 "line-color": "#0f0",
-                "line-width": 5
+                "line-width": 1
             },
             "filter": [
                 "all",
@@ -2246,7 +2246,7 @@
             "type": "line",
             "paint": {
                 "line-color": "#00f",
-                "line-width": 5
+                "line-width": 1
             },
             "filter": [
                 "all",
