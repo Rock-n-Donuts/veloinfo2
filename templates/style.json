@@ -1982,6 +1982,142 @@
             ]
         },
         {
+            "id": "designated1",
+            "source": "veloinfo",
+            "source-layer": "bike_path",
+            "type": "line",
+            "paint": {
+                "line-color": "#f00",
+                "line-width": 5
+            },
+            "filter": [
+                "all",
+                [
+                    "==",
+                    "kind",
+                    "designated"
+                ],
+                [
+                    "<=",
+                    "score",
+                    0.2
+                ]
+            ]
+        },
+        {
+            "id": "designated2",
+            "source": "veloinfo",
+            "source-layer": "bike_path",
+            "type": "line",
+            "paint": {
+                "line-color": "#f90",
+                "line-width": 5
+            },
+            "filter": [
+                "all",
+                [
+                    "==",
+                    "kind",
+                    "designated"
+                ],
+                [
+                    "<=",
+                    "score",
+                    0.4
+                ],
+                [
+                    ">",
+                    "score",
+                    0.2
+                ]
+            ]
+        },
+        {
+            "id": "designated3",
+            "source": "veloinfo",
+            "source-layer": "bike_path",
+            "type": "line",
+            "paint": {
+                "line-color": "#ff0",
+                "line-width": 5
+            },
+            "filter": [
+                "all",
+                [
+                    "==",
+                    "kind",
+                    "designated"
+                ],
+                [
+                    "<=",
+                    "score",
+                    0.6
+                ],
+                [
+                    ">",
+                    "score",
+                    0.4
+                ]
+            ]
+        },
+        {
+            "id": "designated4",
+            "source": "veloinfo",
+            "source-layer": "bike_path",
+            "type": "line",
+            "paint": {
+                "line-color": "#0f0",
+                "line-width": 5
+            },
+            "filter": [
+                "all",
+                [
+                    "==",
+                    "kind",
+                    "designated"
+                ],
+                [
+                    "<=",
+                    "score",
+                    0.8
+                ],
+                [
+                    ">",
+                    "score",
+                    0.6
+                ]
+            ]
+        },
+        {
+            "id": "designated5",
+            "source": "veloinfo",
+            "source-layer": "bike_path",
+            "type": "line",
+            "paint": {
+                "line-color": "#00f",
+                "line-width": 5
+            },
+            "filter": [
+                "all",
+                [
+                    "==",
+                    "kind",
+                    "designated"
+                ],
+                [
+                    "<=",
+                    "score",
+                    1
+                ],
+                [
+                    ">",
+                    "score",
+                    0.8
+                ]
+            ]
+        },
+
+        {
             "id": "shared_lane",
             "source": "veloinfo",
             "source-layer": "bike_path",
@@ -1996,6 +2132,142 @@
                 "shared_lane"
             ]
         },
+        {
+            "id": "shared_lane1",
+            "source": "veloinfo",
+            "source-layer": "bike_path",
+            "type": "line",
+            "paint": {
+                "line-color": "#f00",
+                "line-width": 5
+            },
+            "filter": [
+                "all",
+                [
+                    "==",
+                    "kind",
+                    "shared_lane"
+                ],
+                [
+                    "<=",
+                    "score",
+                    0.2
+                ]
+            ]
+        },
+        {
+            "id": "shared_lane2",
+            "source": "veloinfo",
+            "source-layer": "bike_path",
+            "type": "line",
+            "paint": {
+                "line-color": "#f90",
+                "line-width": 5
+            },
+            "filter": [
+                "all",
+                [
+                    "==",
+                    "kind",
+                    "shared_lane"
+                ],
+                [
+                    "<=",
+                    "score",
+                    0.4
+                ],
+                [
+                    ">",
+                    "score",
+                    0.2
+                ]
+            ]
+        },
+        {
+            "id": "shared_lane3",
+            "source": "veloinfo",
+            "source-layer": "bike_path",
+            "type": "line",
+            "paint": {
+                "line-color": "#ff0",
+                "line-width": 5
+            },
+            "filter": [
+                "all",
+                [
+                    "==",
+                    "kind",
+                    "shared_lane"
+                ],
+                [
+                    "<=",
+                    "score",
+                    0.6
+                ],
+                [
+                    ">",
+                    "score",
+                    0.4
+                ]
+            ]
+        },
+        {
+            "id": "shared_lane4",
+            "source": "veloinfo",
+            "source-layer": "bike_path",
+            "type": "line",
+            "paint": {
+                "line-color": "#0f0",
+                "line-width": 5
+            },
+            "filter": [
+                "all",
+                [
+                    "==",
+                    "kind",
+                    "shared_lane"
+                ],
+                [
+                    "<=",
+                    "score",
+                    0.8
+                ],
+                [
+                    ">",
+                    "score",
+                    0.6
+                ]
+            ]
+        },
+        {
+            "id": "shared_lane5",
+            "source": "veloinfo",
+            "source-layer": "bike_path",
+            "type": "line",
+            "paint": {
+                "line-color": "#00f",
+                "line-width": 5
+            },
+            "filter": [
+                "all",
+                [
+                    "==",
+                    "kind",
+                    "shared_lane"
+                ],
+                [
+                    "<=",
+                    "score",
+                    1
+                ],
+                [
+                    ">",
+                    "score",
+                    0.8
+                ]
+            ]
+        },
+
         {
             "id": "Ocean labels",
             "type": "symbol",
