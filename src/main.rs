@@ -1,7 +1,6 @@
 use anyhow::Result;
 use askama::Template;
 use askama_axum::IntoResponse;
-use axum::extract::State;
 use axum::http::HeaderMap;
 use axum::http::HeaderValue;
 use axum::http::StatusCode;
@@ -19,18 +18,19 @@ use segment_panel::{
 };
 use sqlx::PgPool;
 use std::env;
+use std::process::Command;
+use tokio_cron_scheduler::{Job, JobScheduler};
 use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
 use tower_livereload::LiveReloadLayer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
-mod bike_path;
+mod db;
 mod info_panel;
 mod public;
-mod segment_panel;
-mod db;
 mod segment;
+mod segment_panel;
 
 #[derive(Clone)]
 struct VeloinfoState {
@@ -55,8 +55,22 @@ async fn main() {
 
     sqlx::migrate!().run(&conn).await.unwrap();
 
-    // Prepare bike path because is is destroyed by the import
-    bike_path::prepare_bp(conn.clone()).await.unwrap();
+    println!("Starting cron scheduler");
+    let sched = JobScheduler::new().await.unwrap();
+    sched
+        .add(
+            Job::new("0 0 3 * * *", |_uuid, _l| {
+                println!("Importing data");
+                let output = Command::new("./import.sh")
+                    .output()
+                    .expect("failed to execute process");
+                println!("status: {}", output.status);
+            })
+            .unwrap(),
+        )
+        .await
+        .unwrap();
+    sched.start().await.unwrap();
 
     let mut app = Router::new()
         .route("/", get(index))
@@ -119,9 +133,7 @@ struct IndexTemplate {
 
 async fn index() -> Result<impl IntoResponse, VIError> {
     let segment_panel = get_empty_segment_panel().await;
-    let template = IndexTemplate {
-        segment_panel,
-    };
+    let template = IndexTemplate { segment_panel };
     let body = template.render()?;
     let mut headers = HeaderMap::new();
     headers.insert(

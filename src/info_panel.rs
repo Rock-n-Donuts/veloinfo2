@@ -73,18 +73,7 @@ fn get_score_string(score: f64) -> String {
     } 
 }
 
-pub async fn get_empty_info_panel(conn: sqlx::Pool<Postgres>) -> String {
-    let contributions = InfopanelContribution::get(conn).await.unwrap();
-
-    let template = InfoPanelTemplate {
-        arrow: "▼".to_string(),
-        direction: "down".to_string(),
-        contributions: contributions,
-    };
-    template.render().unwrap()
-}
-
-pub async fn info_panel_down(State(state): State<VeloinfoState>) -> String {
+pub async fn info_panel_down() -> String {
     let template = InfoPanelTemplate {
         arrow: "▲".to_string(),
         direction: "up".to_string(),
