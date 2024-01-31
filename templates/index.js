@@ -48,7 +48,7 @@ select = async (event) => {
     if (segment_panel) {
         fetch_response = await fetch('/segment/route/' + feature.properties.way_id + "/" + way_ids);
         response = await fetch_response.json();
-        if (response.way_ids.length == 0){
+        if (response.way_ids.length == 0) {
             return;
         }
         way_ids = response.way_ids;
@@ -101,6 +101,15 @@ display_segment = async (geom, way_id) => {
         // reprocess htmx for the new info panel
         segment_panel = document.getElementById("segment_panel");
         htmx.process(segment_panel);
+
+        // find the largest bounds
+        var bounds = geom.reduce((currentBounds, coord) => {
+            return [
+                [Math.min(coord[0], currentBounds[0][0]), Math.min(coord[1], currentBounds[0][1])], // min coordinates
+                [Math.max(coord[0], currentBounds[1][0]), Math.max(coord[1], currentBounds[1][1])]  // max coordinates
+            ];
+        }, [[Infinity, Infinity], [-Infinity, -Infinity]]);
+        map.fitBounds(bounds, {padding: 40});
     }
 }
 
