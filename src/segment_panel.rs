@@ -145,7 +145,7 @@ pub async fn segment_panel(
     }
     let way_score = match way.score {
         Some(score) => score,
-        None => 0.8,
+        None => -1.,
     };
     let options = get_options(way_score);
     let segment_name = ways.iter().fold("".to_string(), |acc, way| {
