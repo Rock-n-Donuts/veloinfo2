@@ -76,11 +76,11 @@ impl Cycleway {
         Ok(response.into())
     }
 
-    pub async fn route(name: &str, source: i64, target: i64, conn: sqlx::Pool<Postgres>) -> Result<Route> {
+    pub async fn route(source: &i64, target: &i64, conn: sqlx::Pool<Postgres>) -> Result<Route> {
         let responses: Vec<RouteDB> = sqlx::query_as(
             r#"select   way_id,
-                        $2 as source,
-                        $3 as target, 
+                        $1 as source,
+                        $2 as target, 
                         ST_AsText(ST_Transform(geom, 4326)) as geom,
                         path_seq
                 from pgr_bdastar(
@@ -96,16 +96,14 @@ impl Cycleway {
                             st_x(st_endpoint(geom)) as x2,
                             st_y(st_endpoint(geom)) as y2
                         FROM cycleway
-                        $FORMAT$,
-                        $1
+                        $FORMAT$
                     )
                 , 
-                $2, 
-                $3
+                $1, 
+                $2
                 ) as pa join cycleway c on pa.edge = c.way_id
                 order by path_seq asc"#,
         )
-        .bind(name)
         .bind(source)
         .bind(target)
         .fetch_all(&conn)
@@ -115,8 +113,8 @@ impl Cycleway {
             Route {
                 way_ids: Vec::new(),
                 geom: vec![],
-                source: source,
-                target: target,
+                source: *source,
+                target: *target,
             },
             |mut acc, response| {
                 let this_merge: Route = response.into();

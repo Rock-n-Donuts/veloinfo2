@@ -29,7 +29,6 @@ struct WayInfo {
 
 impl WayInfo {
     pub async fn get(way_id: i64, conn: sqlx::Pool<Postgres>) -> Result<WayInfo, sqlx::Error> {
-        println!("get way_id: {}", way_id);
         sqlx::query_as(
             r#"select  
                 c.name,
@@ -59,7 +58,7 @@ pub async fn get_empty_segment_panel() -> String {
         segment_name: "".to_string(),
         options: "".to_string(),
         comment: "".to_string(),
-        info_panel_template
+        info_panel_template,
     }
     .render()
     .unwrap()
@@ -81,7 +80,6 @@ pub async fn segment_panel_post(
         .find_iter(way_ids.as_str())
         .map(|m| m.as_str().parse::<i64>().unwrap())
         .collect::<Vec<i64>>();
-    println!("post: {:?}", post);
     let conn = state.conn.clone();
 
     sqlx::query(
@@ -97,7 +95,6 @@ pub async fn segment_panel_post(
 
     segment_panel(State(state), Path(way_ids)).await
 }
-
 
 fn get_options(score: f64) -> String {
     let s = vec![
@@ -136,15 +133,13 @@ pub async fn segment_panel(
         .find_iter(way_ids.as_str())
         .map(|cap| cap.as_str().parse::<i64>().unwrap())
         .collect::<Vec<i64>>();
-    let ways = join_all(way_ids_i64.iter().map(|way_id| {
+    let ways = join_all(way_ids_i64.iter().map(|way_id| async {
         let conn = state.conn.clone();
-        WayInfo::get(*way_id, conn)
+        WayInfo::get(*way_id, conn).await.unwrap()
     }))
     .await;
-    let all_same_score = ways
-        .iter()
-        .all(|way| way.as_ref().unwrap().score == ways[0].as_ref().unwrap().score);
-    let mut way = ways[0].as_ref().unwrap().clone();
+    let all_same_score = ways.iter().all(|way| way.score == ways[0].score);
+    let mut way = ways[0].clone();
     if !all_same_score {
         way.score = Some(-1.);
     }
@@ -153,18 +148,17 @@ pub async fn segment_panel(
         None => 0.8,
     };
     let options = get_options(way_score);
-    let segment_name =
-        ways.iter()
-            .fold("".to_string(), |acc, way| match way.as_ref().unwrap().name.as_ref() {
-                Some(name) => {
-                    if acc.find(name) != None {
-                        return acc;
-                    }
-                    format!("{} {}", acc, name)
+    let segment_name = ways.iter().fold("".to_string(), |acc, way| {
+        match way.name.as_ref() {
+            Some(name) => {
+                if acc.find(name) != None {
+                    return acc;
                 }
-                None => acc,
-            });
-
+                format!("{} {}", acc, name)
+            }
+            None => acc,
+        }
+    });
     let info_panel = SegmentPanel {
         way_ids,
         status: "segment".to_string(),
@@ -175,7 +169,7 @@ pub async fn segment_panel(
             arrow: "▲".to_string(),
             direction: "up".to_string(),
             contributions: Vec::new(),
-        }
+        },
     }
     .render()
     .unwrap()
