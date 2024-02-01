@@ -21,6 +21,7 @@ pub struct InfopanelContribution {
     score: String,
     comment: String,
     name: String,
+    score_id: i32,
 }
 
 impl InfopanelContribution {
@@ -35,6 +36,7 @@ impl InfopanelContribution {
                 score: get_score_string(score.score),
                 comment: score.comment.clone().unwrap_or("rien a dire".to_string()),
                 name: get_name(score.way_ids.as_ref(), conn.clone()).await,
+                score_id: score.id,
             }
         }))
         .await)

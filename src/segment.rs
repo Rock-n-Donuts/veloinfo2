@@ -102,7 +102,6 @@ pub async fn route(
         )
         .await?,
     );
-    println!("routes: {:?}", routes);
 
     // We keep the longest segment
     let merge = routes

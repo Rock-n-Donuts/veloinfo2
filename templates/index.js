@@ -95,9 +95,9 @@ display_segment = async (geom, way_id) => {
     if (way_ids) {
         // Display info panel
         var segment_panel = document.getElementById("info");
-        const response = await fetch("/segment_panel/" + way_ids);
+        const response = await fetch("/segment_panel/ways/" + way_ids);
         const html = await response.text();
-        segment_panel.outerHTML = html;
+        segment_panel.innerHTML = html;
         // reprocess htmx for the new info panel
         segment_panel = document.getElementById("info");
         htmx.process(segment_panel);
@@ -114,19 +114,22 @@ display_segment = async (geom, way_id) => {
 }
 
 clear = async () => {
-    map.getSource("selected").setData({
-        "type": "Feature",
-        "properties": {},
-        "geometry": {
-            "type": "LineString",
-            "coordinates": []
-        }
-    })
+    const selected = map.getSource("selected");
+    if (selected) {
+        selected.setData({
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "type": "LineString",
+                "coordinates": []
+            }
+        });
+    }
     // Display info panel
     var segment_panel = document.getElementById("info");
-    const response = await fetch("/segment_panel");
+    const response = await fetch("/info_panel/down");
     const html = await response.text();
-    segment_panel.outerHTML = html;
+    segment_panel.innerHTML = html;
     // reprocess htmx for the new info panel
     segment_panel = document.getElementById("info");
     htmx.process(segment_panel);

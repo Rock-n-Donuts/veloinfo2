@@ -1,3 +1,4 @@
+use crate::segment_panel::select_score_id;
 use anyhow::Result;
 use askama::Template;
 use askama_axum::IntoResponse;
@@ -73,8 +74,9 @@ async fn main() {
     let mut app = Router::new()
         .route("/", get(index))
         .route("/segment_panel", get(get_empty_segment_panel))
+        .route("/segment_panel/id/:id", get(select_score_id))
         .route(
-            "/segment_panel/:way_ids",
+            "/segment_panel/ways/:way_ids",
             get(segment_panel).post(segment_panel_post),
         )
         .route("/segment/select/:way_id", get(select))

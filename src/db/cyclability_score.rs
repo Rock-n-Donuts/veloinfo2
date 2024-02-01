@@ -21,4 +21,15 @@ impl CyclabilityScore {
         .fetch_all(&conn)
         .await
     }
+
+    pub async fn get_by_id(id: i32, conn: sqlx::Pool<Postgres>) -> Result<CyclabilityScore, sqlx::Error> {
+        sqlx::query_as(
+            r#"select id, score, comment, way_ids, created_at
+               from cyclability_score
+               where id = $1"#,
+        )
+        .bind(id)
+        .fetch_one(&conn)
+        .await
+    }
 }
