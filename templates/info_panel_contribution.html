@@ -1,4 +1,4 @@
-<div class="overflow-auto flex cursor-pointer" hx-get="/segment_panel/id/{{score_id}}" hx-target="#info">
+<div class="overflow-auto flex cursor-pointer" hx-get="/segment_panel/id/{{score_id}}" hx-target="#info" onclick="event.stopPropagation()">
     <div class="text-3xl mx-2">{{ score }}</div>
     <div class="content-start">{{ created_at}} {{ name }} {{ comment }}</div>
 </div>
