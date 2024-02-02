@@ -72,7 +72,7 @@ fn get_score_string(score: f64) -> String {
         "🟢".to_string()
     } else {
         "🔵".to_string()
-    } 
+    }
 }
 
 pub async fn info_panel_down() -> String {

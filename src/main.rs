@@ -1,4 +1,10 @@
-use crate::segment_panel::select_score_id;
+use crate::component::index_js::indexjs;
+use crate::component::info_panel::info_panel_down;
+use crate::component::info_panel::info_panel_up;
+use crate::component::segment_panel::get_empty_segment_panel;
+use crate::component::segment_panel::segment_panel;
+use crate::component::segment_panel::segment_panel_post;
+use crate::component::segment_panel::select_score_id;
 use anyhow::Result;
 use askama::Template;
 use askama_axum::IntoResponse;
@@ -8,13 +14,9 @@ use axum::http::StatusCode;
 use axum::response::Html;
 use axum::response::Response;
 use axum::routing::{get, Router};
-use info_panel::info_panel_down;
-use info_panel::info_panel_up;
-use public::indexjs;
-use public::style;
+use component::style::style;
 use segment::route;
 use segment::select;
-use segment_panel::{get_empty_segment_panel, segment_panel, segment_panel_post};
 use sqlx::PgPool;
 use std::env;
 use std::process::Command;
@@ -25,11 +27,9 @@ use tower_livereload::LiveReloadLayer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
+mod component;
 mod db;
-mod info_panel;
-mod public;
 mod segment;
-mod segment_panel;
 
 #[derive(Clone)]
 struct VeloinfoState {

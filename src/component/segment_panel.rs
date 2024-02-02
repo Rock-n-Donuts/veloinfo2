@@ -1,4 +1,5 @@
-use crate::{db::cyclability_score::CyclabilityScore, info_panel::InfoPanelTemplate, VeloInfoError, VeloinfoState};
+use super::info_panel::InfoPanelTemplate;
+use crate::{db::cyclability_score::CyclabilityScore, VeloInfoError, VeloinfoState};
 use anyhow::Result;
 use askama::Template;
 use axum::{
@@ -148,8 +149,9 @@ pub async fn segment_panel(
         None => -1.,
     };
     let options = get_options(way_score);
-    let segment_name = ways.iter().fold("".to_string(), |acc, way| {
-        match way.name.as_ref() {
+    let segment_name = ways
+        .iter()
+        .fold("".to_string(), |acc, way| match way.name.as_ref() {
             Some(name) => {
                 if acc.find(name) != None {
                     return acc;
@@ -157,8 +159,7 @@ pub async fn segment_panel(
                 format!("{} {}", acc, name)
             }
             None => acc,
-        }
-    });
+        });
     let info_panel = SegmentPanel {
         way_ids,
         status: "segment".to_string(),
@@ -178,24 +179,35 @@ pub async fn segment_panel(
     Ok(info_panel)
 }
 
-pub async fn select_score_id(State(state): State<VeloinfoState>, Path(id): Path<i32>) -> Result<String, VeloInfoError> {
-    let score = CyclabilityScore::get_by_id(id, state.conn.clone()).await.unwrap();
+pub async fn select_score_id(
+    State(state): State<VeloinfoState>,
+    Path(id): Path<i32>,
+) -> Result<String, VeloInfoError> {
+    let score = CyclabilityScore::get_by_id(id, state.conn.clone())
+        .await
+        .unwrap();
     let segment_name = join_all(score.way_ids.iter().map(|way_id| async {
         let conn = state.conn.clone();
         WayInfo::get(*way_id, conn).await.unwrap()
-    })).await.iter().fold("".to_string(), |acc, way| {
-        match way.name.as_ref() {
-            Some(name) => {
-                if acc.find(name) != None {
-                    return acc;
-                }
-                format!("{} {}", acc, name)
+    }))
+    .await
+    .iter()
+    .fold("".to_string(), |acc, way| match way.name.as_ref() {
+        Some(name) => {
+            if acc.find(name) != None {
+                return acc;
             }
-            None => acc,
+            format!("{} {}", acc, name)
         }
+        None => acc,
     });
     let panel = SegmentPanel {
-        way_ids: score.way_ids.iter().map(|id| id.to_string()).collect::<Vec<String>>().join(" "),
+        way_ids: score
+            .way_ids
+            .iter()
+            .map(|id| id.to_string())
+            .collect::<Vec<String>>()
+            .join(" "),
         status: "segment".to_string(),
         segment_name,
         options: get_options(score.score),
@@ -209,7 +221,6 @@ pub async fn select_score_id(State(state): State<VeloinfoState>, Path(id): Path<
 
     Ok(panel.render().unwrap())
 }
-
 
 #[derive(Template)]
 #[template(
