@@ -3,7 +3,6 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use sqlx::Postgres;
 
-
 #[derive(Debug, sqlx::FromRow)]
 struct ResponseDb {
     name: Option<String>,
@@ -12,7 +11,6 @@ struct ResponseDb {
     source: Option<i64>,
     target: Option<i64>,
 }
-
 
 #[derive(Debug, Serialize, Clone)]
 pub struct Route {
@@ -95,7 +93,76 @@ impl Cycleway {
                             st_y(st_startpoint(geom)) as y1,
                             st_x(st_endpoint(geom)) as x2,
                             st_y(st_endpoint(geom)) as y2
-                        FROM cycleway
+                        from cycleway                        
+                        $FORMAT$
+                    )
+                , 
+                $1, 
+                $2
+                ) as pa join cycleway c on pa.edge = c.way_id
+                order by path_seq asc"#,
+        )
+        .bind(source)
+        .bind(target)
+        .fetch_all(&conn)
+        .await
+        .unwrap();
+        let segment: Route = responses.iter().fold(
+            Route {
+                way_ids: Vec::new(),
+                geom: vec![],
+                source: *source,
+                target: *target,
+            },
+            |mut acc, response| {
+                let this_merge: Route = response.into();
+                acc.way_ids.extend(this_merge.way_ids);
+                acc.geom.extend(this_merge.geom);
+                acc
+            },
+        );
+        Ok(segment)
+    }
+
+
+    // todo: Finish to have a route from node to node
+    pub async fn route2(source: &i64, target: &i64, conn: sqlx::Pool<Postgres>) -> Result<Route> {
+        let responses: Vec<RouteDB> = sqlx::query_as(
+            r#"select   way_id,
+                        $1 as source,
+                        $2 as target, 
+                        ST_AsText(ST_Transform(geom, 4326)) as geom,
+                        path_seq
+                from pgr_bdastar(
+                    FORMAT(
+                        $FORMAT$
+                        WITH c_points AS (
+                            SELECT 
+                                (ST_DumpPoints(geom)).geom AS point, 
+                                (ST_DumpPoints(geom)).path[1] AS ord,
+                                way_id
+                            FROM cycleway
+                        ),
+                        cycleway_pairs AS (
+                            SELECT 
+                                way_id as id, 
+                                point AS point1, 
+                                LAG(point) OVER (PARTITION BY way_id ORDER BY ord) AS point2
+                            FROM c_points
+                        )
+                        SELECT cpa.id,
+                            cp1.node_id as source,
+                            cp2.node_id as target,
+                            ST_Length(st_makeline(cpa.point1, cpa.point2)) as cost,
+                            ST_Length(st_makeline(cpa.point1, cpa.point2)) as reverse_cost,
+                            ST_X(cpa.point1) AS x1, 
+                            ST_Y(cpa.point1) AS y1, 
+                            ST_X(cpa.point2) AS x2, 
+                            ST_Y(cpa.point2) AS y2
+                        FROM cycleway_pairs cpa
+                        join cycleway_point cp1 on cp1.geom = point1
+                        join cycleway_point cp2 on cp2.geom = point2
+                        WHERE point2 IS NOT NULL;                        
                         $FORMAT$
                     )
                 , 
@@ -165,4 +232,3 @@ impl From<&ResponseDb> for Cycleway {
         }
     }
 }
-
