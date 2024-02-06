@@ -44,7 +44,7 @@ select = async (event) => {
     var fetch_response = await fetch('/segment/select/' + feature.properties.way_id);
     var response = await fetch_response.json();
 
-    const segment_panel = document.getElementById("select_score");
+    const segment_panel = document.getElementById("score_selector");
     if (segment_panel) {
         fetch_response = await fetch('/segment/route/' + feature.properties.way_id + "/" + way_ids);
         response = await fetch_response.json();

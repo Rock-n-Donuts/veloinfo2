@@ -85,7 +85,7 @@ impl Cycleway {
                     FORMAT(
                         $FORMAT$
                         select  way_id as id, 
-                            source, 
+                            source,
                             target, 
                             st_length(geom) as cost, 
                             st_length(geom) as reverse_cost, 
@@ -126,6 +126,7 @@ impl Cycleway {
 
 
     // todo: Finish to have a route from node to node
+    #[allow(dead_code)]
     pub async fn route2(source: &i64, target: &i64, conn: sqlx::Pool<Postgres>) -> Result<Route> {
         let responses: Vec<RouteDB> = sqlx::query_as(
             r#"select   way_id,

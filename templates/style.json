@@ -1834,7 +1834,7 @@
             "source-layer": "bike_path",
             "type": "line",
             "paint": {
-                "line-color": "#f00",
+                "line-color": "#dc2626",
                 "line-width": 5
             },
             "filter": [
@@ -1845,9 +1845,9 @@
                     "cycleway"
                 ],
                 [
-                    "<=",
+                    "==",
                     "score",
-                    0.2
+                    0
                 ]
             ]
         },
@@ -1857,7 +1857,7 @@
             "source-layer": "bike_path",
             "type": "line",
             "paint": {
-                "line-color": "#f90",
+                "line-color": "#ea580c",
                 "line-width": 5
             },
             "filter": [
@@ -1870,12 +1870,12 @@
                 [
                     "<=",
                     "score",
-                    0.4
+                    0.25
                 ],
                 [
                     ">",
                     "score",
-                    0.2
+                    0
                 ]
             ]
         },
@@ -1885,7 +1885,7 @@
             "source-layer": "bike_path",
             "type": "line",
             "paint": {
-                "line-color": "#ff0",
+                "line-color": "#facc15",
                 "line-width": 5
             },
             "filter": [
@@ -1898,12 +1898,12 @@
                 [
                     "<=",
                     "score",
-                    0.6
+                    0.5
                 ],
                 [
                     ">",
                     "score",
-                    0.4
+                    0.25
                 ]
             ]
         },
@@ -1913,7 +1913,7 @@
             "source-layer": "bike_path",
             "type": "line",
             "paint": {
-                "line-color": "#0f0",
+                "line-color": "#4ade80",
                 "line-width": 5
             },
             "filter": [
@@ -1926,12 +1926,12 @@
                 [
                     "<=",
                     "score",
-                    0.8
+                    0.75
                 ],
                 [
                     ">",
                     "score",
-                    0.6
+                    0.5
                 ]
             ]
         },
@@ -1941,7 +1941,7 @@
             "source-layer": "bike_path",
             "type": "line",
             "paint": {
-                "line-color": "#00f",
+                "line-color": "#15803d",
                 "line-width": 5
             },
             "filter": [
@@ -1959,7 +1959,7 @@
                 [
                     ">",
                     "score",
-                    0.8
+                    0.75
                 ]
             ]
         },
@@ -1987,7 +1987,7 @@
             "source-layer": "bike_path",
             "type": "line",
             "paint": {
-                "line-color": "#f00",
+                "line-color": "#dc2626",
                 "line-width": 3
             },
             "filter": [
@@ -2010,7 +2010,7 @@
             "source-layer": "bike_path",
             "type": "line",
             "paint": {
-                "line-color": "#f90",
+                "line-color": "#ea580c",
                 "line-width": 3
             },
             "filter": [
@@ -2038,7 +2038,7 @@
             "source-layer": "bike_path",
             "type": "line",
             "paint": {
-                "line-color": "#ff0",
+                "line-color": "#facc15",
                 "line-width": 3
             },
             "filter": [
@@ -2066,7 +2066,7 @@
             "source-layer": "bike_path",
             "type": "line",
             "paint": {
-                "line-color": "#0f0",
+                "line-color": "#4ade80",
                 "line-width": 3
             },
             "filter": [
@@ -2094,7 +2094,7 @@
             "source-layer": "bike_path",
             "type": "line",
             "paint": {
-                "line-color": "#00f",
+                "line-color": "#15803d",
                 "line-width": 3
             },
             "filter": [
@@ -2138,7 +2138,7 @@
             "source-layer": "bike_path",
             "type": "line",
             "paint": {
-                "line-color": "#f00",
+                "line-color": "#dc2626",
                 "line-width": 1
             },
             "filter": [
@@ -2161,7 +2161,7 @@
             "source-layer": "bike_path",
             "type": "line",
             "paint": {
-                "line-color": "#f90",
+                "line-color": "#ea580c",
                 "line-width": 1
             },
             "filter": [
@@ -2189,7 +2189,7 @@
             "source-layer": "bike_path",
             "type": "line",
             "paint": {
-                "line-color": "#ff0",
+                "line-color": "#facc15",
                 "line-width": 1
             },
             "filter": [
@@ -2217,7 +2217,7 @@
             "source-layer": "bike_path",
             "type": "line",
             "paint": {
-                "line-color": "#0f0",
+                "line-color": "#4ade80",
                 "line-width": 1
             },
             "filter": [
@@ -2245,7 +2245,7 @@
             "source-layer": "bike_path",
             "type": "line",
             "paint": {
-                "line-color": "#00f",
+                "line-color": "#15803d",
                 "line-width": 1
             },
             "filter": [

@@ -1,4 +1,4 @@
-use super::info_panel::InfoPanelTemplate;
+use super::{info_panel::InfoPanelTemplate, score_selector::ScoreSelector};
 use crate::{db::cyclability_score::CyclabilityScore, VeloInfoError, VeloinfoState};
 use anyhow::Result;
 use askama::Template;
@@ -13,11 +13,10 @@ use sqlx::Postgres;
 
 #[derive(Template)]
 #[template(path = "segment_panel.html", escape = "none")]
-pub struct SegmentPanel {
-    way_ids: String,
+pub struct SegmentPanel{
     status: String,
     segment_name: String,
-    options: String,
+    score_selector: ScoreSelector,
     comment: String,
     info_panel_template: InfoPanelTemplate,
 }
@@ -54,10 +53,9 @@ pub async fn get_empty_segment_panel() -> String {
     };
 
     SegmentPanel {
-        way_ids: "".to_string(),
         status: "none".to_string(),
         segment_name: "".to_string(),
-        options: "".to_string(),
+        score_selector: ScoreSelector::get_score_selector(-1.),
         comment: "".to_string(),
         info_panel_template,
     }
@@ -97,33 +95,6 @@ pub async fn segment_panel_post(
     segment_panel(State(state), Path(way_ids)).await
 }
 
-fn get_options(score: f64) -> String {
-    let s = vec![
-        (-1., "⚪ inconnu", "disabled"),
-        (0.2, "🔴 Impossible", ""),
-        (0.4, "🟠 mauvais", ""),
-        (0.6, "🟡 difficile", ""),
-        (0.8, "🟢 bon", ""),
-        (1., "🔵 excellent", ""),
-    ];
-    s.iter()
-        .map(|(s, color, disabled)| {
-            ScoreOption {
-                score: *s,
-                selected: if *s == score {
-                    "selected".to_string()
-                } else {
-                    "".to_string()
-                },
-                color: color.to_string(),
-                disabled: disabled.to_string(),
-            }
-            .render()
-            .unwrap()
-        })
-        .collect::<Vec<String>>()
-        .join(" ")
-}
 
 pub async fn segment_panel(
     State(state): State<VeloinfoState>,
@@ -144,11 +115,6 @@ pub async fn segment_panel(
     if !all_same_score {
         way.score = Some(-1.);
     }
-    let way_score = match way.score {
-        Some(score) => score,
-        None => -1.,
-    };
-    let options = get_options(way_score);
     let segment_name = ways
         .iter()
         .fold("".to_string(), |acc, way| match way.name.as_ref() {
@@ -161,10 +127,9 @@ pub async fn segment_panel(
             None => acc,
         });
     let info_panel = SegmentPanel {
-        way_ids,
         status: "segment".to_string(),
         segment_name,
-        options,
+        score_selector: ScoreSelector::get_score_selector(way.score.unwrap_or(-1.)),
         comment: "".to_string(),
         info_panel_template: InfoPanelTemplate {
             arrow: "▲".to_string(),
@@ -202,15 +167,9 @@ pub async fn select_score_id(
         None => acc,
     });
     let panel = SegmentPanel {
-        way_ids: score
-            .way_ids
-            .iter()
-            .map(|id| id.to_string())
-            .collect::<Vec<String>>()
-            .join(" "),
         status: "segment".to_string(),
         segment_name,
-        options: get_options(score.score),
+        score_selector: ScoreSelector::get_score_selector(score.score),
         comment: score.comment.unwrap_or("".to_string()),
         info_panel_template: InfoPanelTemplate {
             arrow: "▲".to_string(),

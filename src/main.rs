@@ -10,6 +10,7 @@ use askama::Template;
 use askama_axum::IntoResponse;
 use axum::http::HeaderMap;
 use axum::http::HeaderValue;
+use axum::http::Request;
 use axum::http::StatusCode;
 use axum::response::Html;
 use axum::response::Response;
@@ -26,7 +27,9 @@ use tower_http::trace::TraceLayer;
 use tower_livereload::LiveReloadLayer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
+use score_selector_controler::score_selector_controler;
 
+mod score_selector_controler;
 mod component;
 mod db;
 mod segment;
@@ -83,6 +86,7 @@ async fn main() {
         .route("/segment/route/:way_id1/:way_ids", get(route))
         .route("/info_panel/down", get(info_panel_down))
         .route("/info_panel/up", get(info_panel_up))
+        .route("/score_selector/:score", get(score_selector_controler))
         .route("/style.json", get(style))
         .route("/index.js", get(indexjs))
         .nest_service("/pub/", ServeDir::new("pub"))
@@ -90,13 +94,17 @@ async fn main() {
         .layer(TraceLayer::new_for_http());
 
     if dev {
-        app = app.layer(LiveReloadLayer::new());
+        app = app.layer(LiveReloadLayer::new().request_predicate(not_htmx_predicate));
     }
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }
 
+
+fn not_htmx_predicate<T>(req: &Request<T>) -> bool {
+    !req.headers().contains_key("hx-request")
+}
 struct VIError(anyhow::Error);
 
 impl From<anyhow::Error> for VIError {

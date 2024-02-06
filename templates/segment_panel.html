@@ -7,12 +7,7 @@
         </div>
         <div class="mt-4">
             {{ segment_name }}
-            <div>
-                <select id="select_score" name="score" class="bg-white m-2" hx-post="/segment_panel/ways/{{way_ids}}"
-                    hx-target="#info" hx-on:change="reset()">
-                    {{options}}
-                </select>
-            </div>
+            {{score_selector}}
             <input type="text" height="2">
                 {{comment}}
             <input/>
