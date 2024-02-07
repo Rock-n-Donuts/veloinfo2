@@ -74,6 +74,25 @@ impl Cycleway {
         Ok(response.into())
     }
 
+    pub async fn get_by_score_id(score_id: i32, conn: sqlx::Pool<Postgres>) -> Result<Vec<Cycleway>> {
+        let responses: Vec<ResponseDb> = sqlx::query_as(
+            r#"select
+                c.name,  
+                c.way_id,
+                c.source,
+                c.target,
+                ST_AsText(ST_Transform(c.geom, 4326)) as geom  
+               from cycleway c
+               join cyclability_score cs on c.way_id = any(cs.way_ids)
+               where cs.id = $1
+               "#,
+        )
+        .bind(score_id)
+        .fetch_all(&conn)
+        .await?;
+        Ok(responses.iter().map(|response| response.into()).collect())
+    }
+
     pub async fn route(source: &i64, target: &i64, conn: sqlx::Pool<Postgres>) -> Result<Route> {
         let responses: Vec<RouteDB> = sqlx::query_as(
             r#"select   way_id,

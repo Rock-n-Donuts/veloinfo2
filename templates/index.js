@@ -55,10 +55,28 @@ select = async (event) => {
     } else {
         way_ids = feature.properties.way_id;
     }
-    display_segment(response.geom, response.way_id);
+    display_segment_geom(response.geom);
 }
 
-display_segment = async (geom, way_id) => {
+zoom = async (score_id) => {
+    var fetch_response = await fetch('/cyclability_score/geom/' + score_id);    
+    var response = await fetch_response.json();
+    var bounds = response.reduce((currentBounds, cycleway) => {
+        const bound = cycleway.geom.reduce((currentBounds, coord) => {
+            return [
+                [Math.min(coord[0], currentBounds[0][0]), Math.min(coord[1], currentBounds[0][1])], // min coordinates
+                [Math.max(coord[0], currentBounds[1][0]), Math.max(coord[1], currentBounds[1][1])]  // max coordinates
+            ];
+        }, [[Infinity, Infinity], [-Infinity, -Infinity]]);
+        return [
+            [Math.min(bound[0][0], currentBounds[0][0]), Math.min(bound[0][1], currentBounds[0][1])], // min coordinates
+            [Math.max(bound[1][0], currentBounds[1][0]), Math.max(bound[1][1], currentBounds[1][1])]  // max coordinates
+        ];
+    }, [[Infinity, Infinity], [-Infinity, -Infinity]]);
+    map.fitBounds(bounds, { padding: window.innerWidth * .10 });
+}
+
+display_segment_geom = async (geom) => {
     if (map.getLayer("selected")) {
         map.getSource("selected").setData({
             "type": "Feature",

@@ -2,9 +2,6 @@ FROM postgres:13
 
 LABEL maintainer="PostGIS Project - https://postgis.net"
 
-# ENV POSTGIS_MAJOR 3
-# ENV POSTGIS_VERSION 3.2.1+dfsg-1.pgdg110+1
-
 RUN apt-get update \
       && apt-get install -y \
            postgresql-13-postgis-3 \
