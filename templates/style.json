@@ -1,16 +1,8 @@
 {
     "version": 8,
-    "id": "backdrop",
-    "name": "Backdrop",
+    "id": "dataviz",
+    "name": "Dataviz",
     "sources": {
-        "land": {
-            "url": "https://api.maptiler.com/tiles/land/tiles.json?key=STFS4MYo3i7OemN8CY5b",
-            "type": "vector"
-        },
-        "terrain_rgb": {
-            "url": "https://api.maptiler.com/tiles/terrain-rgb-v2/tiles.json?key=STFS4MYo3i7OemN8CY5b",
-            "type": "raster-dem"
-        },
         "maptiler_planet": {
             "url": "https://api.maptiler.com/tiles/v3/tiles.json?key=STFS4MYo3i7OemN8CY5b",
             "type": "vector"
@@ -32,7 +24,7 @@
                 "visibility": "visible"
             },
             "paint": {
-                "background-color": "hsl(0, 0%, 100%)",
+                "background-color": "hsl(30,25%,98%)",
                 "background-opacity": 1
             }
         },
@@ -42,34 +34,30 @@
             "source": "maptiler_planet",
             "source-layer": "landuse",
             "minzoom": 6,
-            "maxzoom": 14,
+            "maxzoom": 13,
             "layout": {
                 "visibility": "visible"
             },
             "paint": {
-                "fill-color": [
-                    "interpolate",
-                    [
-                        "linear"
-                    ],
-                    [
-                        "zoom"
-                    ],
-                    6,
-                    "hsl(190, 0%, 73%)",
-                    13,
-                    "hsl(190, 0%, 90%)"
-                ],
+                "fill-color": {
+                    "stops": [
+                        [
+                            6,
+                            "hsl(0, 0%, 94%)"
+                        ],
+                        [
+                            13,
+                            "hsl(0,0%,93%)"
+                        ]
+                    ]
+                },
                 "fill-opacity": 1,
                 "fill-antialias": true
             },
             "filter": [
-                "any",
-                [
-                    "in",
-                    "class",
-                    "residential"
-                ]
+                "==",
+                "class",
+                "residential"
             ]
         },
         {
@@ -81,7 +69,7 @@
                 "visibility": "visible"
             },
             "paint": {
-                "fill-color": "hsl(0, 0%, 100%)",
+                "fill-color": "hsl(96, 44%, 79%)",
                 "fill-opacity": {
                     "stops": [
                         [
@@ -97,26 +85,89 @@
                             0.35
                         ]
                     ]
-                }
+                },
+                "fill-antialias": false
             },
             "filter": [
                 "in",
                 "class",
-                "grass",
-                "wood"
+                "wood",
+                "grass"
             ]
         },
         {
-            "id": "Hillshade",
-            "type": "hillshade",
-            "source": "terrain_rgb",
+            "id": "Forest",
+            "type": "fill",
+            "source": "maptiler_planet",
+            "source-layer": "globallandcover",
+            "maxzoom": 7,
             "layout": {
                 "visibility": "visible"
             },
             "paint": {
-                "hillshade-shadow-color": "hsl(0, 1%, 60%)",
-                "hillshade-highlight-color": "hsl(0, 0%, 15%)"
-            }
+                "fill-color": "hsla(96, 44%, 79%, 0.15)"
+            },
+            "filter": [
+                "in",
+                "class",
+                "forest",
+                "tree"
+            ]
+        },
+        {
+            "id": "Stadium",
+            "type": "fill",
+            "source": "maptiler_planet",
+            "source-layer": "landuse",
+            "minzoom": 10,
+            "maxzoom": 22,
+            "layout": {
+                "visibility": "visible"
+            },
+            "paint": {
+                "fill-color": "hsl(86,57%,88%)",
+                "fill-opacity": {
+                    "stops": [
+                        [
+                            10,
+                            0.25
+                        ],
+                        [
+                            14,
+                            0.55
+                        ]
+                    ]
+                },
+                "fill-antialias": true,
+                "fill-outline-color": "hsl(85,26%,77%)"
+            },
+            "filter": [
+                "in",
+                "class",
+                "stadium",
+                "pitch"
+            ]
+        },
+        {
+            "id": "Cemetery",
+            "type": "fill",
+            "source": "maptiler_planet",
+            "source-layer": "landuse",
+            "minzoom": 10,
+            "maxzoom": 22,
+            "layout": {
+                "visibility": "visible"
+            },
+            "paint": {
+                "fill-color": "hsl(0, 0%, 89%)",
+                "fill-opacity": 1,
+                "fill-antialias": true
+            },
+            "filter": [
+                "==",
+                "class",
+                "cemetery"
+            ]
         },
         {
             "id": "River",
@@ -127,7 +178,7 @@
                 "visibility": "visible"
             },
             "paint": {
-                "line-color": "hsl(220, 1%, 86%)",
+                "line-color": "hsl(187,37%,87%)",
                 "line-width": [
                     "interpolate",
                     [
@@ -158,7 +209,7 @@
                 "visibility": "visible"
             },
             "paint": {
-                "fill-color": "hsl(229, 1%, 73%)",
+                "fill-color": "hsl(196,28%,74%)",
                 "fill-opacity": 1,
                 "fill-antialias": true,
                 "fill-translate-anchor": "map"
@@ -187,7 +238,7 @@
                 "visibility": "visible"
             },
             "paint": {
-                "fill-color": "hsl(220, 1%, 86%)",
+                "fill-color": "hsl(187, 36%, 87%)",
                 "fill-opacity": 1,
                 "fill-antialias": true,
                 "fill-translate": {
@@ -225,15 +276,16 @@
                 "fill-translate-anchor": "map"
             },
             "filter": [
-                "any",
-                [
-                    "!has",
-                    "brunnel"
-                ],
+                "all",
                 [
                     "==",
+                    "$type",
+                    "Polygon"
+                ],
+                [
+                    "!=",
                     "brunnel",
-                    "bridge"
+                    "tunnel"
                 ]
             ]
         },
@@ -249,7 +301,7 @@
                 "visibility": "visible"
             },
             "paint": {
-                "line-color": "hsl(220, 0%, 80%)",
+                "line-color": "hsl(0, 0%, 87%)",
                 "line-width": [
                     "interpolate",
                     [
@@ -302,11 +354,325 @@
             },
             "metadata": {},
             "filter": [
+                "==",
+                "$type",
+                "LineString"
+            ]
+        },
+        {
+            "id": "Tunnel outline",
+            "type": "line",
+            "source": "maptiler_planet",
+            "source-layer": "transportation",
+            "minzoom": 11,
+            "maxzoom": 22,
+            "layout": {
+                "line-cap": "round",
+                "line-join": "round",
+                "visibility": "visible"
+            },
+            "paint": {
+                "line-color": "hsl(0, 0%, 85%)",
+                "line-width": [
+                    "interpolate",
+                    [
+                        "linear",
+                        2
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    4,
+                    0.5,
+                    7,
+                    0.5,
+                    10,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "motorway"
+                        ],
+                        [
+                            "match",
+                            [
+                                "get",
+                                "ramp"
+                            ],
+                            1,
+                            0,
+                            2.5
+                        ],
+                        [
+                            "trunk",
+                            "primary"
+                        ],
+                        2.4,
+                        0
+                    ],
+                    12,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "motorway"
+                        ],
+                        [
+                            "match",
+                            [
+                                "get",
+                                "ramp"
+                            ],
+                            1,
+                            2,
+                            6
+                        ],
+                        [
+                            "trunk",
+                            "primary"
+                        ],
+                        3,
+                        [
+                            "secondary",
+                            "tertiary"
+                        ],
+                        2,
+                        [
+                            "minor",
+                            "service",
+                            "track"
+                        ],
+                        1,
+                        0.5
+                    ],
+                    14,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "motorway"
+                        ],
+                        [
+                            "match",
+                            [
+                                "get",
+                                "ramp"
+                            ],
+                            1,
+                            5,
+                            8
+                        ],
+                        [
+                            "trunk"
+                        ],
+                        4,
+                        [
+                            "primary"
+                        ],
+                        6,
+                        [
+                            "secondary"
+                        ],
+                        6,
+                        [
+                            "tertiary"
+                        ],
+                        4,
+                        [
+                            "minor",
+                            "service",
+                            "track"
+                        ],
+                        3,
+                        3
+                    ],
+                    16,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "motorway",
+                            "trunk",
+                            "primary"
+                        ],
+                        10,
+                        [
+                            "secondary"
+                        ],
+                        9,
+                        [
+                            "tertiary"
+                        ],
+                        8,
+                        [
+                            "minor",
+                            "service",
+                            "track"
+                        ],
+                        6,
+                        6
+                    ],
+                    20,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "motorway",
+                            "trunk",
+                            "primary"
+                        ],
+                        26,
+                        [
+                            "secondary"
+                        ],
+                        26,
+                        [
+                            "tertiary"
+                        ],
+                        26,
+                        [
+                            "minor",
+                            "service",
+                            "track"
+                        ],
+                        18,
+                        18
+                    ]
+                ],
+                "line-opacity": [
+                    "step",
+                    [
+                        "zoom"
+                    ],
+                    1,
+                    5,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "motorway",
+                            "trunk"
+                        ],
+                        0.5,
+                        0
+                    ],
+                    6,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "motorway",
+                            "trunk"
+                        ],
+                        0.5,
+                        0
+                    ],
+                    7,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "motorway",
+                            "trunk"
+                        ],
+                        1,
+                        0
+                    ],
+                    8,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "motorway",
+                            "trunk",
+                            "primary"
+                        ],
+                        1,
+                        0
+                    ],
+                    11,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "motorway",
+                            "trunk",
+                            "primary",
+                            "secondary",
+                            "tertiary"
+                        ],
+                        1,
+                        0
+                    ],
+                    13,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "motorway",
+                            "trunk",
+                            "primary",
+                            "secondary",
+                            "tertiary",
+                            "minor"
+                        ],
+                        1,
+                        0
+                    ],
+                    15,
+                    1
+                ]
+            },
+            "filter": [
                 "all",
                 [
+                    "in",
+                    "class",
+                    "motorway",
+                    "trunk",
+                    "primary",
+                    "secondary",
+                    "tertiary",
+                    "minor",
+                    "service"
+                ],
+                [
                     "==",
-                    "$type",
-                    "LineString"
+                    "brunnel",
+                    "tunnel"
                 ]
             ]
         },
@@ -323,7 +689,7 @@
                 "visibility": "visible"
             },
             "paint": {
-                "line-color": "hsl(220, 0%, 25%)",
+                "line-color": "hsl(0, 0%, 90%)",
                 "line-width": [
                     "interpolate",
                     [
@@ -374,7 +740,7 @@
                 "visibility": "visible"
             },
             "paint": {
-                "line-color": "hsl(220, 0%, 90%)",
+                "line-color": "hsl(0, 0%, 97%)",
                 "line-width": [
                     "interpolate",
                     [
@@ -670,7 +1036,7 @@
                 "visibility": "visible"
             },
             "paint": {
-                "line-color": "hsl(220, 0%, 80%)",
+                "line-color": "hsl(0, 0%, 80%)",
                 "line-width": {
                     "base": 1.3,
                     "stops": [
@@ -723,7 +1089,7 @@
                 "visibility": "visible"
             },
             "paint": {
-                "line-color": "hsl(220, 0%, 95%)",
+                "line-color": "hsl(0, 0%, 95%)",
                 "line-width": {
                     "base": 1.3,
                     "stops": [
@@ -761,93 +1127,6 @@
             ]
         },
         {
-            "id": "Land outline",
-            "type": "line",
-            "source": "land",
-            "source-layer": "land",
-            "minzoom": 0,
-            "maxzoom": 16,
-            "layout": {
-                "visibility": "visible"
-            },
-            "paint": {
-                "line-blur": 0,
-                "line-color": "hsl(220, 1%, 0%)",
-                "line-width": [
-                    "interpolate",
-                    [
-                        "linear"
-                    ],
-                    [
-                        "zoom"
-                    ],
-                    0,
-                    0.3,
-                    5,
-                    0.5,
-                    8,
-                    0.75,
-                    12,
-                    1,
-                    16,
-                    1.5
-                ],
-                "line-opacity": [
-                    "interpolate",
-                    [
-                        "linear"
-                    ],
-                    [
-                        "zoom"
-                    ],
-                    0,
-                    1,
-                    13,
-                    0.9,
-                    14,
-                    0.6,
-                    15,
-                    0.3
-                ],
-                "line-translate": {
-                    "stops": [
-                        [
-                            0,
-                            [
-                                0,
-                                2
-                            ]
-                        ],
-                        [
-                            6,
-                            [
-                                0,
-                                3
-                            ]
-                        ],
-                        [
-                            12,
-                            [
-                                0,
-                                2
-                            ]
-                        ],
-                        [
-                            14,
-                            [
-                                0,
-                                0
-                            ]
-                        ]
-                    ]
-                },
-                "line-translate-anchor": "map"
-            },
-            "filter": [
-                "all"
-            ]
-        },
-        {
             "id": "Pier",
             "type": "fill",
             "source": "maptiler_planet",
@@ -856,19 +1135,7 @@
                 "visibility": "visible"
             },
             "paint": {
-                "fill-color": "hsl(220, 0%,90%)",
-                "fill-opacity": {
-                    "stops": [
-                        [
-                            6,
-                            0
-                        ],
-                        [
-                            14,
-                            0.5
-                        ]
-                    ]
-                },
+                "fill-color": "hsl(38, 50%, 97%)",
                 "fill-antialias": true
             },
             "metadata": {},
@@ -897,7 +1164,7 @@
                 "visibility": "visible"
             },
             "paint": {
-                "line-color": "hsl(220, 0%,90%)",
+                "line-color": "hsl(30,25%,98%)",
                 "line-width": {
                     "base": 1.2,
                     "stops": [
@@ -908,18 +1175,6 @@
                         [
                             17,
                             4
-                        ]
-                    ]
-                },
-                "line-opacity": {
-                    "stops": [
-                        [
-                            6,
-                            0
-                        ],
-                        [
-                            14,
-                            0.5
                         ]
                     ]
                 }
@@ -948,19 +1203,8 @@
                 "visibility": "visible"
             },
             "paint": {
-                "fill-color": "hsl(220, 0%,90%)",
-                "fill-opacity": {
-                    "stops": [
-                        [
-                            6,
-                            0
-                        ],
-                        [
-                            14,
-                            0.5
-                        ]
-                    ]
-                },
+                "fill-color": "hsl(30,25%,98%)",
+                "fill-opacity": 0.5,
                 "fill-antialias": true
             },
             "metadata": {},
@@ -979,6 +1223,231 @@
             ]
         },
         {
+            "id": "Road network outline",
+            "type": "line",
+            "source": "maptiler_planet",
+            "source-layer": "transportation",
+            "minzoom": 6,
+            "layout": {
+                "line-cap": "butt",
+                "line-join": "round",
+                "visibility": "visible"
+            },
+            "paint": {
+                "line-color": "hsl(0, 0%, 85%)",
+                "line-width": [
+                    "interpolate",
+                    [
+                        "linear",
+                        2
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    4,
+                    0.5,
+                    7,
+                    0.5,
+                    10,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "motorway"
+                        ],
+                        [
+                            "match",
+                            [
+                                "get",
+                                "ramp"
+                            ],
+                            1,
+                            0,
+                            2.5
+                        ],
+                        [
+                            "trunk",
+                            "primary"
+                        ],
+                        2.4,
+                        0
+                    ],
+                    12,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "motorway"
+                        ],
+                        [
+                            "match",
+                            [
+                                "get",
+                                "ramp"
+                            ],
+                            1,
+                            2,
+                            6
+                        ],
+                        [
+                            "trunk",
+                            "primary"
+                        ],
+                        3,
+                        [
+                            "secondary",
+                            "tertiary"
+                        ],
+                        2,
+                        [
+                            "minor",
+                            "service",
+                            "track"
+                        ],
+                        0,
+                        0.5
+                    ],
+                    14,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "motorway"
+                        ],
+                        [
+                            "match",
+                            [
+                                "get",
+                                "ramp"
+                            ],
+                            1,
+                            5,
+                            8
+                        ],
+                        [
+                            "trunk"
+                        ],
+                        4,
+                        [
+                            "primary"
+                        ],
+                        6,
+                        [
+                            "secondary"
+                        ],
+                        6,
+                        [
+                            "tertiary"
+                        ],
+                        4,
+                        [
+                            "minor",
+                            "service",
+                            "track"
+                        ],
+                        3,
+                        3
+                    ],
+                    16,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "motorway",
+                            "trunk",
+                            "primary"
+                        ],
+                        10,
+                        [
+                            "secondary"
+                        ],
+                        9,
+                        [
+                            "tertiary"
+                        ],
+                        8,
+                        [
+                            "minor",
+                            "service",
+                            "track"
+                        ],
+                        6,
+                        6
+                    ],
+                    20,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "motorway",
+                            "trunk",
+                            "primary"
+                        ],
+                        26,
+                        [
+                            "secondary"
+                        ],
+                        26,
+                        [
+                            "tertiary"
+                        ],
+                        26,
+                        [
+                            "minor",
+                            "service",
+                            "track"
+                        ],
+                        18,
+                        18
+                    ]
+                ],
+                "line-opacity": 1
+            },
+            "metadata": {},
+            "filter": [
+                "all",
+                [
+                    "!=",
+                    "brunnel",
+                    "tunnel"
+                ],
+                [
+                    "!in",
+                    "class",
+                    "ferry",
+                    "rail",
+                    "transit",
+                    "pier",
+                    "bridge",
+                    "path",
+                    "aerialway",
+                    "motorway_construction",
+                    "trunk_construction",
+                    "primary_construction",
+                    "secondary_construction",
+                    "tertiary_construction",
+                    "minor_construction",
+                    "service_construction",
+                    "track_construction"
+                ]
+            ]
+        },
+        {
             "id": "Road network",
             "type": "line",
             "source": "maptiler_planet",
@@ -990,7 +1459,7 @@
                 "visibility": "visible"
             },
             "paint": {
-                "line-color": "hsl(220, 0%,90%)",
+                "line-color": "hsl(0, 0%, 100%)",
                 "line-width": [
                     "interpolate",
                     [
@@ -1201,19 +1670,7 @@
                         16,
                         16
                     ]
-                ],
-                "line-opacity": {
-                    "stops": [
-                        [
-                            6,
-                            0
-                        ],
-                        [
-                            14,
-                            1
-                        ]
-                    ]
-                }
+                ]
             },
             "metadata": {},
             "filter": [
@@ -1245,6 +1702,76 @@
             ]
         },
         {
+            "id": "Path outline",
+            "type": "line",
+            "source": "maptiler_planet",
+            "source-layer": "transportation",
+            "minzoom": 16,
+            "maxzoom": 22,
+            "layout": {
+                "line-cap": "round",
+                "line-join": "round",
+                "visibility": "visible"
+            },
+            "paint": {
+                "line-blur": {
+                    "stops": [
+                        [
+                            16,
+                            1
+                        ],
+                        [
+                            22,
+                            2
+                        ]
+                    ]
+                },
+                "line-color": "hsl(0, 0%, 100%)",
+                "line-width": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    15,
+                    1.5,
+                    16,
+                    2,
+                    18,
+                    6,
+                    22,
+                    12
+                ],
+                "line-opacity": {
+                    "stops": [
+                        [
+                            15,
+                            0
+                        ],
+                        [
+                            22,
+                            0.5
+                        ]
+                    ]
+                }
+            },
+            "filter": [
+                "all",
+                [
+                    "in",
+                    "class",
+                    "path",
+                    "track"
+                ],
+                [
+                    "!has",
+                    "brunnel"
+                ]
+            ]
+        },
+        {
             "id": "Path",
             "type": "line",
             "source": "maptiler_planet",
@@ -1257,7 +1784,7 @@
                 "visibility": "visible"
             },
             "paint": {
-                "line-color": "hsl(220, 0%, 25%)",
+                "line-color": "hsl(0, 0%, 80%)",
                 "line-width": [
                     "interpolate",
                     [
@@ -1306,7 +1833,7 @@
                 "visibility": "visible"
             },
             "paint": {
-                "line-color": "hsl(220, 0%, 80%)",
+                "line-color": "hsl(0, 0%, 80%)",
                 "line-width": {
                     "base": 1.3,
                     "stops": [
@@ -1358,7 +1885,7 @@
                 "visibility": "visible"
             },
             "paint": {
-                "line-color": "hsl(220, 0%, 100%)",
+                "line-color": "hsl(0, 0%, 100%)",
                 "line-width": {
                     "base": 1.3,
                     "stops": [
@@ -1404,19 +1931,19 @@
                 "visibility": "visible"
             },
             "paint": {
-                "fill-color": [
-                    "interpolate",
-                    [
-                        "linear"
-                    ],
-                    [
-                        "zoom"
-                    ],
-                    13,
-                    "hsl(0, 0%,70%)",
-                    17,
-                    "hsl(0, 0%, 0%)"
-                ]
+                "fill-color": {
+                    "stops": [
+                        [
+                            13,
+                            "hsl(0,0%,92%)"
+                        ],
+                        [
+                            16,
+                            "hsl(0,0%,85%)"
+                        ]
+                    ]
+                },
+                "fill-antialias": true
             }
         },
         {
@@ -1428,19 +1955,7 @@
                 "visibility": "visible"
             },
             "paint": {
-                "fill-color": [
-                    "interpolate",
-                    [
-                        "linear"
-                    ],
-                    [
-                        "zoom"
-                    ],
-                    13,
-                    "hsl(220, 0%, 70%)",
-                    17,
-                    "hsl(220, 0%, 0%)"
-                ],
+                "fill-color": "hsl(0, 0%, 92%)",
                 "fill-opacity": {
                     "base": 1,
                     "stops": [
@@ -1473,7 +1988,22 @@
                         ]
                     ]
                 },
-                "fill-outline-color": "hsl(220, 0%,30%)"
+                "fill-outline-color": {
+                    "stops": [
+                        [
+                            12,
+                            "hsl(0, 0%, 92%)"
+                        ],
+                        [
+                            14,
+                            "hsl(0, 0%, 92%)"
+                        ],
+                        [
+                            18,
+                            "hsl(0,0%,76%)"
+                        ]
+                    ]
+                }
             }
         },
         {
@@ -1487,7 +2017,7 @@
                 "visibility": "visible"
             },
             "paint": {
-                "line-color": "hsl(220, 0%, 10%)",
+                "line-color": "hsl(356, 32%, 83%)",
                 "line-width": [
                     "interpolate",
                     [
@@ -1497,7 +2027,7 @@
                     [
                         "zoom"
                     ],
-                    5,
+                    3,
                     [
                         "case",
                         [
@@ -1508,8 +2038,22 @@
                             ],
                             6
                         ],
-                        0.4,
-                        0.2
+                        0.5,
+                        0
+                    ],
+                    4,
+                    [
+                        "case",
+                        [
+                            "<=",
+                            [
+                                "get",
+                                "admin_level"
+                            ],
+                            6
+                        ],
+                        0.75,
+                        0
                     ],
                     8,
                     [
@@ -1522,24 +2066,10 @@
                             ],
                             6
                         ],
-                        0.6,
-                        0.4
+                        1.1,
+                        0
                     ],
                     12,
-                    [
-                        "case",
-                        [
-                            "<=",
-                            [
-                                "get",
-                                "admin_level"
-                            ],
-                            6
-                        ],
-                        1.5,
-                        1
-                    ],
-                    16,
                     [
                         "case",
                         [
@@ -1553,7 +2083,7 @@
                         2,
                         1.5
                     ],
-                    22,
+                    16,
                     [
                         "case",
                         [
@@ -1564,8 +2094,8 @@
                             ],
                             6
                         ],
-                        5,
-                        3
+                        3,
+                        2
                     ]
                 ],
                 "line-opacity": 1
@@ -1573,9 +2103,16 @@
             "filter": [
                 "all",
                 [
-                    ">=",
+                    "in",
                     "admin_level",
-                    3
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10
                 ],
                 [
                     "==",
@@ -1595,7 +2132,7 @@
                 "visibility": "visible"
             },
             "paint": {
-                "line-color": "hsl(220, 0%, 10%)",
+                "line-color": "hsl(356, 32%, 83%)",
                 "line-width": [
                     "interpolate",
                     [
@@ -1605,7 +2142,21 @@
                     [
                         "zoom"
                     ],
-                    8,
+                    3,
+                    [
+                        "case",
+                        [
+                            "<=",
+                            [
+                                "get",
+                                "admin_level"
+                            ],
+                            6
+                        ],
+                        0.5,
+                        0
+                    ],
+                    4,
                     [
                         "case",
                         [
@@ -1619,6 +2170,20 @@
                         0.75,
                         0
                     ],
+                    8,
+                    [
+                        "case",
+                        [
+                            "<=",
+                            [
+                                "get",
+                                "admin_level"
+                            ],
+                            6
+                        ],
+                        1.25,
+                        0
+                    ],
                     12,
                     [
                         "case",
@@ -1630,8 +2195,8 @@
                             ],
                             6
                         ],
-                        1.5,
-                        1
+                        2,
+                        1.25
                     ],
                     16,
                     [
@@ -1644,8 +2209,8 @@
                             ],
                             6
                         ],
-                        2,
-                        1.5
+                        3,
+                        2
                     ],
                     22,
                     [
@@ -1658,8 +2223,8 @@
                             ],
                             6
                         ],
-                        5,
-                        3
+                        6,
+                        4
                     ]
                 ],
                 "line-opacity": 1,
@@ -1687,9 +2252,16 @@
             "filter": [
                 "all",
                 [
-                    ">=",
+                    "in",
                     "admin_level",
-                    4
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10
                 ],
                 [
                     "==",
@@ -1710,7 +2282,7 @@
                 "visibility": "visible"
             },
             "paint": {
-                "line-color": "hsl(220, 0%, 0%)",
+                "line-color": "hsl(354, 33%, 88%)",
                 "line-width": [
                     "interpolate",
                     [
@@ -1720,15 +2292,13 @@
                         "zoom"
                     ],
                     1,
-                    0.2,
-                    3,
-                    0.5,
-                    6,
                     0.75,
-                    12,
                     3,
-                    22,
-                    4
+                    1,
+                    6,
+                    1.5,
+                    12,
+                    5
                 ],
                 "line-offset": 0,
                 "line-opacity": 1,
@@ -1768,7 +2338,19 @@
                 "visibility": "visible"
             },
             "paint": {
-                "line-color": "hsl(220, 0%, 0%)",
+                "line-color": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    4,
+                    "hsl(354, 33%, 88%)",
+                    6,
+                    "hsl(356,23%,84%)"
+                ],
                 "line-width": [
                     "interpolate",
                     [
@@ -1778,15 +2360,15 @@
                         "zoom"
                     ],
                     1,
-                    0.2,
-                    3,
-                    0.5,
-                    6,
                     0.75,
-                    12,
                     3,
+                    1.5,
+                    7,
+                    2.2,
+                    12,
+                    3.5,
                     22,
-                    4
+                    8
                 ],
                 "line-offset": 0,
                 "line-opacity": 1
@@ -2267,7 +2849,7 @@
                 ]
             ]
         },
-
+  
         {
             "id": "Ocean labels",
             "type": "symbol",
@@ -2308,10 +2890,31 @@
                 "text-rotation-alignment": "auto"
             },
             "paint": {
-                "text-color": "hsl(358, 0%, 80%)",
-                "text-opacity": 1,
+                "text-color": "hsl(190,9%,63%)",
+                "text-opacity": [
+                    "step",
+                    [
+                        "zoom"
+                    ],
+                    0,
+                    1,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "ocean"
+                        ],
+                        1,
+                        0
+                    ],
+                    4,
+                    1
+                ],
                 "text-halo-blur": 0,
-                "text-halo-width": 0.15
+                "text-halo-width": 0
             },
             "filter": [
                 "all",
@@ -2378,10 +2981,10 @@
                 "text-rotation-alignment": "auto"
             },
             "paint": {
-                "text-color": "hsl(358, 0%, 80%)",
+                "text-color": "hsl(190,9%,63%)",
                 "text-opacity": 1,
                 "text-halo-blur": 0,
-                "text-halo-width": 0.15
+                "text-halo-width": 0
             },
             "filter": [
                 "all",
@@ -2440,19 +3043,11 @@
                 "text-rotation-alignment": "auto"
             },
             "paint": {
-                "text-color": "hsl(344, 0%, 69%)"
+                "text-color": "hsl(190,9%,63%)"
             },
             "filter": [
-                "all",
-                [
-                    "has",
-                    "name"
-                ],
-                [
-                    "==",
-                    "$type",
-                    "LineString"
-                ]
+                "has",
+                "name"
             ]
         },
         {
@@ -2598,7 +3193,7 @@
                 "text-rotation-alignment": "auto"
             },
             "paint": {
-                "text-color": "hsl(220, 0%, 10%)",
+                "text-color": "hsl(204, 11%, 47%)",
                 "text-opacity": [
                     "step",
                     [
@@ -2637,20 +3232,17 @@
                     1
                 ],
                 "text-halo-blur": 0,
-                "text-halo-color": "hsl(220, 0%, 80%)",
-                "text-halo-width": 0.5
+                "text-halo-color": "hsl(0,0%,100%)",
+                "text-halo-width": 1.5
             },
             "filter": [
-                "all",
-                [
-                    "in",
-                    "class",
-                    "primary",
-                    "secondary",
-                    "tertiary",
-                    "minor",
-                    "service"
-                ]
+                "in",
+                "class",
+                "primary",
+                "secondary",
+                "tertiary",
+                "minor",
+                "service"
             ]
         },
         {
@@ -2744,7 +3336,7 @@
                 "text-keep-upright": true
             },
             "paint": {
-                "text-color": "hsl(154, 0%, 100%)",
+                "text-color": "hsl(204, 11%, 47%)",
                 "text-opacity": [
                     "step",
                     [
@@ -2770,25 +3362,19 @@
                     1
                 ],
                 "text-halo-blur": 0,
-                "text-halo-color": "hsl(0, 0%, 0%)",
-                "text-halo-width": 0.5
+                "text-halo-color": "hsl(0, 0%, 100%)",
+                "text-halo-width": 1.5
             },
             "filter": [
-                "any",
-                [
-                    "!has",
-                    "class"
-                ],
-                [
-                    "in",
-                    "class",
-                    "hamlet",
-                    "island",
-                    "isolated_dwelling",
-                    "neighbourhood",
-                    "quarter",
-                    "suburb"
-                ]
+                "!in",
+                "class",
+                "city",
+                "continent",
+                "country",
+                "province",
+                "state",
+                "town",
+                "village"
             ]
         },
         {
@@ -2813,13 +3399,13 @@
                         "zoom"
                     ],
                     12,
-                    12,
+                    10,
                     13,
                     12,
                     14,
                     14,
                     16,
-                    14
+                    13
                 ],
                 "text-field": "{name}",
                 "visibility": "visible",
@@ -2833,11 +3419,11 @@
                 "text-keep-upright": true
             },
             "paint": {
-                "text-color": "hsl(154, 0%, 100%)",
+                "text-color": "hsl(204, 11%, 47%)",
                 "text-opacity": 1,
                 "text-halo-blur": 0,
-                "text-halo-color": "hsl(0, 0%, 0%)",
-                "text-halo-width": 0.5
+                "text-halo-color": "hsl(0, 0%, 100%)",
+                "text-halo-width": 1.5
             },
             "filter": [
                 "==",
@@ -2894,18 +3480,15 @@
                 "text-keep-upright": true
             },
             "paint": {
-                "text-color": "hsl(154, 0%, 100%)",
+                "text-color": "hsl(204, 11%, 47%)",
                 "text-halo-blur": 0,
-                "text-halo-color": "hsl(0, 0%, 0%)",
-                "text-halo-width": 0.5
+                "text-halo-color": "hsl(0,0%,100%)",
+                "text-halo-width": 1.5
             },
             "filter": [
-                "all",
-                [
-                    "==",
-                    "class",
-                    "town"
-                ]
+                "==",
+                "class",
+                "town"
             ]
         },
         {
@@ -2969,7 +3552,7 @@
                 "text-allow-overlap": false
             },
             "paint": {
-                "text-color": "hsl(154, 0%, 100%)",
+                "text-color": "hsl(204, 11%, 47%)",
                 "text-opacity": [
                     "step",
                     [
@@ -3030,8 +3613,8 @@
                     0
                 ],
                 "text-halo-blur": 0,
-                "text-halo-color": "hsl(0, 0%, 0%)",
-                "text-halo-width": 0.5
+                "text-halo-color": "hsl(30,25%,98%)",
+                "text-halo-width": 1.5
             },
             "filter": [
                 "all",
@@ -3137,10 +3720,10 @@
                 "text-keep-upright": false
             },
             "paint": {
-                "text-color": "hsl(154, 0%, 100%)",
+                "text-color": "hsl(204, 11%, 47%)",
                 "text-halo-blur": 0,
-                "text-halo-color": "hsl(0, 0%, 0%)",
-                "text-halo-width": 0.5
+                "text-halo-color": "hsl(0,0%,100%)",
+                "text-halo-width": 1.5
             },
             "filter": [
                 "all",
@@ -3164,7 +3747,7 @@
             "maxzoom": 10,
             "layout": {
                 "text-font": [
-                    "Metropolis Bold",
+                    "Metropolis Semi Bold",
                     "Noto Sans Bold"
                 ],
                 "text-size": [
@@ -3266,7 +3849,7 @@
                 "text-transform": "uppercase"
             },
             "paint": {
-                "text-color": "hsl(154, 0%, 100%)",
+                "text-color": "hsl(204, 11%, 47%)",
                 "text-opacity": [
                     "step",
                     [
@@ -3291,8 +3874,8 @@
                     1
                 ],
                 "text-halo-blur": 0,
-                "text-halo-color": "hsl(0, 0%, 0%)",
-                "text-halo-width": 0.75
+                "text-halo-color": "hsl(0,0%,100%)",
+                "text-halo-width": 1.5
             },
             "filter": [
                 "all",
@@ -3316,11 +3899,11 @@
             "maxzoom": 2,
             "layout": {
                 "text-font": [
-                    "Metropolis Bold",
+                    "Metropolis Semi Bold",
                     "Noto Sans Bold"
                 ],
                 "text-size": 13,
-                "text-field": "{name}",
+                "text-field": "{name:en}",
                 "visibility": "visible",
                 "text-justify": "center",
                 "text-max-width": 9,
@@ -3329,22 +3912,24 @@
                 "text-letter-spacing": 0.1
             },
             "paint": {
-                "text-color": "hsl(154, 0%, 100%)",
+                "text-color": "hsl(204, 11%, 47%)",
                 "text-halo-blur": 0,
-                "text-halo-color": "hsl(0, 0%, 0%)",
-                "text-halo-width": 0.5
+                "text-halo-color": "hsl(0,0%,100%)",
+                "text-halo-width": 1.5
             },
             "filter": [
-                "all",
-                [
-                    "==",
-                    "class",
-                    "continent"
-                ]
+                "==",
+                "class",
+                "continent"
             ]
         }
     ],
     "glyphs": "https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=STFS4MYo3i7OemN8CY5b",
     "bearing": 0,
-    "pitch": 0
+    "pitch": 0,
+    "center": [
+        0,
+        0
+    ],
+    "zoom": 1
 }
