@@ -61,19 +61,15 @@ select = async (event) => {
 zoom = async (score_id) => {
     var fetch_response = await fetch('/cyclability_score/geom/' + score_id);    
     var response = await fetch_response.json();
-    var bounds = response.reduce((currentBounds, cycleway) => {
-        const bound = cycleway.geom.reduce((currentBounds, coord) => {
-            return [
-                [Math.min(coord[0], currentBounds[0][0]), Math.min(coord[1], currentBounds[0][1])], // min coordinates
-                [Math.max(coord[0], currentBounds[1][0]), Math.max(coord[1], currentBounds[1][1])]  // max coordinates
-            ];
-        }, [[Infinity, Infinity], [-Infinity, -Infinity]]);
-        return [
-            [Math.min(bound[0][0], currentBounds[0][0]), Math.min(bound[0][1], currentBounds[0][1])], // min coordinates
-            [Math.max(bound[1][0], currentBounds[1][0]), Math.max(bound[1][1], currentBounds[1][1])]  // max coordinates
-        ];
-    }, [[Infinity, Infinity], [-Infinity, -Infinity]]);
-    map.fitBounds(bounds, { padding: window.innerWidth * .10 });
+    way_ids = [];
+    var geom = response.reduce((geom, cycleway) => {
+        way_ids.push(cycleway.way_id);
+        cycleway.geom.forEach((coords) => {
+            geom.push(coords);
+        });
+        return geom;
+    }, []);
+    display_segment_geom(geom);
 }
 
 display_segment_geom = async (geom) => {
@@ -127,6 +123,7 @@ display_segment_geom = async (geom) => {
                 [Math.max(coord[0], currentBounds[1][0]), Math.max(coord[1], currentBounds[1][1])]  // max coordinates
             ];
         }, [[Infinity, Infinity], [-Infinity, -Infinity]]);
+        console.log("bounds"+bounds);
         map.fitBounds(bounds, { padding: window.innerWidth * .10 });
     }
 }
