@@ -1,7 +1,6 @@
 use crate::component::index_js::indexjs;
 use crate::component::info_panel::info_panel_down;
 use crate::component::info_panel::info_panel_up;
-use crate::component::segment_panel::get_empty_segment_panel;
 use crate::component::segment_panel::segment_panel;
 use crate::component::segment_panel::segment_panel_post;
 use crate::component::segment_panel::select_score_id;
@@ -77,7 +76,6 @@ async fn main() {
 
     let mut app = Router::new()
         .route("/", get(index))
-        .route("/segment_panel", get(get_empty_segment_panel))
         .route("/segment_panel/id/:id", get(select_score_id))
         .route(
             "/segment_panel/ways/:way_ids",

@@ -1,9 +1,19 @@
-{% let class = " cursor-pointer w-40 h-8 text-center rounded " %}
+{% let class = " cursor-pointer w-48 h-8 text-center rounded " %}
 {% let border_class = " border-4 border-black " %}
+{% let text = ["impossible", "10% des cyclistes sont à l'aise", "50% des cyclistes sont à l'aise", "90% des cyclistes sont à l'aise", "Bon pour les débutants"] %}
+{% let color = ["red-600", "orange-600", "yellow-400", "green-400", "green-700"] %}
 
+{% if !edit %}
 <div id="score_selector">
     <div class="font-bold">Confort :</div>
-    {% if score == 0.0 %}
+    <div class="bg-{{ color[category] }} w-48 h-8 text-center rounded">
+        {{ text[category] }}
+    </div>
+</div>
+{% else %}
+<div id="score_selector">
+    <div class="font-bold">Confort :</div>
+    {% if category == 0 %}
     <div class="bg-red-600 {{class}} {{border_class}}">
         impossible
     </div>
@@ -12,34 +22,34 @@
         impossible
     </div>
     {% endif %}
-    {% if score > 0.0 && score <= 0.25 %}
+    {% if category == 1 %}
     <div class="bg-orange-600 {{class}} {{border_class}}">
-        10% des cyclistes y vont
+        10% des cyclistes sont à l'aise
     </div>
     {% else %}
     <div hx-target="#score_selector" hx-get="/score_selector/0.25" class="bg-orange-600 {{class}}">
-        10% des cyclistes y vont
+        10% des cyclistes sont à l'aise
     </div>
     {% endif %}
-    {% if score > 0.25 && score <= 0.5 %}
+    {% if category == 2 %}
     <div class="bg-yellow-400 {{class}} {{border_class}}">
-        50% des cyclistes y vont
+        50% des cyclistes sont à l'aise
     </div>
     {% else %}
     <div hx-target="#score_selector" hx-get="/score_selector/0.5" class="bg-yellow-400 {{class}}">
-        50% des cyclistes y vont
+        50% des cyclistes sont à l'aise
     </div>
     {% endif %}
-    {% if score > 0.5 && score <= 0.75 %}
+    {% if category == 3 %}
     <div class="bg-green-400 {{class}} {{border_class}}">
-        90% des cyclistes y vont
+        90% des cyclistes sont à l'aise
     </div>
     {% else %}
     <div hx-target="#score_selector" hx-get="/score_selector/0.75" class="bg-green-400 {{class}}">
-        90% des cyclistes y vont
+        90% des cyclistes sont à l'aise
     </div>
     {% endif %}
-    {% if score > 0.75 && score <= 1.0 %}
+    {% if category == 4 %}
     <div class="bg-green-700 {{class}} {{border_class}}">
         Bon pour les débutants
     </div>
@@ -49,3 +59,4 @@
     </div>
     {% endif %}
 </div>
+{% endif %}

@@ -123,7 +123,6 @@ display_segment_geom = async (geom) => {
                 [Math.max(coord[0], currentBounds[1][0]), Math.max(coord[1], currentBounds[1][1])]  // max coordinates
             ];
         }, [[Infinity, Infinity], [-Infinity, -Infinity]]);
-        console.log("bounds"+bounds);
         map.fitBounds(bounds, { padding: window.innerWidth * .10 });
     }
 }

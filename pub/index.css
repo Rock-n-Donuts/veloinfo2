@@ -566,8 +566,8 @@ video {
   bottom: 0px;
 }
 
-.bottom-1 {
-  bottom: 0.25rem;
+.bottom-6 {
+  bottom: 1.5rem;
 }
 
 .bottom-8 {
@@ -624,8 +624,8 @@ video {
   height: 2rem;
 }
 
-.w-40 {
-  width: 10rem;
+.w-48 {
+  width: 12rem;
 }
 
 .w-full {

@@ -19,6 +19,7 @@ pub struct SegmentPanel{
     score_selector: ScoreSelector,
     comment: String,
     info_panel_template: InfoPanelTemplate,
+    edit: bool,
 }
 
 #[derive(Debug, sqlx::FromRow, Clone)]
@@ -43,24 +44,6 @@ impl WayInfo {
         .fetch_one(&conn)
         .await
     }
-}
-
-pub async fn get_empty_segment_panel() -> String {
-    let info_panel_template = InfoPanelTemplate {
-        arrow: "▲".to_string(),
-        direction: "up".to_string(),
-        contributions: Vec::new(),
-    };
-
-    SegmentPanel {
-        status: "none".to_string(),
-        segment_name: "".to_string(),
-        score_selector: ScoreSelector::get_score_selector(-1.),
-        comment: "".to_string(),
-        info_panel_template,
-    }
-    .render()
-    .unwrap()
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -129,13 +112,14 @@ pub async fn segment_panel(
     let info_panel = SegmentPanel {
         status: "segment".to_string(),
         segment_name,
-        score_selector: ScoreSelector::get_score_selector(way.score.unwrap_or(-1.)),
+        score_selector: ScoreSelector::get_score_selector(way.score.unwrap_or(-1.), false),
         comment: "".to_string(),
         info_panel_template: InfoPanelTemplate {
             arrow: "▲".to_string(),
             direction: "up".to_string(),
             contributions: Vec::new(),
         },
+        edit: false,
     }
     .render()
     .unwrap()
@@ -169,13 +153,14 @@ pub async fn select_score_id(
     let panel = SegmentPanel {
         status: "segment".to_string(),
         segment_name,
-        score_selector: ScoreSelector::get_score_selector(score.score),
+        score_selector: ScoreSelector::get_score_selector(score.score, false),
         comment: score.comment.unwrap_or("".to_string()),
         info_panel_template: InfoPanelTemplate {
             arrow: "▲".to_string(),
             direction: "up".to_string(),
             contributions: Vec::new(),
         },
+        edit: false,
     };
 
     Ok(panel.render().unwrap())

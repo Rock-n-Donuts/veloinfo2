@@ -1,4 +1,4 @@
-<div id="segment_panel" class="absolute bottom-1 right-1 z-10">
+<div id="segment_panel" class="absolute bottom-6 right-1 z-10">
     {% if status == "segment" %}
     <div class="bg-gray-100 p-2 rounded-xl shadow-lg">
         <div hx-on:click="clear()" 
@@ -8,9 +8,13 @@
         <div class="mt-4">
             {{ segment_name }}
             {{score_selector}}
-            <input type="text" height="2">
+            
+            {% if edit %}
+                <label for="comment">Commentaire</label>
+                <input type="text" name="comment">
                 {{comment}}
-            <input/>
+                </input>
+            {% endif %}
         </div>
     </div>
     {% endif %}
