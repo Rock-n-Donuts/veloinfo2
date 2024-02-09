@@ -56,7 +56,6 @@ select = async (event) => {
         way_ids = feature.properties.way_id;
     }
     display_segment_geom(response.geom);
-    console.log(way_ids);
     if (way_ids) {
         // Display info panel
         var info_panel = document.getElementById("info");
@@ -73,11 +72,9 @@ select = async (event) => {
 zoomToSegment = async (score_id) => {
     var fetch_response = await fetch('/cyclability_score/geom/' + score_id);
     var response = await fetch_response.json();
-    console.log(response);
     way_ids = response.reduce((way_ids, score) => {
         return way_ids + " " + score.way_id;
     }, "");
-    console.log(way_ids);
     var geom = response.reduce((geom, cycleway) => {
         cycleway.geom.forEach((coords) => {
             geom.push(coords);

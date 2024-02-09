@@ -3,13 +3,12 @@ use askama::Template;
 #[derive(Template)]
 #[template(path = "score_selector.html")]
 pub struct ScoreSelector {
+    score: f64,
     category: usize,
-    edit: bool,
 }
 
-impl ScoreSelector{
-    pub fn get_score_selector(score: f64, edit: bool) -> ScoreSelector {
-        println!("score: {}", score);
+impl ScoreSelector {
+    pub fn get_score_selector(score: f64) -> ScoreSelector {
         let category = {
             if score <= 0.0 {
                 0
@@ -25,9 +24,6 @@ impl ScoreSelector{
                 10
             }
         };
-        ScoreSelector {
-            category,
-            edit
-        }
+        ScoreSelector { category, score }
     }
 }

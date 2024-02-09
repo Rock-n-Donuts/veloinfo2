@@ -4,15 +4,6 @@
 "90% des cyclistes sont à l'aise", "Bon pour les débutants"] %}
 {% let color = ["red-600", "orange-600", "yellow-400", "green-400", "green-700"] %}
 
-{% if !edit %}
-<div id="score_selector" hx="">
-    <div class="font-bold">Confort :</div>
-    <div class="relative flex cursor-pointer">
-        <div class="bg-{{ color[category] }} w-6 h-6 rounded-full"></div>
-        <div class="">▼</div>
-    </div>
-</div>
-{% else %}
 <div id="score_selector">
     <div class="font-bold">Confort :</div>
     {% if category == 0 %}
@@ -60,5 +51,5 @@
         Bon pour les débutants
     </div>
     {% endif %}
+    <input type="hidden" name="score" value="{{score}}">
 </div>
-{% endif %}

@@ -15,6 +15,7 @@ use axum::http::Request;
 use axum::http::StatusCode;
 use axum::response::Html;
 use axum::response::Response;
+use axum::routing::post;
 use axum::routing::{get, Router};
 use component::style::style;
 use score_selector_controler::score_selector_controler;
@@ -80,12 +81,13 @@ async fn main() {
         .route("/segment_panel/id/:id", get(select_score_id))
         .route(
             "/segment_panel/ways/:way_ids",
-            get(segment_panel).post(segment_panel_post),
+            get(segment_panel),
         )
         .route(
             "/segment_panel/edit/ways/:way_ids",
             get(segment_panel_edit),
         )
+        .route("/segment_panel", post(segment_panel_post))
         .route("/segment/select/:way_id", get(select))
         .route("/segment/route/:way_id1/:way_ids", get(route))
         .route(

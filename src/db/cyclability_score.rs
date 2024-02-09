@@ -1,7 +1,7 @@
 use sqlx::types::chrono::NaiveDateTime;
 use sqlx::Postgres;
 
-#[derive(sqlx::FromRow)]
+#[derive(sqlx::FromRow, Debug, Clone)]
 pub struct CyclabilityScore {
     pub id: i32,
     pub score: f64,
@@ -36,5 +36,24 @@ impl CyclabilityScore {
         .bind(id)
         .fetch_one(&conn)
         .await
+    }
+
+    pub async fn insert(
+        score: f64,
+        comment: Option<String>,
+        way_ids: Vec<i64>,
+        conn: sqlx::Pool<Postgres>,
+    ) -> Result<(), sqlx::Error> {
+        sqlx::query(
+            r#"INSERT INTO cyclability_score 
+                    (way_ids, score, comment) 
+                    VALUES ($1, $2, $3)"#,
+        )
+        .bind(way_ids)
+        .bind(score)
+        .bind(comment)
+        .execute(&conn)
+        .await?;
+        Ok(())
     }
 }

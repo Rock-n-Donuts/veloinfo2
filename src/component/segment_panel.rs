@@ -51,40 +51,36 @@ impl WayInfo {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PostValue {
-    pub score: Option<f64>,
-    pub comment: Option<String>,
+    pub score: f64,
+    pub comment: String,
+    pub way_ids: String,
 }
 
 pub async fn segment_panel_post(
     State(state): State<VeloinfoState>,
-    Path(way_ids): Path<String>,
     Form(post): Form<PostValue>,
 ) -> Result<SegmentPanel, VeloInfoError> {
-    let re = Regex::new(r"\d*").unwrap();
+    println!("segment_panel_post");
+    println!("{:?}", post);
+    let way_ids = post.way_ids;
+    let re = Regex::new(r"\d+").unwrap();
     let way_ids_i64 = re
         .find_iter(way_ids.as_str())
         .map(|m| m.as_str().parse::<i64>().unwrap())
         .collect::<Vec<i64>>();
-    let conn = state.conn.clone();
 
-    sqlx::query(
-        r#"INSERT INTO cyclability_score 
-                    (way_ids, score, comment) 
-                    VALUES ($1, $2, $3)"#,
-    )
-    .bind(way_ids_i64)
-    .bind(post.score)
-    .bind(post.comment)
-    .execute(&conn)
-    .await?;
-
+    CyclabilityScore::insert(post.score, Some(post.comment.clone()), way_ids_i64.clone(), state.conn.clone())
+        .await
+        .unwrap();
     segment_panel(State(state), Path(way_ids)).await
 }
 
 pub async fn segment_panel_edit(
     State(state): State<VeloinfoState>,
     Path(way_ids): Path<String>,
-) -> Result<String, VeloInfoError> {
+) -> Result<SegmentPanel, VeloInfoError> {
+    println!("segment_panel_edit");
+    println!("{}", way_ids);
     let re = Regex::new(r"\d+").unwrap();
     let way_ids_i64 = re
         .find_iter(way_ids.as_str())
@@ -113,11 +109,11 @@ pub async fn segment_panel_edit(
             }
             None => acc,
         });
-    let info_panel = SegmentPanel {
+    let segment_panel = SegmentPanel {
         status: "segment".to_string(),
         way_ids: way_ids.clone(),
         segment_name,
-        score_selector: ScoreSelector::get_score_selector(way.score.unwrap_or(-1.), true),
+        score_selector: ScoreSelector::get_score_selector(way.score.unwrap_or(-1.)),
         comment: "".to_string(),
         info_panel_template: InfoPanelTemplate {
             arrow: "▲".to_string(),
@@ -125,18 +121,17 @@ pub async fn segment_panel_edit(
             contributions: Vec::new(),
         },
         edit: true,
-    }
-    .render()
-    .unwrap()
-    .to_string();
-
-    Ok(info_panel)
+    };
+    
+    Ok(segment_panel)
 }
 
 pub async fn segment_panel(
     State(state): State<VeloinfoState>,
     Path(way_ids): Path<String>,
 ) -> Result<SegmentPanel, VeloInfoError> {
+    println!("segment_panel");
+    println!("{}", way_ids);
     let re = Regex::new(r"\d+").unwrap();
     let way_ids_i64 = re
         .find_iter(way_ids.as_str())
@@ -167,7 +162,7 @@ pub async fn segment_panel(
         status: "segment".to_string(),
         way_ids: way_ids.clone(),
         segment_name,
-        score_selector: ScoreSelector::get_score_selector(way.score.unwrap_or(-1.), false),
+        score_selector: ScoreSelector::get_score_selector(way.score.unwrap_or(-1.)),
         comment: "".to_string(),
         info_panel_template: InfoPanelTemplate {
             arrow: "▲".to_string(),
@@ -184,9 +179,11 @@ pub async fn select_score_id(
     State(state): State<VeloinfoState>,
     Path(id): Path<i32>,
 ) -> Result<String, VeloInfoError> {
+    println!("select_score_id");
     let score = CyclabilityScore::get_by_id(id, state.conn.clone())
         .await
         .unwrap();
+    println!("{:?}", score);
     let (segment_name, way_ids) = join_all(score.way_ids.iter().map(|way_id| async {
         let conn = state.conn.clone();
         WayInfo::get(*way_id, conn).await.unwrap()
@@ -198,21 +195,22 @@ pub async fn select_score_id(
         |(names, ways), way| match way.name.as_ref() {
             Some(name) => {
                 if names.find(name) != None {
-                    return (names, ways);
+                    return (names, format!("{} {}", ways, way.way_id));
                 }
                 (
                     format!("{} {}", names, name),
                     format!("{} {}", ways, way.way_id),
                 )
             }
-            None => (names, ways),
+            None => (names, format!("{} {}", ways, way.way_id)),
         },
     );
+    println!("{:?}", way_ids);
     let panel = SegmentPanel {
         status: "segment".to_string(),
         way_ids,
         segment_name,
-        score_selector: ScoreSelector::get_score_selector(score.score, false),
+        score_selector: ScoreSelector::get_score_selector(score.score),
         comment: score.comment.unwrap_or("".to_string()),
         info_panel_template: InfoPanelTemplate {
             arrow: "▲".to_string(),
