@@ -1,4 +1,4 @@
-<div id="segment_panel" class="absolute bottom-6 right-1 z-10">
+<div id="segment_panel" class="absolute bottom-16 right-1 z-10">
     {% if status == "segment" %}
     <div class="bg-gray-100 p-2 rounded-xl shadow-lg">
         <div hx-on:click="clear()" 
@@ -6,14 +6,18 @@
             X
         </div>
         <div class="mt-4">
-            {{ segment_name }}
-            {{score_selector}}
-            
+            <div class="flex">
+            <div class="rounded-full bg-red-600 h-4 w-4 mr-1"></div> <div>{{ segment_name }}</div>
+            </div>
             {% if edit %}
-                <label for="comment">Commentaire</label>
-                <input type="text" name="comment">
+                {{score_selector}} 
+                <input type="text" name="comment" placeholder="Commentaire" class="mt-2">
                 {{comment}}
                 </input>
+                <br>
+                <button hx-post="/segment_panel/edit/segment/{{way_ids}}" hx-target="#info" class="ml-2">Enregistrer</button>
+            {% else %}
+                <button hx-get="/segment_panel/edit/ways/{{way_ids}}" hx-target="#info" class="ml-2">Modifier l'état du segment</button>
             {% endif %}
         </div>
     </div>

@@ -1,13 +1,15 @@
 {% let class = " cursor-pointer w-48 h-8 text-center rounded " %}
 {% let border_class = " border-4 border-black " %}
-{% let text = ["impossible", "10% des cyclistes sont à l'aise", "50% des cyclistes sont à l'aise", "90% des cyclistes sont à l'aise", "Bon pour les débutants"] %}
+{% let text = ["impossible", "10% des cyclistes sont à l'aise", "50% des cyclistes sont à l'aise",
+"90% des cyclistes sont à l'aise", "Bon pour les débutants"] %}
 {% let color = ["red-600", "orange-600", "yellow-400", "green-400", "green-700"] %}
 
 {% if !edit %}
-<div id="score_selector">
+<div id="score_selector" hx="">
     <div class="font-bold">Confort :</div>
-    <div class="bg-{{ color[category] }} w-48 h-8 text-center rounded">
-        {{ text[category] }}
+    <div class="relative flex cursor-pointer">
+        <div class="bg-{{ color[category] }} w-6 h-6 rounded-full"></div>
+        <div class="">▼</div>
     </div>
 </div>
 {% else %}

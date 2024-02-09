@@ -13,8 +13,9 @@ use sqlx::Postgres;
 
 #[derive(Template)]
 #[template(path = "segment_panel.html", escape = "none")]
-pub struct SegmentPanel{
+pub struct SegmentPanel {
     status: String,
+    way_ids: String,
     segment_name: String,
     score_selector: ScoreSelector,
     comment: String,
@@ -24,6 +25,7 @@ pub struct SegmentPanel{
 
 #[derive(Debug, sqlx::FromRow, Clone)]
 struct WayInfo {
+    way_id: i64,
     name: Option<String>,
     score: Option<f64>,
 }
@@ -32,6 +34,7 @@ impl WayInfo {
     pub async fn get(way_id: i64, conn: sqlx::Pool<Postgres>) -> Result<WayInfo, sqlx::Error> {
         sqlx::query_as(
             r#"select  
+                c.way_id,
                 c.name,
                 cs.score,
                 cs.comment
@@ -56,7 +59,7 @@ pub async fn segment_panel_post(
     State(state): State<VeloinfoState>,
     Path(way_ids): Path<String>,
     Form(post): Form<PostValue>,
-) -> Result<String, VeloInfoError> {
+) -> Result<SegmentPanel, VeloInfoError> {
     let re = Regex::new(r"\d*").unwrap();
     let way_ids_i64 = re
         .find_iter(way_ids.as_str())
@@ -78,11 +81,62 @@ pub async fn segment_panel_post(
     segment_panel(State(state), Path(way_ids)).await
 }
 
+pub async fn segment_panel_edit(
+    State(state): State<VeloinfoState>,
+    Path(way_ids): Path<String>,
+) -> Result<String, VeloInfoError> {
+    let re = Regex::new(r"\d+").unwrap();
+    let way_ids_i64 = re
+        .find_iter(way_ids.as_str())
+        .map(|m| m.as_str().parse::<i64>().unwrap())
+        .collect::<Vec<i64>>();
+    let conn = state.conn.clone();
+    let ways = join_all(
+        way_ids_i64
+            .iter()
+            .map(|way_id| async { WayInfo::get(*way_id, conn.clone()).await.unwrap() }),
+    )
+    .await;
+    let all_same_score = ways.iter().all(|way| way.score == ways[0].score);
+    let mut way = ways[0].clone();
+    if !all_same_score {
+        way.score = Some(-1.);
+    }
+    let segment_name = ways
+        .iter()
+        .fold("".to_string(), |acc, way| match way.name.as_ref() {
+            Some(name) => {
+                if acc.find(name) != None {
+                    return acc;
+                }
+                format!("{} {}", acc, name)
+            }
+            None => acc,
+        });
+    let info_panel = SegmentPanel {
+        status: "segment".to_string(),
+        way_ids: way_ids.clone(),
+        segment_name,
+        score_selector: ScoreSelector::get_score_selector(way.score.unwrap_or(-1.), true),
+        comment: "".to_string(),
+        info_panel_template: InfoPanelTemplate {
+            arrow: "▲".to_string(),
+            direction: "up".to_string(),
+            contributions: Vec::new(),
+        },
+        edit: true,
+    }
+    .render()
+    .unwrap()
+    .to_string();
+
+    Ok(info_panel)
+}
 
 pub async fn segment_panel(
     State(state): State<VeloinfoState>,
     Path(way_ids): Path<String>,
-) -> Result<String, VeloInfoError> {
+) -> Result<SegmentPanel, VeloInfoError> {
     let re = Regex::new(r"\d+").unwrap();
     let way_ids_i64 = re
         .find_iter(way_ids.as_str())
@@ -111,6 +165,7 @@ pub async fn segment_panel(
         });
     let info_panel = SegmentPanel {
         status: "segment".to_string(),
+        way_ids: way_ids.clone(),
         segment_name,
         score_selector: ScoreSelector::get_score_selector(way.score.unwrap_or(-1.), false),
         comment: "".to_string(),
@@ -120,10 +175,7 @@ pub async fn segment_panel(
             contributions: Vec::new(),
         },
         edit: false,
-    }
-    .render()
-    .unwrap()
-    .to_string();
+    };
 
     Ok(info_panel)
 }
@@ -135,23 +187,30 @@ pub async fn select_score_id(
     let score = CyclabilityScore::get_by_id(id, state.conn.clone())
         .await
         .unwrap();
-    let segment_name = join_all(score.way_ids.iter().map(|way_id| async {
+    let (segment_name, way_ids) = join_all(score.way_ids.iter().map(|way_id| async {
         let conn = state.conn.clone();
         WayInfo::get(*way_id, conn).await.unwrap()
     }))
     .await
     .iter()
-    .fold("".to_string(), |acc, way| match way.name.as_ref() {
-        Some(name) => {
-            if acc.find(name) != None {
-                return acc;
+    .fold(
+        ("".to_string(), "".to_string()),
+        |(names, ways), way| match way.name.as_ref() {
+            Some(name) => {
+                if names.find(name) != None {
+                    return (names, ways);
+                }
+                (
+                    format!("{} {}", names, name),
+                    format!("{} {}", ways, way.way_id),
+                )
             }
-            format!("{} {}", acc, name)
-        }
-        None => acc,
-    });
+            None => (names, ways),
+        },
+    );
     let panel = SegmentPanel {
         status: "segment".to_string(),
+        way_ids,
         segment_name,
         score_selector: ScoreSelector::get_score_selector(score.score, false),
         comment: score.comment.unwrap_or("".to_string()),

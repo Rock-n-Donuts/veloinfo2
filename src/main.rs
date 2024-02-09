@@ -2,6 +2,7 @@ use crate::component::index_js::indexjs;
 use crate::component::info_panel::info_panel_down;
 use crate::component::info_panel::info_panel_up;
 use crate::component::segment_panel::segment_panel;
+use crate::component::segment_panel::segment_panel_edit;
 use crate::component::segment_panel::segment_panel_post;
 use crate::component::segment_panel::select_score_id;
 use crate::score_selector_controler::score_bounds_controler;
@@ -16,6 +17,7 @@ use axum::response::Html;
 use axum::response::Response;
 use axum::routing::{get, Router};
 use component::style::style;
+use score_selector_controler::score_selector_controler;
 use segment::route;
 use segment::select;
 use sqlx::PgPool;
@@ -27,11 +29,10 @@ use tower_http::trace::TraceLayer;
 use tower_livereload::LiveReloadLayer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
-use score_selector_controler::score_selector_controler;
 
-mod score_selector_controler;
 mod component;
 mod db;
+mod score_selector_controler;
 mod segment;
 
 #[derive(Clone)]
@@ -81,9 +82,16 @@ async fn main() {
             "/segment_panel/ways/:way_ids",
             get(segment_panel).post(segment_panel_post),
         )
+        .route(
+            "/segment_panel/edit/ways/:way_ids",
+            get(segment_panel_edit),
+        )
         .route("/segment/select/:way_id", get(select))
         .route("/segment/route/:way_id1/:way_ids", get(route))
-        .route("/cyclability_score/geom/:cyclability_score_id", get(score_bounds_controler))
+        .route(
+            "/cyclability_score/geom/:cyclability_score_id",
+            get(score_bounds_controler),
+        )
         .route("/info_panel/down", get(info_panel_down))
         .route("/info_panel/up", get(info_panel_up))
         .route("/score_selector/:score", get(score_selector_controler))
@@ -100,7 +108,6 @@ async fn main() {
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }
-
 
 fn not_htmx_predicate<T>(req: &Request<T>) -> bool {
     !req.headers().contains_key("hx-request")

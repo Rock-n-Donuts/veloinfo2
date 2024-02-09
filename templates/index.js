@@ -44,7 +44,7 @@ select = async (event) => {
     var fetch_response = await fetch('/segment/select/' + feature.properties.way_id);
     var response = await fetch_response.json();
 
-    const segment_panel = document.getElementById("score_selector");
+    const segment_panel = document.getElementById("segment_panel");
     if (segment_panel) {
         fetch_response = await fetch('/segment/route/' + feature.properties.way_id + "/" + way_ids);
         response = await fetch_response.json();
@@ -56,14 +56,29 @@ select = async (event) => {
         way_ids = feature.properties.way_id;
     }
     display_segment_geom(response.geom);
+    console.log(way_ids);
+    if (way_ids) {
+        // Display info panel
+        var info_panel = document.getElementById("info");
+        const response = await fetch("/segment_panel/ways/" + way_ids);
+        const html = await response.text();
+        info_panel.innerHTML = html;
+        // reprocess htmx for the new info panel
+        info_panel = document.getElementById("info");
+        htmx.process(info_panel);
+    }
+
 }
 
-zoom = async (score_id) => {
-    var fetch_response = await fetch('/cyclability_score/geom/' + score_id);    
+zoomToSegment = async (score_id) => {
+    var fetch_response = await fetch('/cyclability_score/geom/' + score_id);
     var response = await fetch_response.json();
-    way_ids = [];
+    console.log(response);
+    way_ids = response.reduce((way_ids, score) => {
+        return way_ids + " " + score.way_id;
+    }, "");
+    console.log(way_ids);
     var geom = response.reduce((geom, cycleway) => {
-        way_ids.push(cycleway.way_id);
         cycleway.geom.forEach((coords) => {
             geom.push(coords);
         });
@@ -106,25 +121,14 @@ display_segment_geom = async (geom) => {
         });
     }
 
-    if (way_ids) {
-        // Display info panel
-        var segment_panel = document.getElementById("info");
-        const response = await fetch("/segment_panel/ways/" + way_ids);
-        const html = await response.text();
-        segment_panel.innerHTML = html;
-        // reprocess htmx for the new info panel
-        segment_panel = document.getElementById("info");
-        htmx.process(segment_panel);
-
-        // find the largest bounds
-        var bounds = geom.reduce((currentBounds, coord) => {
-            return [
-                [Math.min(coord[0], currentBounds[0][0]), Math.min(coord[1], currentBounds[0][1])], // min coordinates
-                [Math.max(coord[0], currentBounds[1][0]), Math.max(coord[1], currentBounds[1][1])]  // max coordinates
-            ];
-        }, [[Infinity, Infinity], [-Infinity, -Infinity]]);
-        map.fitBounds(bounds, { padding: window.innerWidth * .10 });
-    }
+    // find the largest bounds
+    var bounds = geom.reduce((currentBounds, coord) => {
+        return [
+            [Math.min(coord[0], currentBounds[0][0]), Math.min(coord[1], currentBounds[0][1])], // min coordinates
+            [Math.max(coord[0], currentBounds[1][0]), Math.max(coord[1], currentBounds[1][1])]  // max coordinates
+        ];
+    }, [[Infinity, Infinity], [-Infinity, -Infinity]]);
+    map.fitBounds(bounds, { padding: window.innerWidth * .10 });
 }
 
 clear = async () => {
