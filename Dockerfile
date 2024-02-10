@@ -23,9 +23,19 @@ COPY . .
 RUN cargo build --release
 
 FROM ubuntu as prod
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=AMERICA/MONTREAL
+
+RUN apt-get update && apt-get install -y \
+    osm2pgsql \
+    wget
+
 WORKDIR /app
 COPY --from=build /app/target/release/veloinfo /app/veloinfo
 COPY --from=build /app/migrations /app/migrations
 COPY --from=build /app/pub /app/pub
+RUN echo "db:5432:carte:postgres:postgres" >> /root/.pgpass
+RUN chmod 0600 /root/.pgpass
 
 CMD /app/veloinfo
