@@ -17,6 +17,13 @@ var map = new maplibregl.Map({
     zoom: getCookie("zoom") ? getCookie("zoom") : 6
 });
 
+map.addControl(new maplibregl.NavigationControl());
+map.addControl(new maplibregl.GeolocateControl({positionOptions: {
+    enableHighAccuracy: true
+},
+trackUserLocation: true
+}));
+
 map.on("click", async function (event) {
     select(event);
 });
