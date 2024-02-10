@@ -1,4 +1,4 @@
-use super::{info_panel::InfoPanelTemplate, score_selector::ScoreSelector};
+use super::{info_panel::InfoPanelTemplate, score_circle::ScoreCircle, score_selector::ScoreSelector};
 use crate::{db::cyclability_score::CyclabilityScore, VeloInfoError, VeloinfoState};
 use anyhow::Result;
 use askama::Template;
@@ -14,8 +14,8 @@ use sqlx::Postgres;
 #[derive(Template)]
 #[template(path = "segment_panel.html", escape = "none")]
 pub struct SegmentPanel {
-    status: String,
     way_ids: String,
+    score_circle: ScoreCircle,
     segment_name: String,
     score_selector: ScoreSelector,
     comment: String,
@@ -110,8 +110,8 @@ pub async fn segment_panel_edit(
             None => acc,
         });
     let segment_panel = SegmentPanel {
-        status: "segment".to_string(),
         way_ids: way_ids.clone(),
+        score_circle: ScoreCircle { score: way.score.unwrap_or(-1.) },
         segment_name,
         score_selector: ScoreSelector::get_score_selector(way.score.unwrap_or(-1.)),
         comment: "".to_string(),
@@ -159,8 +159,8 @@ pub async fn segment_panel(
             None => acc,
         });
     let info_panel = SegmentPanel {
-        status: "segment".to_string(),
         way_ids: way_ids.clone(),
+        score_circle: ScoreCircle { score: way.score.unwrap_or(-1.) },
         segment_name,
         score_selector: ScoreSelector::get_score_selector(way.score.unwrap_or(-1.)),
         comment: "".to_string(),
@@ -207,8 +207,8 @@ pub async fn select_score_id(
     );
     println!("{:?}", way_ids);
     let panel = SegmentPanel {
-        status: "segment".to_string(),
         way_ids,
+        score_circle: ScoreCircle { score: score.score },
         segment_name,
         score_selector: ScoreSelector::get_score_selector(score.score),
         comment: score.comment.unwrap_or("".to_string()),

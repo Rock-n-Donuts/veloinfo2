@@ -1,12 +1,11 @@
 <div id="segment_panel" class="absolute bottom-16 right-1 z-10">
-    {% if status == "segment" %}
     <div class="bg-gray-100 p-2 rounded-xl shadow-lg m-1">
         <div hx-on:click="clear()" class="absolute right-2 cursor-pointer">
             X
         </div>
         <div class="mt-4">
             <div class="flex">
-                <div class="rounded-full bg-red-600 h-4 w-4 mr-1"></div>
+                {{score_circle}}
                 <div>{{ segment_name }}</div>
             </div>
             {% if edit %}
@@ -25,6 +24,5 @@
             {% endif %}
         </div>
     </div>
-    {% endif %}
 </div>
 {{ info_panel_template }}
