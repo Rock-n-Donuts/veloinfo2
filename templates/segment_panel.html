@@ -1,6 +1,6 @@
 <div id="segment_panel" class="absolute bottom-16 right-1 z-10">
     {% if status == "segment" %}
-    <div class="bg-gray-100 p-2 rounded-xl shadow-lg">
+    <div class="bg-gray-100 p-2 rounded-xl shadow-lg m-1">
         <div hx-on:click="clear()" class="absolute right-2 cursor-pointer">
             X
         </div>
@@ -13,14 +13,14 @@
             <form>
                 {{score_selector}}
                 <input type="hidden" name="way_ids" value="{{way_ids}}">
-                <input type="text" name="comment" placeholder="Commentaire" class="mt-2">
+                <input type="text" name="comment" placeholder="Commentaire" class="m-2">
                 {{comment}}
                 </input>
                 <br>
-                <button hx-post="/segment_panel" hx-target="#info" class="ml-2" hx-on:click="reset()">Enregistrer</button>
+                <button hx-post="/segment_panel" hx-target="#info" class="ml-2 bg-slate-500 rounded p-1" hx-on:click="reset()">Enregistrer</button>
             </form>
             {% else %}
-            <button hx-get="/segment_panel/edit/ways/{{way_ids}}" hx-target="#info" class="ml-2">Modifier l'état du
+            <button hx-get="/segment_panel/edit/ways/{{way_ids}}" hx-target="#info" class="ml-2 bg-slate-500 rounded p-1">Modifier l'état du
                 segment</button>
             {% endif %}
         </div>
