@@ -18,7 +18,7 @@ impl CyclabilityScore {
             r#"select id, score, comment, way_ids, created_at
                from cyclability_score
                order by created_at desc
-               limit 20"#,
+               limit 100"#,
         )
         .fetch_all(&conn)
         .await
