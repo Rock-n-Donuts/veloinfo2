@@ -44,6 +44,41 @@ impl CyclabilityScore {
         way_ids: Vec<i64>,
         conn: sqlx::Pool<Postgres>,
     ) -> Result<(), sqlx::Error> {
+        let old: Vec<CyclabilityScore> = sqlx::query_as(
+            r#"select id, score, comment, way_ids, created_at
+               from cyclability_score
+               where way_ids = $1"#,
+        )
+        .bind(way_ids.clone())
+        .fetch_all(&conn)
+        .await?;
+
+        let _ = old.iter().map(|old| async {
+            sqlx::query(
+                r#"INSERT INTO cyclability_score_history
+                    (way_ids, score, comment, created_at) 
+                    VALUES ($1, $2, $3, $4)"#,
+            )
+            .bind(old.way_ids.clone())
+            .bind(old.score)
+            .bind(old.comment.clone())
+            .bind(old.created_at)
+            .execute(&conn)
+            .await
+            .expect("Failed to copy old score to history");
+        });
+
+        let _ = old.iter().map(|old| async {
+            sqlx::query(
+                r#"DELETE FROM cyclability_score
+                    WHERE id = $1"#,
+            )
+            .bind(old.id)
+            .execute(&conn)
+            .await
+            .expect("Failed to delete old score");
+        });
+
         sqlx::query(
             r#"INSERT INTO cyclability_score 
                     (way_ids, score, comment) 
@@ -54,6 +89,7 @@ impl CyclabilityScore {
         .bind(comment)
         .execute(&conn)
         .await?;
+
         Ok(())
     }
 }

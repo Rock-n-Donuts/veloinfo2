@@ -42,7 +42,7 @@ impl InfopanelContribution {
                     score: score.score,
                 },
                 comment: score.comment.clone().unwrap_or("rien a dire".to_string()),
-                name: get_name(score.way_ids.as_ref(), conn.clone()).await?,
+                name: get_name(score.way_ids.as_ref(), conn.clone()).await,
                 score_id: score.id,
             })
         }))
@@ -55,7 +55,7 @@ impl InfopanelContribution {
     }
 }
 
-async fn get_name(way_ids: &Vec<i64>, conn: sqlx::Pool<Postgres>) -> Result<String> {
+async fn get_name(way_ids: &Vec<i64>, conn: sqlx::Pool<Postgres>) -> String {
     join_all(way_ids.iter().map(|way_id| async {
         Ok(Cycleway::get(*way_id, conn.clone())
             .await?
@@ -64,14 +64,13 @@ async fn get_name(way_ids: &Vec<i64>, conn: sqlx::Pool<Postgres>) -> Result<Stri
     }))
     .await
     .iter()
-    .fold(Ok("".to_string()), |acc, name: &std::prelude::v1::Result<String, _>| {
-        let acc = acc?;
+    .fold("".to_string(), |acc, name: &std::prelude::v1::Result<String, _>| {
         let erreur = "erreur".to_string();
         let name = name.as_ref().unwrap_or(&erreur);
         if acc.find(name.as_str()) != None {
-            return Ok(acc);
+            return acc;
         }
-        Ok(format!("{} {}", acc, name))
+        format!("{} {}", acc, name)
     })
 }
 
