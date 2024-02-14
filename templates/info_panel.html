@@ -1,20 +1,23 @@
 <div>
     {% if direction == "up" %}
-    <div id="info_panel" class="overflow-auto absolute w-full h-6 bg-white z-10 bottom-0 rounded-lg"
+    <div id="info_panel" class="absolute w-full h-6 bg-white z-10 bottom-0 rounded-lg"
         hx-get="/info_panel/{{direction}}" hx-target="#info">
-    {% else %}
-    <div id="info_panel" class="overflow-auto absolute w-full h-1/3 bg-white z-10 bottom-0 rounded-lg"
-        hx-get="/info_panel/{{direction}}" hx-target="#info">
-    {% endif %}
-        <img id="spinner" class="htmx-indicator z-30 fixed bottom-8 mx-auto inset-x-0" src="/pub/bars.svg" />
-        <div class="w-full h-7 justify-center flex cursor-pointer">
-            <div class="uppercase font-bold">Dernières contributions dans cette zone</div>
-            <div class="absolute right-2">
-                {{ arrow }}
+        {% else %}
+        <div id="info_panel" class="absolute w-full h-1/3 bg-white z-10 bottom-0 rounded-lg"
+            hx-get="/info_panel/{{direction}}" hx-target="#info">
+            {% endif %}
+            <img id="spinner" class="htmx-indicator z-30 fixed bottom-8 mx-auto inset-x-0" src="/pub/bars.svg" />
+            <div class="w-full h-7 justify-center flex cursor-pointer">
+                <div class="uppercase font-bold">Dernières contributions dans cette zone</div>
+                <div class="absolute right-2">
+                    {{ arrow }}
+                </div>
+            </div>
+            <div class="overflow-auto h-full">
+                {% for contribution in contributions %}
+                {{contribution}}
+                {% endfor %}
             </div>
         </div>
-        {% for contribution in contributions %}
-        {{contribution}}
-        {% endfor %}
     </div>
 </div>
