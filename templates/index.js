@@ -149,7 +149,11 @@ clear = async () => {
     }
     // Display info panel
     var segment_panel = document.getElementById("info");
-    const response = await fetch("/info_panel/down");
+    var hx_indicator = document.getElementsByClassName("htmx-indicator")[0];
+    hx_indicator.classList.add("htmx-request");
+    const response = await fetch("/info_panel/up");
+    var hx_indicator = document.getElementsByClassName("htmx-indicator")[0];
+    hx_indicator.classList.remove("htmx-request");
     const html = await response.text();
     segment_panel.innerHTML = html;
     // reprocess htmx for the new info panel
