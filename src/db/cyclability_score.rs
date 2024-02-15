@@ -1,4 +1,4 @@
-use sqlx::types::chrono::NaiveDateTime;
+use chrono::{DateTime, Local};
 use sqlx::Postgres;
 
 #[derive(sqlx::FromRow, Debug, Clone)]
@@ -7,7 +7,7 @@ pub struct CyclabilityScore {
     pub score: f64,
     pub comment: Option<String>,
     pub way_ids: Vec<i64>,
-    pub created_at: NaiveDateTime,
+    pub created_at: DateTime<Local>,
 }
 
 impl CyclabilityScore {

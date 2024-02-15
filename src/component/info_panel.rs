@@ -5,9 +5,8 @@ use askama::Template;
 use axum::extract::State;
 use futures::future::join_all;
 use sqlx::Postgres;
-
 use crate::VeloinfoState;
-
+use chrono::Locale;
 use super::score_circle::ScoreCircle;
 
 #[derive(Template)]
@@ -37,7 +36,7 @@ impl InfopanelContribution {
 
         let r: Vec<std::prelude::v1::Result<InfopanelContribution, _>> = join_all(scores.iter().map(|score| async {
             Ok(InfopanelContribution {
-                created_at: score.created_at.format("%d/%m/%Y").to_string(),
+                created_at: score.created_at.format_localized("%H:%M - %d %B", Locale::fr_CA).to_string(),
                 score_circle: ScoreCircle {
                     score: score.score,
                 },
