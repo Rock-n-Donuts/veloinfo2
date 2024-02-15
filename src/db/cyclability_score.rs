@@ -38,6 +38,22 @@ impl CyclabilityScore {
         .await
     }
 
+    pub async fn get_by_way_ids(
+        way_ids: Vec<i64>,
+        conn: sqlx::Pool<Postgres>,
+    ) -> Option<CyclabilityScore> {
+        sqlx::query_as(
+            r#"select id, score, comment, way_ids, created_at
+               from cyclability_score
+               where way_ids = $1
+               order by created_at desc"#,
+        )
+        .bind(way_ids)
+        .fetch_one(&conn)
+        .await
+        .ok()
+    }
+
     pub async fn insert(
         score: f64,
         comment: Option<String>,

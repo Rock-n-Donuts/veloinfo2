@@ -6,20 +6,23 @@
         <div>
             <div class="flex mb-2 mt-1">
                 {{score_circle}}
-                <div class="text-sm font-bold">{{ segment_name }}</div>
+                <div>
+                    <div class="text-sm font-bold">{{ segment_name }}</div>
+                    <div class="text-sm text-gray-600">{{ comment }}</div>
+                </div>
             </div>
             {% if edit %}
             <form>
                 {{score_selector}}
                 <input type="hidden" name="way_ids" value="{{way_ids}}">
-                <textarea rows="4" cols="50" name="comment" placeholder="Commentaire">
-                {{comment}}
-                </textarea>
+                <textarea rows="4" cols="50" name="comment" class="border-2" placeholder="Commentaire"></textarea>
                 <br>
-                <button hx-post="/segment_panel" hx-target="#info" class="ml-2 bg-slate-300 rounded uppercase p-2" hx-on:click="reset()">Enregistrer</button>
+                <button hx-post="/segment_panel" hx-target="#info" class="ml-2 bg-slate-300 rounded uppercase p-2"
+                    hx-on:click="reset()">Enregistrer</button>
             </form>
             {% else %}
-            <button hx-get="/segment_panel/edit/ways/{{way_ids}}" hx-target="#info" class="ml-2 bg-slate-300 rounded uppercase p-2">Modifier l'état du
+            <button hx-get="/segment_panel/edit/ways/{{way_ids}}" hx-target="#info"
+                class="ml-2 bg-slate-300 rounded uppercase p-2">Modifier l'état du
                 segment</button>
             {% endif %}
         </div>
