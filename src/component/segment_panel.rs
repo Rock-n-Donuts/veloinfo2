@@ -60,8 +60,6 @@ pub async fn segment_panel_post(
     State(state): State<VeloinfoState>,
     Form(post): Form<PostValue>,
 ) -> Result<SegmentPanel, VeloInfoError> {
-    println!("segment_panel_post");
-    println!("{:?}", post);
     let way_ids = post.way_ids;
     let re = Regex::new(r"\d+").unwrap();
     let way_ids_i64 = re
@@ -79,8 +77,6 @@ pub async fn segment_panel_edit(
     State(state): State<VeloinfoState>,
     Path(way_ids): Path<String>,
 ) -> Result<SegmentPanel, VeloInfoError> {
-    println!("segment_panel_edit");
-    println!("{}", way_ids);
     let re = Regex::new(r"\d+").unwrap();
     let way_ids_i64 = re
         .find_iter(way_ids.as_str())
@@ -109,7 +105,6 @@ pub async fn segment_panel_edit(
             }
             None => acc,
         });
-    println!("way {:?}", way);
     let segment_panel = SegmentPanel {
         way_ids: way_ids.clone(),
         score_circle: ScoreCircle { score: way.score.unwrap_or(-1.) },
@@ -131,8 +126,6 @@ pub async fn segment_panel(
     State(state): State<VeloinfoState>,
     Path(way_ids): Path<String>,
 ) -> Result<SegmentPanel, VeloInfoError> {
-    println!("segment_panel");
-    println!("{}", way_ids);
     let re = Regex::new(r"\d+").unwrap();
     let way_ids_i64 = re
         .find_iter(way_ids.as_str())
@@ -180,11 +173,9 @@ pub async fn select_score_id(
     State(state): State<VeloinfoState>,
     Path(id): Path<i32>,
 ) -> Result<String, VeloInfoError> {
-    println!("select_score_id");
     let score = CyclabilityScore::get_by_id(id, state.conn.clone())
         .await
         .unwrap();
-    println!("{:?}", score);
     let (segment_name, way_ids) = join_all(score.way_ids.iter().map(|way_id| async {
         let conn = state.conn.clone();
         WayInfo::get(*way_id, conn).await.unwrap()
@@ -206,7 +197,6 @@ pub async fn select_score_id(
             None => (names, format!("{} {}", ways, way.way_id)),
         },
     );
-    println!("{:?}", way_ids);
     let panel = SegmentPanel {
         way_ids,
         score_circle: ScoreCircle { score: score.score },
