@@ -1,5 +1,6 @@
 use anyhow::Ok;
 use anyhow::Result;
+use sqlx::types::chrono::Local;
 use crate::db::{cyclability_score::CyclabilityScore, cycleway::Cycleway};
 use askama::Template;
 use axum::extract::State;
@@ -8,6 +9,8 @@ use sqlx::Postgres;
 use crate::VeloinfoState;
 use chrono::Locale;
 use super::score_circle::ScoreCircle;
+use timeago;
+use timeago::languages::french::French;
 
 #[derive(Template)]
 #[template(path = "info_panel.html", escape = "none")]
@@ -22,9 +25,10 @@ pub struct InfoPanelTemplate {
 #[template(path = "info_panel_contribution.html", escape = "none")]
 pub struct InfopanelContribution {
     created_at: String,
+    timeago: String,
     score_circle: ScoreCircle,
-    comment: String,
     name: String,
+    comment: String,
     score_id: i32,
 }
 
@@ -37,11 +41,12 @@ impl InfopanelContribution {
         let r: Vec<std::prelude::v1::Result<InfopanelContribution, _>> = join_all(scores.iter().map(|score| async {
             Ok(InfopanelContribution {
                 created_at: score.created_at.format_localized("%H:%M - %d %B", Locale::fr_CA).to_string(),
+                timeago: timeago::Formatter::with_language(French).convert_chrono(score.created_at, Local::now()),
                 score_circle: ScoreCircle {
                     score: score.score,
                 },
-                comment: score.comment.clone().unwrap_or("rien a dire".to_string()),
                 name: get_name(score.way_ids.as_ref(), conn.clone()).await,
+                comment: score.comment.clone().unwrap_or("".to_string()),
                 score_id: score.id,
             })
         }))

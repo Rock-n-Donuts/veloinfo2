@@ -109,6 +109,7 @@ pub async fn segment_panel_edit(
             }
             None => acc,
         });
+    println!("way {:?}", way);
     let segment_panel = SegmentPanel {
         way_ids: way_ids.clone(),
         score_circle: ScoreCircle { score: way.score.unwrap_or(-1.) },
