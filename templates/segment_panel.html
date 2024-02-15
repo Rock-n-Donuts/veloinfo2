@@ -1,25 +1,25 @@
-<div id="segment_panel" class="absolute bottom-16 z-10">
-    <div class="bg-gray-100 p-2 rounded-xl shadow-lg m-1">
+<div id="segment_panel" class="absolute w-full md:w-[500px] bg-white z-20 bottom-0 rounded-lg">
+    <div class="p-2 m-1">
         <div hx-on:click="clear()" class="absolute right-2 cursor-pointer">
             X
         </div>
-        <div class="mt-4">
-            <div class="flex">
+        <div>
+            <div class="flex mb-2 mt-1">
                 {{score_circle}}
-                <div>{{ segment_name }}</div>
+                <div class="text-sm font-bold">{{ segment_name }}</div>
             </div>
             {% if edit %}
             <form>
                 {{score_selector}}
                 <input type="hidden" name="way_ids" value="{{way_ids}}">
-                <input type="text" name="comment" placeholder="Commentaire" class="m-2">
+                <textarea rows="4" cols="50" name="comment" placeholder="Commentaire">
                 {{comment}}
-                </input>
+                </textarea>
                 <br>
-                <button hx-post="/segment_panel" hx-target="#info" class="ml-2 bg-slate-500 rounded p-1" hx-on:click="reset()">Enregistrer</button>
+                <button hx-post="/segment_panel" hx-target="#info" class="ml-2 bg-slate-300 rounded uppercase p-2" hx-on:click="reset()">Enregistrer</button>
             </form>
             {% else %}
-            <button hx-get="/segment_panel/edit/ways/{{way_ids}}" hx-target="#info" class="ml-2 bg-slate-500 rounded p-1">Modifier l'état du
+            <button hx-get="/segment_panel/edit/ways/{{way_ids}}" hx-target="#info" class="ml-2 bg-slate-300 rounded uppercase p-2">Modifier l'état du
                 segment</button>
             {% endif %}
         </div>
