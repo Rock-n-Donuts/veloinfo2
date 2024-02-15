@@ -788,8 +788,8 @@ video {
 }
 
 @media (min-width: 768px) {
-  .md\:max-h-80 {
-    max-height: 20rem;
+  .md\:h-\[500px\] {
+    height: 500px;
   }
 
   .md\:w-\[500px\] {
