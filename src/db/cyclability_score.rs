@@ -24,6 +24,27 @@ impl CyclabilityScore {
         .await
     }
 
+    pub async fn get_history(
+        way_ids: Vec<i64>,
+        conn: sqlx::Pool<Postgres>,
+    ) -> Vec<CyclabilityScore> {
+        let result = sqlx::query_as(
+            r#"select id, score, comment, way_ids, created_at
+               from cyclability_score
+               where way_ids = $1
+               order by created_at desc
+               limit 100"#,
+        )
+        .bind(way_ids)
+        .fetch_all(&conn)
+        .await;
+
+        match result {
+            Ok(scores) => scores,
+            Err(_) => vec![],
+        }
+    }
+
     pub async fn get_by_id(
         id: i32,
         conn: sqlx::Pool<Postgres>,

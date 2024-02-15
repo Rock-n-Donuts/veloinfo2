@@ -57,6 +57,27 @@ impl InfopanelContribution {
             Err(_) => false,
         }).map(|result: &std::prelude::v1::Result<InfopanelContribution, _>| result.as_ref().unwrap()).cloned().collect::<Vec<InfopanelContribution>>())
     }
+
+    pub async fn get_history(
+        way_ids: Vec<i64>,
+        conn: sqlx::Pool<Postgres>,
+    ) -> Vec<InfopanelContribution> {
+        let scores = CyclabilityScore::get_history(way_ids, conn.clone()).await;
+
+        join_all(scores.iter().map(|score| async {
+            InfopanelContribution {
+                created_at: score.created_at.format_localized("%H:%M - %d %B", Locale::fr_CA).to_string(),
+                timeago: timeago::Formatter::with_language(French).convert_chrono(score.created_at, Local::now()),
+                score_circle: ScoreCircle {
+                    score: score.score,
+                },
+                name: get_name(score.way_ids.as_ref(), conn.clone()).await,
+                comment: score.comment.clone().unwrap_or("".to_string()),
+                score_id: score.id,
+            }
+        }))
+        .await
+    }
 }
 
 async fn get_name(way_ids: &Vec<i64>, conn: sqlx::Pool<Postgres>) -> String {

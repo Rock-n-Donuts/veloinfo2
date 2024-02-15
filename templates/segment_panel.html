@@ -25,7 +25,14 @@
             <button hx-get="/segment_panel/edit/ways/{{way_ids}}" hx-target="#info"
                 class="ml-2 bg-slate-300 rounded uppercase p-2">Modifier l'état du
                 segment</button>
-            {% endif %}
+            <div class="uppercase m-2">historique</div>
+            <div class="overflow-auto h-72">
+                <hr>
+                {% for contribution in history %}
+                {{ contribution }}
+                {% endfor %}
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>

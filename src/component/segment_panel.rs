@@ -1,5 +1,5 @@
 use super::{
-    info_panel::InfoPanelTemplate, score_circle::ScoreCircle, score_selector::ScoreSelector,
+    info_panel::{InfoPanelTemplate, InfopanelContribution}, score_circle::ScoreCircle, score_selector::ScoreSelector,
 };
 use crate::{db::cyclability_score::CyclabilityScore, VeloInfoError, VeloinfoState};
 use anyhow::Result;
@@ -23,6 +23,7 @@ pub struct SegmentPanel {
     comment: String,
     info_panel_template: InfoPanelTemplate,
     edit: bool,
+    history: Vec<InfopanelContribution>,
 }
 
 #[derive(Debug, sqlx::FromRow, Clone)]
@@ -119,6 +120,8 @@ pub async fn segment_panel_edit(
             }
             None => acc,
         });
+
+    let history = InfopanelContribution::get_history(way_ids_i64, conn).await;
     let segment_panel = SegmentPanel {
         way_ids: way_ids.clone(),
         score_circle: ScoreCircle {
@@ -133,6 +136,7 @@ pub async fn segment_panel_edit(
             contributions: Vec::new(),
         },
         edit: true,
+        history
     };
 
     Ok(segment_panel)
@@ -174,6 +178,8 @@ pub async fn segment_panel(
             }
             None => acc,
         });
+        let history = InfopanelContribution::get_history(way_ids_i64, state.conn).await;
+
     let info_panel = SegmentPanel {
         way_ids: way_ids.clone(),
         score_circle: ScoreCircle {
@@ -188,6 +194,7 @@ pub async fn segment_panel(
             contributions: Vec::new(),
         },
         edit: false,
+        history
     };
 
     Ok(info_panel)
@@ -220,6 +227,7 @@ async fn segment_panel_score_id(
             None => (names, format!("{} {}", ways, way.way_id)),
         },
     );
+    let history = InfopanelContribution::get_history(score.way_ids, conn).await;
     Ok(SegmentPanel {
         way_ids,
         score_circle: ScoreCircle { score: score.score },
@@ -232,6 +240,7 @@ async fn segment_panel_score_id(
             contributions: Vec::new(),
         },
         edit,
+        history
     })
 }
 
