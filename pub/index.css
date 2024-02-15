@@ -549,10 +549,6 @@ video {
   transition: opacity 0.5s ease-in;
 }
 
-.static {
-  position: static;
-}
-
 .absolute {
   position: absolute;
 }
@@ -572,6 +568,14 @@ video {
 
 .right-2 {
   right: 0.5rem;
+}
+
+.top-0 {
+  top: 0px;
+}
+
+.top-1 {
+  top: 0.25rem;
 }
 
 .z-10 {
@@ -633,10 +637,6 @@ video {
 
 .h-7 {
   height: 1.75rem;
-}
-
-.h-72 {
-  height: 18rem;
 }
 
 .h-8 {

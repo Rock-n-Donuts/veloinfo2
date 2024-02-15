@@ -1,7 +1,7 @@
-<div id="segment_panel" class="absolute w-full md:w-[500px] bg-white z-20 bottom-0 rounded-lg">
-    <img id="spinner" class="htmx-indicator static z-30 bottom-8 mx-auto inset-x-0" src="/pub/bars.svg" />
+<div id="segment_panel" class="absolute w-full md:w-[500px] bg-white z-20 bottom-0 rounded-lg h-1/3 overflow-auto"> 
+    <img id="spinner" class="htmx-indicator absolute z-30 bottom-8 mx-auto inset-x-0 top-1" src="/pub/bars.svg" />
     <div class="p-2 m-1">
-        <div hx-on:click="clear()" class="absolute right-2 cursor-pointer p-4">
+        <div hx-on:click="clear()" class="absolute right-2 top-0 cursor-pointer p-4">
             X
         </div>
         <div>
@@ -26,7 +26,7 @@
                 class="ml-2 bg-slate-300 rounded uppercase p-2">Modifier l'état du
                 segment</button>
             <div class="uppercase m-2">historique</div>
-            <div class="overflow-auto h-72">
+            <div class="">
                 <hr>
                 {% for contribution in history %}
                 {{ contribution }}
