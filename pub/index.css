@@ -639,6 +639,10 @@ video {
   height: 1.75rem;
 }
 
+.h-72 {
+  height: 18rem;
+}
+
 .h-8 {
   height: 2rem;
 }
@@ -784,6 +788,10 @@ video {
 }
 
 @media (min-width: 768px) {
+  .md\:max-h-80 {
+    max-height: 20rem;
+  }
+
   .md\:w-\[500px\] {
     width: 500px;
   }
