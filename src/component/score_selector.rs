@@ -10,7 +10,9 @@ pub struct ScoreSelector {
 impl ScoreSelector {
     pub fn get_score_selector(score: f64) -> ScoreSelector {
         let category = {
-            if score <= 0.0 {
+            if score < 0.0 {
+                10
+            } else if score <= 0.0 {
                 0
             } else if score <= 0.25 {
                 1
