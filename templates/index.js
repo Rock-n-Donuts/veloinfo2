@@ -37,6 +37,7 @@ map.on("move", function (e) {
     document.cookie = "zoom=" + map.getZoom();
     document.cookie = "lng=" + map.getCenter().lng;
     document.cookie = "lat=" + map.getCenter().lat;
+    update_info();
 });
 
 select = async (event) => {
@@ -138,6 +139,20 @@ display_segment_geom = async (geom) => {
         ];
     }, [[Infinity, Infinity], [-Infinity, -Infinity]]);
     map.fitBounds(bounds, { padding: window.innerWidth * .10 });
+}
+
+let timeoutId = null;
+update_info = async () => {
+    var info_panel = document.getElementById("info");
+    if(!info_panel) {
+        return;
+    }
+    if (timeoutId){
+        clearTimeout(timeoutId);
+    }
+    timeoutId = setTimeout(async () => {
+        clear();
+    }, 1000)
 }
 
 clear = async () => {
