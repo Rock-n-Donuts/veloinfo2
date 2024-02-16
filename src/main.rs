@@ -128,6 +128,12 @@ impl From<askama::Error> for VIError {
     }
 }
 
+impl From<regex::Error> for VIError {
+    fn from(error: regex::Error) -> Self {
+        VIError(anyhow::Error::from(error))
+    }
+}
+
 impl IntoResponse for VIError {
     fn into_response(self) -> Response {
         (
@@ -163,6 +169,12 @@ impl IntoResponse for VeloInfoError {
             format!("Something went wrong: {}", self.0),
         )
             .into_response()
+    }
+}
+
+impl From<regex::Error> for VeloInfoError {
+    fn from(error: regex::Error) -> Self {
+        VeloInfoError(anyhow::Error::from(error))
     }
 }
 

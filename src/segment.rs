@@ -21,7 +21,7 @@ pub async fn route(
     State(state): State<VeloinfoState>,
     Path((way_id1, way_ids)): Path<(i64, String)>,
 ) -> Result<Json<Route>, VeloInfoError> {
-    let re = Regex::new(r"\d+").unwrap();
+    let re = Regex::new(r"\d+")?;
     let conn = state.conn;
     let way_ids_i64 = re
         .find_iter(&way_ids)
