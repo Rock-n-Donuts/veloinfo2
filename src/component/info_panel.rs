@@ -18,7 +18,6 @@ use timeago::languages::french::French;
 #[template(path = "info_panel.html", escape = "none")]
 pub struct InfoPanelTemplate {
     pub arrow: String,
-    pub direction: String,
     pub contributions: Vec<InfopanelContribution>,
 }
 
@@ -122,7 +121,6 @@ async fn get_name(way_ids: &Vec<i64>, conn: sqlx::Pool<Postgres>) -> String {
 pub async fn info_panel_down() -> String {
     let template = InfoPanelTemplate {
         arrow: "▲".to_string(),
-        direction: "up".to_string(),
         contributions: Vec::new(),
     };
     template.render().unwrap()
@@ -150,7 +148,6 @@ pub async fn info_panel_up(
 
     InfoPanelTemplate {
         arrow: "▼".to_string(),
-        direction: "down".to_string(),
         contributions: contributions,
     }
 }

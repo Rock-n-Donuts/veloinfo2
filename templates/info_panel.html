@@ -1,7 +1,7 @@
-{% if direction == "up" %}
+{% if arrow == "▲" %}
 <div id="info_panel" class="absolute h-12 w-full md:w-[500px] bg-white z-10 bottom-0 rounded-lg" hx-on:click="clear()">
     {% else %}
-    <div id="info_panel" class="absolute w-full h-2/5 md:w-[500px] bg-white z-10 bottom-0 rounded-lg" hx-get="/info_panel/{{direction}}"
+    <div id="info_panel" class="absolute w-full h-2/5 md:w-[500px] bg-white z-10 bottom-0 rounded-lg" hx-get="/info_panel/down"
     hx-target="#info">
     <div id="info_panel_up"></div>
         {% endif %}
@@ -18,7 +18,7 @@
             {{contribution}}
             {% endfor %}
         </div>
-        {% if direction == "up" %}
+        {% if arrow == "▼" %}
     </div>
     {% else %}
 </div>
