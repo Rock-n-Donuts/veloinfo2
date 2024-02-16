@@ -130,7 +130,7 @@ pub async fn segment_panel_edit(
         score_selector: ScoreSelector::get_score_selector(way.score.unwrap_or(-1.)),
         comment: "".to_string(),
         edit: true,
-        history
+        history,
     };
 
     Ok(segment_panel)
@@ -172,7 +172,7 @@ pub async fn segment_panel(
             }
             None => acc,
         });
-        let history = InfopanelContribution::get_history(way_ids_i64, state.conn).await;
+    let history = InfopanelContribution::get_history(way_ids_i64, state.conn).await;
 
     let info_panel = SegmentPanel {
         way_ids: way_ids.clone(),
@@ -183,7 +183,7 @@ pub async fn segment_panel(
         score_selector: ScoreSelector::get_score_selector(way.score.unwrap_or(-1.)),
         comment: "".to_string(),
         edit: false,
-        history
+        history,
     };
 
     Ok(info_panel)
@@ -197,13 +197,16 @@ async fn segment_panel_score_id(
     let score = CyclabilityScore::get_by_id(id, conn.clone()).await.unwrap();
     let (segment_name, way_ids) = join_all(score.way_ids.iter().map(|way_id| async {
         let conn = conn.clone();
-        WayInfo::get(*way_id, conn).await.unwrap()
+        WayInfo::get(*way_id, conn).await
     }))
     .await
     .iter()
-    .fold(
-        ("".to_string(), "".to_string()),
-        |(names, ways), way| match way.name.as_ref() {
+    .fold(("".to_string(), "".to_string()), |(names, ways), way| {
+        let way = match way {
+            Ok(way) => way,
+            _ => return (names, ways),
+        };
+        match way.name.as_ref() {
             Some(name) => {
                 if names.find(name) != None {
                     return (names, format!("{} {}", ways, way.way_id));
@@ -214,8 +217,8 @@ async fn segment_panel_score_id(
                 )
             }
             None => (names, format!("{} {}", ways, way.way_id)),
-        },
-    );
+        }
+    });
     let history = InfopanelContribution::get_history(score.way_ids, conn).await;
     Ok(SegmentPanel {
         way_ids,
@@ -224,7 +227,7 @@ async fn segment_panel_score_id(
         score_selector: ScoreSelector::get_score_selector(score.score),
         comment: score.comment.unwrap_or("".to_string()),
         edit,
-        history
+        history,
     })
 }
 
