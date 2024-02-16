@@ -12,13 +12,13 @@ pub struct CyclabilityScore {
     pub created_at: DateTime<Local>,
 }
 
-impl CyclabilityScore {
+impl CyclabilityScore { 
     pub async fn get_recents(
         bounds: Bounds,
         conn: sqlx::Pool<Postgres>,
     ) -> Result<Vec<CyclabilityScore>, sqlx::Error> {
         sqlx::query_as(
-            r#"select cs.id, cs.score, cs.comment, cs.way_ids, cs.created_at
+            r#"select DISTINCT ON (cs.created_at) cs.id, cs.score, cs.comment, cs.way_ids, cs.created_at
                from cyclability_score cs
                join cycleway c on c.way_id = any(cs.way_ids) 
                where
