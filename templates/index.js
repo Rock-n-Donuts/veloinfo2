@@ -147,8 +147,8 @@ update_info = async () => {
         clearTimeout(timeoutId);
     }
     timeoutId = setTimeout(async () => {
-        var segment_panel = document.getElementById("segment_panel");
-        if(segment_panel) {
+        var info_panel = document.getElementById("info_panel");
+        if(!info_panel) {
             return;
         }
         clear();

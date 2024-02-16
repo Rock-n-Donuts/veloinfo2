@@ -1,5 +1,5 @@
 use super::{
-    info_panel::{InfoPanelTemplate, InfopanelContribution}, score_circle::ScoreCircle, score_selector::ScoreSelector,
+    info_panel::InfopanelContribution, score_circle::ScoreCircle, score_selector::ScoreSelector,
 };
 use crate::{db::cyclability_score::CyclabilityScore, VeloInfoError, VeloinfoState};
 use anyhow::Result;
@@ -21,7 +21,6 @@ pub struct SegmentPanel {
     segment_name: String,
     score_selector: ScoreSelector,
     comment: String,
-    info_panel_template: InfoPanelTemplate,
     edit: bool,
     history: Vec<InfopanelContribution>,
 }
@@ -130,11 +129,6 @@ pub async fn segment_panel_edit(
         segment_name,
         score_selector: ScoreSelector::get_score_selector(way.score.unwrap_or(-1.)),
         comment: "".to_string(),
-        info_panel_template: InfoPanelTemplate {
-            arrow: "▲".to_string(),
-            direction: "up".to_string(),
-            contributions: Vec::new(),
-        },
         edit: true,
         history
     };
@@ -188,11 +182,6 @@ pub async fn segment_panel(
         segment_name,
         score_selector: ScoreSelector::get_score_selector(way.score.unwrap_or(-1.)),
         comment: "".to_string(),
-        info_panel_template: InfoPanelTemplate {
-            arrow: "▲".to_string(),
-            direction: "up".to_string(),
-            contributions: Vec::new(),
-        },
         edit: false,
         history
     };
@@ -234,11 +223,6 @@ async fn segment_panel_score_id(
         segment_name,
         score_selector: ScoreSelector::get_score_selector(score.score),
         comment: score.comment.unwrap_or("".to_string()),
-        info_panel_template: InfoPanelTemplate {
-            arrow: "▲".to_string(),
-            direction: "up".to_string(),
-            contributions: Vec::new(),
-        },
         edit,
         history
     })
