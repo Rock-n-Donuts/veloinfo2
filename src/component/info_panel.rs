@@ -7,6 +7,7 @@ use askama::Template;
 use axum::extract::State;
 use axum::Json;
 use chrono::Locale;
+use chrono_tz::America::Montreal;
 use futures::future::join_all;
 use serde::Deserialize;
 use sqlx::types::chrono::Local;
@@ -44,6 +45,7 @@ impl InfopanelContribution {
                 Ok(InfopanelContribution {
                     created_at: score
                         .created_at
+                        .with_timezone(&Montreal)
                         .format_localized("%H:%M - %d %B", Locale::fr_CA)
                         .to_string(),
                     timeago: timeago::Formatter::with_language(French)
