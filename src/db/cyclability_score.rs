@@ -1,6 +1,8 @@
 use chrono::{DateTime, Local};
 use sqlx::Postgres;
 
+use crate::component::info_panel::Bounds;
+
 #[derive(sqlx::FromRow, Debug, Clone)]
 pub struct CyclabilityScore {
     pub id: i32,
@@ -12,14 +14,22 @@ pub struct CyclabilityScore {
 
 impl CyclabilityScore {
     pub async fn get_recents(
+        bounds: Bounds,
         conn: sqlx::Pool<Postgres>,
     ) -> Result<Vec<CyclabilityScore>, sqlx::Error> {
         sqlx::query_as(
-            r#"select id, score, comment, way_ids, created_at
-               from cyclability_score
-               order by created_at desc
+            r#"select cs.id, cs.score, cs.comment, cs.way_ids, cs.created_at
+               from cyclability_score cs
+               join cycleway c on c.way_id = any(cs.way_ids) 
+               where
+               c.geom && ST_Transform(st_makeenvelope($1, $2, $3, $4, 4326), 3857)
+               order by cs.created_at desc
                limit 100"#,
         )
+        .bind(bounds._ne.lng)
+        .bind(bounds._ne.lat)
+        .bind(bounds._sw.lng)
+        .bind(bounds._sw.lat)
         .fetch_all(&conn)
         .await
     }

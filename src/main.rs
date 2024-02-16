@@ -95,7 +95,7 @@ async fn main() {
             get(score_bounds_controler),
         )
         .route("/info_panel/down", get(info_panel_down))
-        .route("/info_panel/up", get(info_panel_up))
+        .route("/info_panel/up", post(info_panel_up))
         .route("/score_selector/:score", get(score_selector_controler))
         .route("/style.json", get(style))
         .route("/index.js", get(indexjs))
