@@ -143,14 +143,14 @@ display_segment_geom = async (geom) => {
 
 let timeoutId = null;
 update_info = async () => {
-    var info_panel = document.getElementById("info");
-    if(!info_panel) {
-        return;
-    }
     if (timeoutId){
         clearTimeout(timeoutId);
     }
     timeoutId = setTimeout(async () => {
+        var segment_panel = document.getElementById("segment_panel");
+        if(segment_panel) {
+            return;
+        }
         clear();
     }, 1000)
 }
