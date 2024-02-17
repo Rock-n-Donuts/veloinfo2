@@ -2646,6 +2646,7 @@ dependencies = [
  "chrono",
  "chrono-tz",
  "futures",
+ "lazy_static",
  "regex",
  "reqwest",
  "serde",

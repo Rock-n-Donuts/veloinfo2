@@ -17,6 +17,6 @@ pub async fn indexjs() -> impl IntoResponse {
         "Content-Type",
         HeaderValue::from_static("application/javascript"),
     );
-    let resp = IndexJs { martin_url }.render().unwrap();
+    let resp = IndexJs { martin_url };
     (headers, resp)
 }

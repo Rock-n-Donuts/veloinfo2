@@ -120,12 +120,11 @@ async fn get_name(way_ids: &Vec<i64>, conn: sqlx::Pool<Postgres>) -> String {
     )
 }
 
-pub async fn info_panel_down() -> String {
-    let template = InfoPanelTemplate {
+pub async fn info_panel_down() -> InfoPanelTemplate {
+    InfoPanelTemplate {
         arrow: "▲".to_string(),
         contributions: Vec::new(),
-    };
-    template.render().unwrap()
+    }
 }
 
 #[derive(Deserialize, Debug)]
@@ -144,10 +143,12 @@ pub async fn info_panel_up(
     State(state): State<VeloinfoState>,
     Json(bounds): Json<Bounds>,
 ) -> InfoPanelTemplate {
-    let contributions = InfopanelContribution::get(bounds, state.conn)
-        .await
-        .unwrap();
-
+    let contributions = match InfopanelContribution::get(bounds, state.conn).await{
+        Result::Ok(c) => c,
+        Err(e) => {
+            eprintln!("Error getting contributions {:?}", e);
+            Vec::new()},
+    };
     InfoPanelTemplate {
         arrow: "▼".to_string(),
         contributions: contributions,

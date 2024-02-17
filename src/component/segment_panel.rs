@@ -12,6 +12,7 @@ use futures::future::join_all;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use sqlx::Postgres;
+use lazy_static::lazy_static;
 
 #[derive(Template)]
 #[template(path = "segment_panel.html", escape = "none")]
@@ -58,13 +59,16 @@ pub struct PostValue {
     pub way_ids: String,
 }
 
+lazy_static! {
+    static ref RE_NUMBER: Regex = Regex::new(r"\d+").unwrap();
+}
+
 pub async fn segment_panel_post(
     State(state): State<VeloinfoState>,
     Form(post): Form<PostValue>,
 ) -> Result<SegmentPanel, VeloInfoError> {
     let way_ids = post.way_ids;
-    let re = Regex::new(r"\d+").unwrap();
-    let way_ids_i64 = re
+    let way_ids_i64 = RE_NUMBER
         .find_iter(way_ids.as_str())
         .map(|m| m.as_str().parse::<i64>().unwrap())
         .collect::<Vec<i64>>();
@@ -75,8 +79,7 @@ pub async fn segment_panel_post(
         way_ids_i64.clone(),
         state.conn.clone(),
     )
-    .await
-    .unwrap();
+    .await?;
     segment_panel(State(state), Path(way_ids)).await
 }
 
@@ -84,8 +87,7 @@ pub async fn segment_panel_edit(
     State(state): State<VeloinfoState>,
     Path(way_ids): Path<String>,
 ) -> Result<SegmentPanel, VeloInfoError> {
-    let re = Regex::new(r"\d+").unwrap();
-    let way_ids_i64 = re
+    let way_ids_i64 = RE_NUMBER
         .find_iter(way_ids.as_str())
         .map(|m| m.as_str().parse::<i64>().unwrap())
         .collect::<Vec<i64>>();

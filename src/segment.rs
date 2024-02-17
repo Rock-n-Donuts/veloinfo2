@@ -28,12 +28,16 @@ pub async fn route(
         .map(|m| m.as_str().parse::<i64>().unwrap())
         .collect::<Vec<i64>>();
     let start_segment: Cycleway = Cycleway::get(way_id1, conn.clone()).await?;
-    let cycleways = join_all(
+    let cycleways: Vec<Cycleway> = join_all(
         way_ids_i64
             .iter()
-            .map(|way_id| async { Cycleway::get(*way_id, conn.clone()).await.unwrap() }),
+            .map(|way_id| async { Cycleway::get(*way_id, conn.clone()).await }),
     )
-    .await;
+    .await
+    .iter().filter_map(|c| match c {
+        Ok(c) => Some(c),
+        Err(_) => None,
+    }).cloned().collect();
 
     let mut routes: Vec<Route> = vec![];
     // We try to find the longest path between the 4 possible combinations
