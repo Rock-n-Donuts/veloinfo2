@@ -14,6 +14,10 @@
         "veloinfo": {
             "type": "vector",
             "url": "{{martin_url}}/bike_path"
+        },
+        "veloinfo_cycleway": {
+            "type": "vector",
+            "url": "{{martin_url}}/cycleway"
         }
     },
     "layers": [
@@ -2394,8 +2398,8 @@
         },
         {
             "id": "cycleway",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
+            "source": "veloinfo_cycleway",
+            "source-layer": "cycleway",
             "type": "line",
             "paint": {
                 "line-color": "#050",
@@ -2547,8 +2551,8 @@
         },
         {
             "id": "designated",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
+            "source": "veloinfo_cycleway",
+            "source-layer": "cycleway",
             "type": "line",
             "paint": {
                 "line-color": "#050",
@@ -2701,8 +2705,8 @@
 
         {
             "id": "shared_lane",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
+            "source": "veloinfo_cycleway",
+            "source-layer": "cycleway",
             "type": "line",
             "paint": {
                 "line-color": "#050",
