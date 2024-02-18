@@ -7,9 +7,9 @@ osm2pgsql -H db -U postgres -d carte -O flex -S import.lua quebec-latest.osm.pbf
 psql -h db -U postgres -d carte -c "CREATE OR REPLACE VIEW bike_path AS
                                         SELECT *
                                             FROM (
-                                                SELECT cycleway.*, recent_cyclability_score.score,
-                                                ROW_NUMBER() OVER (PARTITION BY cycleway.way_id ORDER BY recent_cyclability_score.created_at DESC) as rn
-                                                FROM cycleway 
-                                                LEFT JOIN cyclability_score AS recent_cyclability_score ON cycleway.way_id = ANY(recent_cyclability_score.way_ids)
+                                                SELECT c.*, cs.score,
+                                                ROW_NUMBER() OVER (PARTITION BY c.way_id ORDER BY cs.created_at DESC) as rn
+                                                FROM cyclability_score cs 
+                                                right JOIN cycleway c ON c.way_id = ANY(cs.way_ids)
                                             ) t
                                         WHERE t.rn = 1;"
