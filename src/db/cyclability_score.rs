@@ -3,7 +3,7 @@ use sqlx::Postgres;
 
 use crate::component::info_panel::Bounds;
 
-#[derive(sqlx::FromRow, Debug, Clone)]
+#[derive(sqlx::FromRow, Debug)]
 pub struct CyclabilityScore {
     pub id: i32,
     pub score: f64,

@@ -6,10 +6,10 @@ use sqlx::Postgres;
 #[derive(Debug, sqlx::FromRow)]
 struct ResponseDb {
     name: Option<String>,
-    way_id: Option<i64>,
-    geom: Option<String>,
-    source: Option<i64>,
-    target: Option<i64>,
+    way_id: i64,
+    geom: String,
+    source: i64,
+    target: i64,
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -23,10 +23,10 @@ pub struct Route {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Cycleway {
     pub name: Option<String>,
-    pub way_id: Option<i64>,
-    pub geom: Option<Vec<[f64; 2]>>,
-    pub source: Option<i64>,
-    pub target: Option<i64>,
+    pub way_id: i64,
+    pub geom: Vec<[f64; 2]>,
+    pub source: i64,
+    pub target: i64,
 }
 
 #[derive(Debug, sqlx::FromRow)]
@@ -222,33 +222,22 @@ impl From<ResponseDb> for Cycleway {
 
 impl From<&ResponseDb> for Cycleway {
     fn from(response: &ResponseDb) -> Self {
-        match response.geom.as_ref() {
-            Some(str) => {
-                let re = Regex::new(r"(-?\d+\.*\d*) (-?\d+\.*\d*)").unwrap();
-                let points = re
-                    .captures_iter(str.as_str())
-                    .map(|cap| {
-                        let x = cap[1].parse::<f64>().unwrap();
-                        let y = cap[2].parse::<f64>().unwrap();
+        let re = Regex::new(r"(-?\d+\.*\d*) (-?\d+\.*\d*)").unwrap();
+        let points = re
+            .captures_iter(response.geom.as_str())
+            .map(|cap| {
+                let x = cap[1].parse::<f64>().unwrap();
+                let y = cap[2].parse::<f64>().unwrap();
 
-                        [x, y]
-                    })
-                    .collect::<Vec<[f64; 2]>>();
-                Cycleway {
-                    name: response.name.clone(),
-                    way_id: response.way_id,
-                    geom: Some(points),
-                    source: response.source,
-                    target: response.target,
-                }
-            }
-            None => Cycleway {
-                name: None,
-                way_id: None,
-                geom: None,
-                source: None,
-                target: None,
-            },
+                [x, y]
+            })
+            .collect::<Vec<[f64; 2]>>();
+        Cycleway {
+            name: response.name.clone(),
+            way_id: response.way_id,
+            geom: points,
+            source: response.source,
+            target: response.target,
         }
     }
 }

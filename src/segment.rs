@@ -44,64 +44,64 @@ pub async fn route(
     // It is not the best way to do it, but it is the simplest
     routes.push(
         Cycleway::route(
-            &start_segment.source.unwrap(),
-            &cycleways.first().unwrap().target.unwrap(),
+            &start_segment.source,
+            &cycleways.first().unwrap().target,
             conn.clone(),
         )
         .await?,
     );
     routes.push(
         Cycleway::route(
-            &start_segment.source.unwrap(),
-            &cycleways.first().unwrap().source.unwrap(),
+            &start_segment.source,
+            &cycleways.first().unwrap().source,
             conn.clone(),
         )
         .await?,
     );
     routes.push(
         Cycleway::route(
-            &start_segment.source.unwrap(),
-            &cycleways.last().unwrap().target.unwrap(),
+            &start_segment.source,
+            &cycleways.last().unwrap().target,
             conn.clone(),
         )
         .await?,
     );
     routes.push(
         Cycleway::route(
-            &start_segment.source.unwrap(),
-            &cycleways.last().unwrap().source.unwrap(),
+            &start_segment.source,
+            &cycleways.last().unwrap().source,
             conn.clone(),
         )
         .await?,
     );
     routes.push(
         Cycleway::route(
-            &start_segment.target.unwrap(),
-            &cycleways.first().unwrap().target.unwrap(),
+            &start_segment.target,
+            &cycleways.first().unwrap().target,
             conn.clone(),
         )
         .await?,
     );
     routes.push(
         Cycleway::route(
-            &start_segment.target.unwrap(),
-            &cycleways.first().unwrap().source.unwrap(),
+            &start_segment.target,
+            &cycleways.first().unwrap().source,
             conn.clone(),
         )
         .await?,
     );
     routes.push(
         Cycleway::route(
-            &start_segment.target.unwrap(),
-            &cycleways.last().unwrap().target.unwrap(),
+            &start_segment.target,
+            &cycleways.last().unwrap().target,
             conn.clone(),
         )
         .await?,
     );
     routes.push(
         Cycleway::route(
-            &start_segment.target.unwrap(),
-            &cycleways.last().unwrap().source.unwrap(),
+            &start_segment.target,
+            &cycleways.last().unwrap().source,
             conn.clone(),
         )
         .await?,
