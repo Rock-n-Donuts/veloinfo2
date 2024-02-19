@@ -3,22 +3,24 @@ local cycleway = osm2pgsql.define_way_table("cycleway", {
         column = 'name',
         type = 'text'
     }, {
-        column = 'winter_service',
-        type = 'text'
-    }, {
         column = 'geom',
-        type = 'LineString'
+        type = 'LineString',
+        not_null = true
     }, {
         column = 'source',
-        type = 'int8'
+        type = 'int8',
+        not_null = true
     }, {
         column = 'target',
-        type = 'int8'
+        type = 'int8',
+        not_null = true
     },{
         column = 'kind',
-        type = 'text'
+        type = 'text',
+        not_null = true
     }, {
-        column = 'tags', type = 'jsonb'
+        column = 'tags', type = 'jsonb',
+        not_null = true
     }
 })
 
@@ -34,7 +36,6 @@ function osm2pgsql.process_way(object)
         
         cycleway:insert({
             name = object.tags.name,
-            winter_service = object.tags.winter_service,
             geom = object:as_linestring(),
             source = object.nodes[1],
             target = object.nodes[#object.nodes],
@@ -47,7 +48,6 @@ function osm2pgsql.process_way(object)
         object.tags["cycleway:both"] == "lane" then
             cycleway:insert({
                 name = object.tags.name,
-                winter_service = object.tags.winter_service,
                 geom = object:as_linestring(),
                 source = object.nodes[1],
                 target = object.nodes[#object.nodes],
@@ -57,7 +57,6 @@ function osm2pgsql.process_way(object)
     elseif object.tags.cycleway == "shared_lane" or object.tags.cycleway == "lane" or object.tags["cycleway:left"] == "shared_lane" or object.tags["cycleway:right"] == "shared_lane" or object.tags["cycleway:both"] == "shared_lane" then
             cycleway:insert({
                 name = object.tags.name,
-                winter_service = object.tags.winter_service,
                 geom = object:as_linestring(),
                 source = object.nodes[1],
                 target = object.nodes[#object.nodes],
