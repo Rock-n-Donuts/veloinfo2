@@ -3,8 +3,17 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use sqlx::Postgres;
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Cycleway {
+    pub name: Option<String>,
+    pub way_id: i64,
+    pub geom: Vec<[f64; 2]>,
+    pub source: i64,
+    pub target: i64,
+}
+
 #[derive(Debug, sqlx::FromRow)]
-struct ResponseDb {
+struct CyclewayDb {
     name: Option<String>,
     way_id: i64,
     geom: String,
@@ -20,15 +29,6 @@ pub struct Route {
     pub target: i64,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Cycleway {
-    pub name: Option<String>,
-    pub way_id: i64,
-    pub geom: Vec<[f64; 2]>,
-    pub source: i64,
-    pub target: i64,
-}
-
 #[derive(Debug, sqlx::FromRow)]
 struct RouteDB {
     way_id: i64,
@@ -37,29 +37,9 @@ struct RouteDB {
     geom: String,
 }
 
-impl From<&RouteDB> for Route {
-    fn from(response: &RouteDB) -> Self {
-        let re = Regex::new(r"(-?\d+\.*\d*) (-?\d+\.*\d*)").unwrap();
-        let points = re
-            .captures_iter(response.geom.as_str())
-            .map(|cap| {
-                let x = cap[1].parse::<f64>().unwrap();
-                let y = cap[2].parse::<f64>().unwrap();
-                [x, y]
-            })
-            .collect::<Vec<[f64; 2]>>();
-        Route {
-            way_ids: vec![response.way_id],
-            geom: points,
-            source: response.source,
-            target: response.target,
-        }
-    }
-}
-
 impl Cycleway {
     pub async fn get(way_id: i64, conn: sqlx::Pool<Postgres>) -> Result<Cycleway> {
-        let response: ResponseDb = sqlx::query_as(
+        let response: CyclewayDb = sqlx::query_as(
             r#"select
                 name,  
                 way_id,
@@ -74,8 +54,11 @@ impl Cycleway {
         Ok(response.into())
     }
 
-    pub async fn get_by_score_id(score_id: i32, conn: sqlx::Pool<Postgres>) -> Result<Vec<Cycleway>> {
-        let responses: Vec<ResponseDb> = sqlx::query_as(
+    pub async fn get_by_score_id(
+        score_id: i32,
+        conn: sqlx::Pool<Postgres>,
+    ) -> Result<Vec<Cycleway>> {
+        let responses: Vec<CyclewayDb> = sqlx::query_as(
             r#"select
                 c.name,  
                 c.way_id,
@@ -142,7 +125,6 @@ impl Cycleway {
         );
         Ok(segment)
     }
-
 
     // todo: Finish to have a route from node to node
     #[allow(dead_code)]
@@ -214,14 +196,14 @@ impl Cycleway {
     }
 }
 
-impl From<ResponseDb> for Cycleway {
-    fn from(response: ResponseDb) -> Self {
+impl From<CyclewayDb> for Cycleway {
+    fn from(response: CyclewayDb) -> Self {
         Cycleway::from(&response)
     }
 }
 
-impl From<&ResponseDb> for Cycleway {
-    fn from(response: &ResponseDb) -> Self {
+impl From<&CyclewayDb> for Cycleway {
+    fn from(response: &CyclewayDb) -> Self {
         let re = Regex::new(r"(-?\d+\.*\d*) (-?\d+\.*\d*)").unwrap();
         let points = re
             .captures_iter(response.geom.as_str())
@@ -235,6 +217,26 @@ impl From<&ResponseDb> for Cycleway {
         Cycleway {
             name: response.name.clone(),
             way_id: response.way_id,
+            geom: points,
+            source: response.source,
+            target: response.target,
+        }
+    }
+}
+
+impl From<&RouteDB> for Route {
+    fn from(response: &RouteDB) -> Self {
+        let re = Regex::new(r"(-?\d+\.*\d*) (-?\d+\.*\d*)").unwrap();
+        let points = re
+            .captures_iter(response.geom.as_str())
+            .map(|cap| {
+                let x = cap[1].parse::<f64>().unwrap();
+                let y = cap[2].parse::<f64>().unwrap();
+                [x, y]
+            })
+            .collect::<Vec<[f64; 2]>>();
+        Route {
+            way_ids: vec![response.way_id],
             geom: points,
             source: response.source,
             target: response.target,
