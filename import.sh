@@ -10,6 +10,6 @@ psql -h db -U postgres -d carte -c "CREATE OR REPLACE VIEW bike_path AS
                                                 SELECT c.*, cs.score,
                                                 ROW_NUMBER() OVER (PARTITION BY c.way_id ORDER BY cs.created_at DESC) as rn
                                                 FROM cyclability_score cs 
-                                                right JOIN cycleway c ON c.way_id = ANY(cs.way_ids)
+                                                JOIN cycleway c ON c.way_id = ANY(cs.way_ids)
                                             ) t
                                         WHERE t.rn = 1;"
