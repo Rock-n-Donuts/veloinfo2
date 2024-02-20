@@ -9,9 +9,11 @@ services:
       - root:/root/.local:z
       - target:/app/target
       - node_modules:/app/node_modules
+      - images:/images
     ports:
       - 3000:3000
     environment:
+      - IMAGE_DIR=/images
       - PGUSER=postgres
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/carte
       - MARTIN_URL=http://localhost:3001
@@ -43,3 +45,5 @@ volumes:
   db:
   target:
   node_modules:
+  images:
+    

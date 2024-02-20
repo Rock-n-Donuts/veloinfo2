@@ -30,11 +30,16 @@ use tower_http::trace::TraceLayer;
 use tower_livereload::LiveReloadLayer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
+use lazy_static::lazy_static;
 
 mod component;
 mod db;
 mod score_selector_controler;
 mod segment;
+
+lazy_static! {
+    static ref IMAGE_DIR: String = env::var("IMAGE_DIR").unwrap();
+}
 
 #[derive(Clone)]
 struct VeloinfoState {
@@ -100,11 +105,13 @@ async fn main() {
         .route("/style.json", get(style))
         .route("/index.js", get(indexjs))
         .nest_service("/pub/", ServeDir::new("pub"))
+        .nest_service("/images/", ServeDir::new(IMAGE_DIR.as_str()))
         .with_state(state)
         .layer(TraceLayer::new_for_http());
 
     if dev {
-        app = app.layer(LiveReloadLayer::new().request_predicate(not_htmx_predicate));
+        let livereload = LiveReloadLayer::new();   
+        app = app.layer(livereload.request_predicate(not_htmx_predicate));
     }
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();

@@ -1,18 +1,20 @@
+use std::env;
+
 use super::{
     info_panel::InfopanelContribution, score_circle::ScoreCircle, score_selector::ScoreSelector,
 };
 use crate::{db::cyclability_score::CyclabilityScore, VeloInfoError, VeloinfoState};
 use anyhow::Result;
 use askama::Template;
-use axum::{
-    extract::{Path, State},
-    Form,
-};
+use axum::extract::multipart::Multipart;
+use axum::extract::{Path, State};
 use futures::future::join_all;
+use lazy_static::lazy_static;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use sqlx::Postgres;
-use lazy_static::lazy_static;
+use tokio::fs::File;
+use tokio::io::AsyncWriteExt;
 
 #[derive(Template)]
 #[template(path = "segment_panel.html", escape = "none")]
@@ -57,29 +59,61 @@ pub struct PostValue {
     pub score: f64,
     pub comment: String,
     pub way_ids: String,
+    pub photo: Option<String>,
 }
 
 lazy_static! {
     static ref RE_NUMBER: Regex = Regex::new(r"\d+").unwrap();
 }
 
+lazy_static! {
+    static ref IMAGE_DIR: String = env::var("IMAGE_DIR").unwrap();
+}
+
 pub async fn segment_panel_post(
     State(state): State<VeloinfoState>,
-    Form(post): Form<PostValue>,
+    mut multipart: Multipart,
 ) -> Result<SegmentPanel, VeloInfoError> {
-    let way_ids = post.way_ids;
+    let mut score = -1.;
+    let mut comment = "".to_string();
+    let mut way_ids = "".to_string();
+    let mut photo = None;
+    while let Some(field) = multipart.next_field().await.unwrap() {
+        let name = field.name().unwrap();
+        match name {
+            "score" => score = field.text().await.unwrap().parse::<f64>().unwrap(),
+            "comment" => comment = field.text().await.unwrap(),
+            "way_ids" => way_ids = field.text().await.unwrap(),
+            "photo" => photo = Some(field.bytes().await.unwrap()),
+            _ => (),
+        }
+    }
     let way_ids_i64 = RE_NUMBER
         .find_iter(way_ids.as_str())
         .map(|m| m.as_str().parse::<i64>().unwrap())
         .collect::<Vec<i64>>();
 
-    CyclabilityScore::insert(
-        post.score,
-        Some(post.comment.clone()),
-        way_ids_i64.clone(),
+    let id = CyclabilityScore::insert(
+        score,
+        Some(comment),
+        way_ids_i64,
+        match photo.as_ref() {
+            Some(_photo) => Some(IMAGE_DIR.to_string() + "/{}.jpeg"),
+            None => None,
+        },
         state.conn.clone(),
     )
-    .await?;
+    .await
+    .unwrap();
+
+    if let Some(photo) = photo {
+        let photo_path = Some(format!("/images/{}.jpeg", id));
+        let mut file = File::create(photo_path.as_ref().unwrap_or(&"".to_string()))
+            .await
+            .unwrap();
+        file.write(&photo).await.unwrap();
+    }
+
     segment_panel(State(state), Path(way_ids)).await
 }
 

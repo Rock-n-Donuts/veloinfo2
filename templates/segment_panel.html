@@ -18,10 +18,10 @@
                 <input type="hidden" name="way_ids" value="{{way_ids}}">
                 <textarea rows="4" cols="50" name="comment" class="border-2" placeholder="Commentaire"></textarea>
                 <div class="uppercase m-2">
-                    <label for="fileUpload">Choisissez une photo :</label>
-                    <input type="file" id="fileUpload" name="fileUpload">
+                    <label for="photo">Choisissez une photo :</label>
+                    <input type="file" id="photo" name="photo">
                 </div>
-                <button hx-post="/segment_panel" hx-target="#info" class="ml-2 bg-slate-300 rounded uppercase p-2"
+                <button hx-post="/segment_panel"  hx-encoding="multipart/form-data" hx-target="#info" class="ml-2 bg-slate-300 rounded uppercase p-2"
                     hx-on:click="reset()">Enregistrer</button>
             </form>
             {% else %}
