@@ -1,4 +1,4 @@
-<div id="segment_panel" class="absolute w-full md:w-[500px] bg-white z-20 bottom-0 rounded-lg"> 
+<div id="segment_panel" class="absolute w-full md:w-[500px] bg-white z-20 bottom-0 rounded-lg">
     <img id="spinner" class="htmx-indicator absolute z-30 bottom-8 mx-auto inset-x-0 top-1" src="/pub/bars.svg" />
     <div class="p-2 m-1">
         <div hx-on:click="clear()" class="absolute right-2 top-0 cursor-pointer p-4">
@@ -8,9 +8,9 @@
             <div class="flex mb-2 mt-1">
                 {{score_circle}}
                 {% match photo_path %}
-                    {% when Some with (photo_path) %}
-                    <img class="w-40 h-40 rounded-lg p-4" src="{{ photo_path }}" alt="photo">
-                    {% when None %}
+                {% when Some with (photo_path) %}
+                <img class="w-40 h-40 rounded-md p-2" src="{{ photo_path }}" alt="photo">
+                {% when None %}
                 {% endmatch %}
                 <div>
                     <div class="text-sm font-bold">{{ segment_name }}</div>
@@ -26,8 +26,10 @@
                     <label for="photo">Choisissez une photo :</label>
                     <input type="file" id="photo" name="photo">
                 </div>
-                <button hx-post="/segment_panel"  hx-encoding="multipart/form-data" hx-target="#info" class="ml-2 bg-slate-300 rounded uppercase p-2"
-                    hx-on:click="reset()">Enregistrer</button>
+                <button hx-post="/segment_panel" hx-encoding="multipart/form-data" hx-target="#info"
+                    class="ml-2 bg-slate-300 rounded uppercase p-2" hx-on:click="reset()">Enregistrer</button>
+                <button hx-get="/segment_panel/ways/{{way_ids}}" hx-target="#info"
+                    class="ml-2 bg-slate-300 rounded uppercase p-2">annuler</button>
             </form>
             {% else %}
             <button hx-get="/segment_panel/edit/ways/{{way_ids}}" hx-target="#info"
