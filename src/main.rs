@@ -9,6 +9,7 @@ use crate::score_selector_controler::score_bounds_controler;
 use anyhow::Result;
 use askama::Template;
 use askama_axum::IntoResponse;
+use axum::extract::DefaultBodyLimit;
 use axum::http::HeaderMap;
 use axum::http::HeaderValue;
 use axum::http::Request;
@@ -107,7 +108,8 @@ async fn main() {
         .nest_service("/pub/", ServeDir::new("pub"))
         .nest_service("/images/", ServeDir::new(IMAGE_DIR.as_str()))
         .with_state(state)
-        .layer(TraceLayer::new_for_http());
+        .layer(TraceLayer::new_for_http())
+        .layer(DefaultBodyLimit::max(1024 * 1024 * 10));
 
     if dev {
         let livereload = LiveReloadLayer::new();   

@@ -7,6 +7,11 @@
         <div>
             <div class="flex mb-2 mt-1">
                 {{score_circle}}
+                {% match photo_path %}
+                    {% when Some with (photo_path) %}
+                    <img class="w-40 h-40 rounded-lg p-4" src="{{ photo_path }}" alt="photo">
+                    {% when None %}
+                {% endmatch %}
                 <div>
                     <div class="text-sm font-bold">{{ segment_name }}</div>
                     <div class="text-sm text-gray-600">{{ comment }}</div>

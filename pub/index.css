@@ -635,6 +635,10 @@ video {
   height: 40%;
 }
 
+.h-40 {
+  height: 10rem;
+}
+
 .h-7 {
   height: 1.75rem;
 }
@@ -649,6 +653,10 @@ video {
 
 .max-h-48 {
   max-height: 12rem;
+}
+
+.w-40 {
+  width: 10rem;
 }
 
 .w-48 {

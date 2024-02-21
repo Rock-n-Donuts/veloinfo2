@@ -13,8 +13,6 @@ use lazy_static::lazy_static;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use sqlx::Postgres;
-use tokio::fs::File;
-use tokio::io::AsyncWriteExt;
 
 #[derive(Template)]
 #[template(path = "segment_panel.html", escape = "none")]
@@ -26,6 +24,7 @@ pub struct SegmentPanel {
     comment: String,
     edit: bool,
     history: Vec<InfopanelContribution>,
+    photo_path: Option<String>,
 }
 
 #[derive(Debug, sqlx::FromRow, Clone)]
@@ -101,17 +100,20 @@ pub async fn segment_panel_post(
             Some(_photo) => Some(IMAGE_DIR.to_string() + "/{}.jpeg"),
             None => None,
         },
+        match photo.as_ref() {
+            Some(_photo) => Some(IMAGE_DIR.to_string() + "/{}_thumbnail.jpeg"),
+            None => None,
+        },
         state.conn.clone(),
     )
-    .await
-    .unwrap();
+    .await?;
 
     if let Some(photo) = photo {
-        let photo_path = Some(format!("/images/{}.jpeg", id));
-        let mut file = File::create(photo_path.as_ref().unwrap_or(&"".to_string()))
-            .await
-            .unwrap();
-        file.write(&photo).await.unwrap();
+        let img = image::load_from_memory(&photo).unwrap();
+        let img = img.resize(1000, 1000, image::imageops::FilterType::Lanczos3);  
+        img.save(IMAGE_DIR.to_string() + "/"+id.to_string().as_str()+".jpeg").unwrap();
+        let img = img.resize(300, 300, image::imageops::FilterType::Lanczos3);
+        img.save(IMAGE_DIR.to_string() + "/"+id.to_string().as_str()+"_thumbnail.jpeg").unwrap();
     }
 
     segment_panel(State(state), Path(way_ids)).await
@@ -167,6 +169,7 @@ pub async fn segment_panel_edit(
         comment: "".to_string(),
         edit: true,
         history,
+        photo_path: None,
     };
 
     Ok(segment_panel)
@@ -220,6 +223,7 @@ pub async fn segment_panel(
         comment: "".to_string(),
         edit: false,
         history,
+        photo_path: None,
     };
 
     Ok(info_panel)
@@ -264,6 +268,7 @@ async fn segment_panel_score_id(
         comment: score.comment.unwrap_or("".to_string()),
         edit,
         history,
+        photo_path: score.photo_path,
     })
 }
 

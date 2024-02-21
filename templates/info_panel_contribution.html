@@ -2,6 +2,11 @@
      onclick="zoomToSegment(this.getAttribute('data-score-id'));event.stopPropagation();">
      {{ score_circle }}
      <div class="content-start w-full">
+          {% match photo_path_thumbnail %}
+               {% when Some with (photo_path_thumbnail) %}
+               <img class="w-8 h-8 rounded-full" src="{{ photo_path_thumbnail }}" alt="photo">
+               {% when None %}
+          {% endmatch %}
           <div class="flex flex-row justify-between">
                <div class="text-xs"> {{ created_at}} </div>
                <div class="text-xs mr-2"> {{ timeago }} </div>

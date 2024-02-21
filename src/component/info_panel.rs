@@ -31,6 +31,7 @@ pub struct InfopanelContribution {
     name: String,
     comment: String,
     score_id: i32,
+    photo_path_thumbnail: Option<String>,
 }
 
 impl InfopanelContribution {
@@ -54,6 +55,7 @@ impl InfopanelContribution {
                     name: get_name(score.way_ids.as_ref(), conn.clone()).await,
                     comment: score.comment.clone().unwrap_or("".to_string()),
                     score_id: score.id,
+                    photo_path_thumbnail: score.photo_path_thumbnail.clone(),
                 })
             }))
             .await;
@@ -92,6 +94,7 @@ impl InfopanelContribution {
                 name: get_name(score.way_ids.as_ref(), conn.clone()).await,
                 comment: score.comment.clone().unwrap_or("".to_string()),
                 score_id: score.id,
+                photo_path_thumbnail: score.photo_path_thumbnail.clone(),
             }
         }))
         .await

@@ -10,6 +10,7 @@ pub struct CyclabilityScore {
     pub way_ids: Vec<i64>,
     pub created_at: DateTime<Local>,
     pub photo_path: Option<String>,
+    pub photo_path_thumbnail: Option<String>,
 }
 
 impl CyclabilityScore {
@@ -18,7 +19,7 @@ impl CyclabilityScore {
         conn: sqlx::Pool<Postgres>,
     ) -> Result<Vec<CyclabilityScore>, sqlx::Error> {
         sqlx::query_as(
-            r#"select DISTINCT ON (cs.created_at) cs.id, cs.score, cs.comment, cs.way_ids, cs.created_at, cs.photo_path
+            r#"select DISTINCT ON (cs.created_at) cs.id, cs.score, cs.comment, cs.way_ids, cs.created_at, cs.photo_path, cs.photo_path_thumbnail
                from cyclability_score cs
                join cycleway c on c.way_id = any(cs.way_ids) 
                where
@@ -39,7 +40,7 @@ impl CyclabilityScore {
         conn: sqlx::Pool<Postgres>,
     ) -> Vec<CyclabilityScore> {
         let result = sqlx::query_as(
-            r#"select id, score, comment, way_ids, created_at, photo_path
+            r#"select id, score, comment, way_ids, created_at, photo_path, photo_path_thumbnail
                from cyclability_score
                where way_ids = $1
                order by created_at desc
@@ -60,7 +61,7 @@ impl CyclabilityScore {
         conn: sqlx::Pool<Postgres>,
     ) -> Result<CyclabilityScore, sqlx::Error> {
         sqlx::query_as(
-            r#"select id, score, comment, way_ids, created_at, photo_path
+            r#"select id, score, comment, way_ids, created_at, photo_path, photo_path_thumbnail
                from cyclability_score
                where id = $1"#,
         )
@@ -74,7 +75,7 @@ impl CyclabilityScore {
         conn: sqlx::Pool<Postgres>,
     ) -> Option<CyclabilityScore> {
         sqlx::query_as(
-            r#"select id, score, comment, way_ids, created_at, photo_path
+            r#"select id, score, comment, way_ids, created_at, photo_path, photo_path_thumbnail
                from cyclability_score
                where way_ids = $1
                order by created_at desc"#,
@@ -90,28 +91,36 @@ impl CyclabilityScore {
         comment: Option<String>,
         way_ids: Vec<i64>,
         photo_path: Option<String>,
+        photo_path_thumbnail: Option<String>,
         conn: sqlx::Pool<Postgres>,
     ) -> Result<i32, sqlx::Error> {
         let id: i32 = sqlx::query(
             r#"INSERT INTO cyclability_score 
-                    (way_ids, score, comment, photo_path) 
-                    VALUES ($1, $2, $3, $4)
+                    (way_ids, score, comment, photo_path, photo_path_thumbnail) 
+                    VALUES ($1, $2, $3, $4, $5)
                     RETURNING id"#,
         )
         .bind(way_ids)
         .bind(score)
         .bind(comment)
         .bind(&photo_path)
+        .bind(&photo_path_thumbnail)
         .fetch_one(&conn)
-        .await?.get(0);
+        .await?
+        .get(0);
 
         if let Some(photo_path) = photo_path {
             sqlx::query(
                 r#"UPDATE cyclability_score 
-                        SET photo_path = $1 
-                        WHERE id = $2"#,
+                        SET photo_path = $1,
+                        photo_path_thumbnail = $2
+                        WHERE id = $3"#,
             )
             .bind(photo_path.replace("{}", id.to_string().as_str()))
+            .bind(match photo_path_thumbnail {
+                Some(p) => Some(p.replace("{}", id.to_string().as_str())),
+                None => None,
+            })
             .bind(id)
             .execute(&conn)
             .await?;
