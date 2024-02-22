@@ -110,7 +110,7 @@ pub async fn segment_panel_post(
 
     if let Some(photo) = photo {
         let img = image::load_from_memory(&photo).unwrap();
-        let img = img.resize(1000, 1000, image::imageops::FilterType::Lanczos3);  
+        let img = img.resize(1500, 1500, image::imageops::FilterType::Lanczos3);  
         img.save(IMAGE_DIR.to_string() + "/"+id.to_string().as_str()+".jpeg").unwrap();
         let img = img.resize(300, 300, image::imageops::FilterType::Lanczos3);
         img.save(IMAGE_DIR.to_string() + "/"+id.to_string().as_str()+"_thumbnail.jpeg").unwrap();
