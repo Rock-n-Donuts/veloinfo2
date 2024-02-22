@@ -675,6 +675,10 @@ video {
   max-height: 12rem;
 }
 
+.max-h-\[50\%\] {
+  max-height: 50%;
+}
+
 .max-h-full {
   max-height: 100%;
 }
