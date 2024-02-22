@@ -39,7 +39,7 @@ impl InfopanelContribution {
         bounds: Bounds,
         conn: sqlx::Pool<Postgres>,
     ) -> Result<Vec<InfopanelContribution>> {
-        let scores = CyclabilityScore::get_recents(bounds, conn.clone()).await?;
+        let scores = CyclabilityScore::get_recents(&bounds, conn.clone()).await?;
 
         let r: Vec<std::prelude::v1::Result<InfopanelContribution, _>> =
             join_all(scores.iter().map(|score| async {
@@ -103,7 +103,7 @@ impl InfopanelContribution {
 
 async fn get_name(way_ids: &Vec<i64>, conn: sqlx::Pool<Postgres>) -> String {
     join_all(way_ids.iter().map(|way_id| async {
-        Ok(Cycleway::get(*way_id, conn.clone())
+        Ok(Cycleway::get(way_id, conn.clone())
             .await?
             .name
             .unwrap_or("Non inconnu".to_string()))

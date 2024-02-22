@@ -38,7 +38,7 @@ struct RouteDB {
 }
 
 impl Cycleway {
-    pub async fn get(way_id: i64, conn: sqlx::Pool<Postgres>) -> Result<Cycleway> {
+    pub async fn get(way_id: &i64, conn: sqlx::Pool<Postgres>) -> Result<Cycleway> {
         let response: CyclewayDb = sqlx::query_as(
             r#"select
                 name,  
@@ -55,7 +55,7 @@ impl Cycleway {
     }
 
     pub async fn get_by_score_id(
-        score_id: i32,
+        score_id: &i32,
         conn: sqlx::Pool<Postgres>,
     ) -> Result<Vec<Cycleway>> {
         let responses: Vec<CyclewayDb> = sqlx::query_as(

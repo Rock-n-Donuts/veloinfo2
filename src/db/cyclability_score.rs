@@ -15,7 +15,7 @@ pub struct CyclabilityScore {
 
 impl CyclabilityScore {
     pub async fn get_recents(
-        bounds: Bounds,
+        bounds: &Bounds,
         conn: sqlx::Pool<Postgres>,
     ) -> Result<Vec<CyclabilityScore>, sqlx::Error> {
         sqlx::query_as(
@@ -71,7 +71,7 @@ impl CyclabilityScore {
     }
 
     pub async fn get_by_way_ids(
-        way_ids: Vec<i64>,
+        way_ids: &Vec<i64>,
         conn: sqlx::Pool<Postgres>,
     ) -> Option<CyclabilityScore> {
         sqlx::query_as(
@@ -106,11 +106,11 @@ impl CyclabilityScore {
     }
 
     pub async fn insert(
-        score: f64,
-        comment: Option<String>,
-        way_ids: Vec<i64>,
-        photo_path: Option<String>,
-        photo_path_thumbnail: Option<String>,
+        score: &f64,
+        comment: &Option<String>,
+        way_ids: &Vec<i64>,
+        photo_path: &Option<String>,
+        photo_path_thumbnail: &Option<String>,
         conn: sqlx::Pool<Postgres>,
     ) -> Result<i32, sqlx::Error> {
         let id: i32 = sqlx::query(

@@ -12,7 +12,7 @@ pub async fn select(
     Path(way_id): Path<i64>,
 ) -> Result<Json<Cycleway>, VeloInfoError> {
     let conn = state.conn;
-    let searched_segment: Cycleway = Cycleway::get(way_id, conn.clone()).await?;
+    let searched_segment: Cycleway = Cycleway::get(&way_id, conn.clone()).await?;
 
     Ok(Json(searched_segment))
 }
@@ -27,11 +27,11 @@ pub async fn route(
         .find_iter(&way_ids)
         .map(|m| m.as_str().parse::<i64>().unwrap())
         .collect::<Vec<i64>>();
-    let start_segment: Cycleway = Cycleway::get(way_id1, conn.clone()).await?;
+    let start_segment: Cycleway = Cycleway::get(&way_id1, conn.clone()).await?;
     let cycleways: Vec<Cycleway> = join_all(
         way_ids_i64
             .iter()
-            .map(|way_id| async { Cycleway::get(*way_id, conn.clone()).await }),
+            .map(|way_id| async { Cycleway::get(&way_id.clone(), conn.clone()).await }),
     )
     .await
     .iter().filter_map(|c| match c {

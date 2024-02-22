@@ -93,14 +93,14 @@ pub async fn segment_panel_post(
         .collect::<Vec<i64>>();
 
     let id = CyclabilityScore::insert(
-        score,
-        Some(comment),
-        way_ids_i64,
-        match photo.as_ref() {
+        &score,
+        &Some(comment),
+        &way_ids_i64,
+        &match photo.as_ref() {
             Some(_photo) => Some(IMAGE_DIR.to_string() + "/{}.jpeg"),
             None => None,
         },
-        match photo.as_ref() {
+        &match photo.as_ref() {
             Some(_photo) => Some(IMAGE_DIR.to_string() + "/{}_thumbnail.jpeg"),
             None => None,
         },
@@ -128,7 +128,7 @@ pub async fn segment_panel_edit(
         .map(|m| m.as_str().parse::<i64>().unwrap())
         .collect::<Vec<i64>>();
     let cyclability_score =
-        CyclabilityScore::get_by_way_ids(way_ids_i64.clone(), state.conn.clone()).await;
+        CyclabilityScore::get_by_way_ids(&way_ids_i64, state.conn.clone()).await;
     if let Some(score) = cyclability_score {
         println!("score: {:?}", score);
         return segment_panel_score_id(state.conn.clone(), score.id, true).await;
@@ -186,7 +186,7 @@ pub async fn segment_panel(
         .map(|cap| cap.as_str().parse::<i64>().unwrap())
         .collect::<Vec<i64>>();
     let cyclability_score =
-        CyclabilityScore::get_by_way_ids(way_ids_i64.clone(), state.conn.clone()).await;
+        CyclabilityScore::get_by_way_ids(&way_ids_i64, state.conn.clone()).await;
     if let Some(score) = cyclability_score {
         return segment_panel_score_id(state.conn.clone(), score.id, false).await;
     }
