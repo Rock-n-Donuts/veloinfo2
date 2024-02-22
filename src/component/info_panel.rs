@@ -86,6 +86,7 @@ impl InfopanelContribution {
             InfopanelContribution {
                 created_at: score
                     .created_at
+                    .with_timezone(&Montreal)
                     .format_localized("%H:%M - %d %B", Locale::fr_CA)
                     .to_string(),
                 timeago: timeago::Formatter::with_language(French)
