@@ -4,3 +4,4 @@ pub mod segment_panel;
 pub mod style;
 pub mod score_selector;
 pub mod score_circle;
+pub mod photo_scroll;

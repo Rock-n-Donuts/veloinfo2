@@ -77,7 +77,7 @@ impl InfopanelContribution {
     }
 
     pub async fn get_history(
-        way_ids: Vec<i64>,
+        way_ids: &Vec<i64>,
         conn: sqlx::Pool<Postgres>,
     ) -> Vec<InfopanelContribution> {
         let scores = CyclabilityScore::get_history(way_ids, conn.clone()).await;

@@ -1,6 +1,7 @@
 use crate::component::index_js::indexjs;
 use crate::component::info_panel::info_panel_down;
 use crate::component::info_panel::info_panel_up;
+use crate::component::photo_scroll::photo_scroll;
 use crate::component::segment_panel::segment_panel;
 use crate::component::segment_panel::segment_panel_edit;
 use crate::component::segment_panel::segment_panel_post;
@@ -103,6 +104,7 @@ async fn main() {
         .route("/info_panel/down", get(info_panel_down))
         .route("/info_panel/up", post(info_panel_up))
         .route("/score_selector/:score", get(score_selector_controler))
+        .route("/photo_scroll/:photo/:way_ids", get(photo_scroll))
         .route("/style.json", get(style))
         .route("/index.js", get(indexjs))
         .nest_service("/pub/", ServeDir::new("pub"))

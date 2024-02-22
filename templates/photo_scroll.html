@@ -1,0 +1,16 @@
+<div id="photo_scroll" class="fixed inset-0 flex items-center justify-center">
+    <div class="relative object-contain max-w-full max-h-full">
+        {% match previous %}
+            {% when Some with (previous) %}
+                <button class="absolute bottom-0 left-0 text-2xl bg-opacity-50 bg-white p-8" hx-get="/photo_scroll/{{previous}}/{{way_ids}}" hx-swap="outerHTML" hx-target="#photo_scroll">&lt;</button>
+            {% when None %}
+        {% endmatch %}
+        {% match next %}
+            {% when Some with (next) %}
+                <button class="absolute bottom-0 right-0 text-2xl bg-opacity-50 bg-white p-8" hx-get="/photo_scroll/{{next}}/{{way_ids}}" hx-swap="outerHTML" hx-target="#photo_scroll">&gt;</button>
+            {% when None %}
+        {% endmatch %}
+        <img src="/images/{{ photo }}.jpeg" alt="photo">
+        <button class="absolute top-0 right-0 text-2xl bg-opacity-50 bg-white p-8" hx-get="/segment_panel/ways/{{way_ids}}" hx-target="#info">X</button>
+    </div>
+</div>

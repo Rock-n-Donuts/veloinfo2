@@ -24,7 +24,7 @@ pub struct SegmentPanel {
     comment: String,
     edit: bool,
     history: Vec<InfopanelContribution>,
-    photo_path: Option<String>,
+    photo_ids: Vec<i32>,
 }
 
 #[derive(Debug, sqlx::FromRow, Clone)]
@@ -58,7 +58,7 @@ pub struct PostValue {
     pub score: f64,
     pub comment: String,
     pub way_ids: String,
-    pub photo: Option<String>,
+    pub photo: Option<i64>,
 }
 
 lazy_static! {
@@ -158,7 +158,8 @@ pub async fn segment_panel_edit(
             None => acc,
         });
 
-    let history = InfopanelContribution::get_history(way_ids_i64, conn).await;
+    let photo_ids = CyclabilityScore::get_photo_by_way_ids(&way_ids_i64, conn.clone()).await;
+    let history = InfopanelContribution::get_history(&way_ids_i64, conn).await;
     let segment_panel = SegmentPanel {
         way_ids: way_ids.clone(),
         score_circle: ScoreCircle {
@@ -169,7 +170,7 @@ pub async fn segment_panel_edit(
         comment: "".to_string(),
         edit: true,
         history,
-        photo_path: None,
+        photo_ids,
     };
 
     Ok(segment_panel)
@@ -211,8 +212,8 @@ pub async fn segment_panel(
             }
             None => acc,
         });
-    let history = InfopanelContribution::get_history(way_ids_i64, state.conn).await;
-
+    let history = InfopanelContribution::get_history(&way_ids_i64, state.conn.clone()).await;
+    let photo_ids = CyclabilityScore::get_photo_by_way_ids(&way_ids_i64, state.conn.clone()).await; 
     let info_panel = SegmentPanel {
         way_ids: way_ids.clone(),
         score_circle: ScoreCircle {
@@ -223,7 +224,7 @@ pub async fn segment_panel(
         comment: "".to_string(),
         edit: false,
         history,
-        photo_path: None,
+        photo_ids,
     };
 
     Ok(info_panel)
@@ -259,7 +260,8 @@ async fn segment_panel_score_id(
             None => (names, format!("{} {}", ways, way.way_id)),
         }
     });
-    let history = InfopanelContribution::get_history(score.way_ids, conn).await;
+    let history = InfopanelContribution::get_history(&score.way_ids, conn.clone()).await;
+    let photo_ids = CyclabilityScore::get_photo_by_way_ids(&score.way_ids, conn.clone()).await;
     Ok(SegmentPanel {
         way_ids,
         score_circle: ScoreCircle { score: score.score },
@@ -268,7 +270,7 @@ async fn segment_panel_score_id(
         comment: score.comment.unwrap_or("".to_string()),
         edit,
         history,
-        photo_path: score.photo_path,
+        photo_ids,
     })
 }
 

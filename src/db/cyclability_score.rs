@@ -36,7 +36,7 @@ impl CyclabilityScore {
     }
 
     pub async fn get_history(
-        way_ids: Vec<i64>,
+        way_ids: &Vec<i64>,
         conn: sqlx::Pool<Postgres>,
     ) -> Vec<CyclabilityScore> {
         let result = sqlx::query_as(
@@ -84,6 +84,25 @@ impl CyclabilityScore {
         .fetch_one(&conn)
         .await
         .ok()
+    }
+
+    pub async fn get_photo_by_way_ids(
+        way_ids: &Vec<i64>,
+        conn: sqlx::Pool<Postgres>,
+    ) -> Vec<i32> {
+        let result = sqlx::query(
+            r#"select id
+               from cyclability_score
+               where way_ids && $1
+               and photo_path_thumbnail is not null
+               order by created_at desc"#,
+        )
+        .bind(way_ids)
+        .fetch_all(&conn)
+        .await
+        .unwrap();
+
+        result.iter().map(|photo| photo.get(0)).collect()
     }
 
     pub async fn insert(
