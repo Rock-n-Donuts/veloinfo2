@@ -175,8 +175,8 @@ const update_url = () => {
         clearTimeout(timeout_url);
     }
     timeout_url = setTimeout(() => {
-    window.history.replaceState({}, "", "/?lat=" + map.getCenter().lat + "&lng=" + map.getCenter().lng + "&zoom=" + map.getZoom());
-    update_info();
+        window.history.replaceState({}, "", "/?lat=" + map.getCenter().lat + "&lng=" + map.getCenter().lng + "&zoom=" + map.getZoom());
+        update_info();
     }, 1000);
 }
 
