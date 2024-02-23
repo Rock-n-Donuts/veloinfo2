@@ -10,21 +10,34 @@ if ("serviceWorker" in navigator) {
 }
 var way_ids = "";
 
+// Set the initial map center and zoom level
+// the url parameters take precedence over the cookies
+var lng = getCookie("lng") ? getCookie("lng") : -72.45272261855519;
+var lat = getCookie("lat") ? getCookie("lat") : 45.924806212523265;
+var zoom = getCookie("zoom") ? getCookie("zoom") : 6;
+let params = new URLSearchParams(window.location.search);
+if (params.has("lat") && params.has("lng") && params.has("zoom")) {
+    lat = parseFloat(params.get("lat"));
+    lng = parseFloat(params.get("lng"));
+    zoom = parseFloat(params.get("zoom"));
+}
+
 var map = new maplibregl.Map({
     container: 'map',
     style: '/style.json',
-    center: [getCookie("lng") ? getCookie("lng") : -72.45272261855519, getCookie("lat") ? getCookie("lat") : 45.924806212523265],
-    zoom: getCookie("zoom") ? getCookie("zoom") : 6
+    center: [lng, lat],
+    zoom: zoom
 });
 
 map.addControl(new maplibregl.NavigationControl());
-map.addControl(new maplibregl.GeolocateControl({positionOptions: {
-    enableHighAccuracy: true
-},
-trackUserLocation: true
+map.addControl(new maplibregl.GeolocateControl({
+    positionOptions: {
+        enableHighAccuracy: true
+    },
+    trackUserLocation: true
 }));
 
-map.on("load",  () => {
+map.on("load", () => {
     clear();
 })
 
@@ -37,6 +50,7 @@ map.on("move", function (e) {
     document.cookie = "zoom=" + map.getZoom();
     document.cookie = "lng=" + map.getCenter().lng;
     document.cookie = "lat=" + map.getCenter().lat;
+    window.history.replaceState({}, "", "/?lat=" + map.getCenter().lat + "&lng=" + map.getCenter().lng + "&zoom=" + map.getZoom());
     update_info();
 });
 
@@ -143,12 +157,12 @@ display_segment_geom = async (geom) => {
 
 let timeoutId = null;
 update_info = async () => {
-    if (timeoutId){
+    if (timeoutId) {
         clearTimeout(timeoutId);
     }
     timeoutId = setTimeout(async () => {
         var info_panel = document.getElementById("info_panel_up");
-        if(!info_panel) {
+        if (!info_panel) {
             return;
         }
         clear();
@@ -170,7 +184,7 @@ clear = async () => {
     // Display info panel
     var segment_panel = document.getElementById("info");
     var hx_indicator = document.getElementsByClassName("htmx-indicator")[0];
-    if(hx_indicator) {
+    if (hx_indicator) {
         hx_indicator.classList.add("htmx-request");
     }
     const response = await fetch("/info_panel/up", {
@@ -181,7 +195,7 @@ clear = async () => {
         body: JSON.stringify(map.getBounds())
     });
     var hx_indicator = document.getElementsByClassName("htmx-indicator")[0];
-    if(hx_indicator) {
+    if (hx_indicator) {
         hx_indicator.classList.remove("htmx-request");
     }
     const html = await response.text();
