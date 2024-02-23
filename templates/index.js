@@ -50,8 +50,8 @@ map.on("move", function (e) {
     document.cookie = "zoom=" + map.getZoom();
     document.cookie = "lng=" + map.getCenter().lng;
     document.cookie = "lat=" + map.getCenter().lat;
-    window.history.replaceState({}, "", "/?lat=" + map.getCenter().lat + "&lng=" + map.getCenter().lng + "&zoom=" + map.getZoom());
-    update_info();
+
+    update_url();
 });
 
 select = async (event) => {
@@ -168,6 +168,18 @@ update_info = async () => {
         clear();
     }, 1000)
 }
+
+let timeout_url = null;
+const update_url = () => {
+    if (timeout_url) {
+        clearTimeout(timeout_url);
+    }
+    timeout_url = setTimeout(() => {
+    window.history.replaceState({}, "", "/?lat=" + map.getCenter().lat + "&lng=" + map.getCenter().lng + "&zoom=" + map.getZoom());
+    update_info();
+    }, 1000);
+}
+
 
 clear = async () => {
     const selected = map.getSource("selected");
