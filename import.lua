@@ -31,8 +31,11 @@ local cycleway_point = osm2pgsql.define_node_table('cycleway_point', {
 })
 
 function osm2pgsql.process_way(object)
-    if object.tags.highway == 'cycleway' or object.tags.cycleway == "track" or object.tags["cycleway:left"] == "track" or
-        object.tags["cycleway:right"] == "track" or object.tags["cycleway:both"] == "track" then
+    if object.tags.highway == 'cycleway' or 
+        object.tags.cycleway == "track" or 
+        object.tags["cycleway:left"] == "track" or
+        object.tags["cycleway:right"] == "track" or 
+        object.tags["cycleway:both"] == "track" then
         
         cycleway:insert({
             name = object.tags.name,
@@ -42,9 +45,12 @@ function osm2pgsql.process_way(object)
             kind = 'cycleway',
             tags = object.tags
         })
-    elseif object.tags.bicycle == "designated" or object.tags["cycleway:left"] == "share_busway" or
-        object.tags["cycleway:right"] == "share_busway" or object.tags["cycleway:both"] == "share_busway" or
-        object.tags["cycleway:right"] == "lane" or object.tags["cycleway:left"] == "lane" or
+    elseif object.tags.bicycle == "designated" or 
+        object.tags["cycleway:left"] == "share_busway" or
+        object.tags["cycleway:right"] == "share_busway" or 
+        object.tags["cycleway:both"] == "share_busway" or
+        object.tags["cycleway:right"] == "lane" or 
+        object.tags["cycleway:left"] == "lane" or
         object.tags["cycleway:both"] == "lane" then
             cycleway:insert({
                 name = object.tags.name,
