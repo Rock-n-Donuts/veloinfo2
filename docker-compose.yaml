@@ -40,6 +40,18 @@ services:
       - db:/var/lib/postgresql/data:z
     ports:
       - 5432:5432
+  keycloak:
+    image: bitnami/keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_DATABASE_HOST: db
+      KEYCLOAK_DATABASE_PORT: 5432
+      KEYCLOAK_DATABASE_USER: postgres
+      KEYCLOAK_DATABASE_NAME: carte
+      KEYCLOAK_DATABASE_PASSWORD: postgres
+    ports:
+      - 8080:8080
 volumes:
   root:
   db:
