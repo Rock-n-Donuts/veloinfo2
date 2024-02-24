@@ -1,6 +1,7 @@
 use crate::component::index_js::indexjs;
 use crate::component::info_panel::info_panel_down;
 use crate::component::info_panel::info_panel_up;
+use crate::component::menu::{menu_close, menu_open};
 use crate::component::photo_scroll::photo_scroll;
 use crate::component::segment_panel::segment_panel;
 use crate::component::segment_panel::segment_panel_edit;
@@ -95,6 +96,8 @@ async fn main() {
             get(segment_panel_edit),
         )
         .route("/segment_panel", post(segment_panel_post))
+        .route("/menu/open", get(menu_open))
+        .route("/menu/closed", get(menu_close))
         .route("/segment/select/:way_id", get(select))
         .route("/segment/route/:way_id1/:way_ids", get(route))
         .route(

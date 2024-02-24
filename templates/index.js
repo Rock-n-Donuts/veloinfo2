@@ -155,12 +155,12 @@ display_segment_geom = async (geom) => {
     map.fitBounds(bounds, { padding: window.innerWidth * .10 });
 }
 
-let timeoutId = null;
+let timeout_info = null;
 update_info = async () => {
-    if (timeoutId) {
-        clearTimeout(timeoutId);
+    if (timeout_info) {
+        clearTimeout(timeout_info);
     }
-    timeoutId = setTimeout(async () => {
+    timeout_info = setTimeout(async () => {
         var info_panel = document.getElementById("info_panel_up");
         if (!info_panel) {
             return;
