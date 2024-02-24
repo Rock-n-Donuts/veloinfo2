@@ -660,10 +660,6 @@ video {
   display: none;
 }
 
-.h-10 {
-  height: 2.5rem;
-}
-
 .h-12 {
   height: 3rem;
 }
@@ -702,10 +698,6 @@ video {
 
 .max-h-full {
   max-height: 100%;
-}
-
-.w-10 {
-  width: 2.5rem;
 }
 
 .w-8 {

@@ -1,7 +1,7 @@
 <div id="menu">
     <div class="absolute top-2 left-2 z-10 flex flex-col">
         {% if open == true %}
-        <img src="/pub/menu.png" id="menu-icon" class="h-10 w-10 cursor-pointer" hx-get="/menu/closed" hx-target="#menu"
+        <img src="/pub/menu.png" id="menu-icon" class="h-8 w-8 cursor-pointer" hx-get="/menu/closed" hx-target="#menu"
             hx-swap="outerHTML" />
         <div class="flex flex-col bg-white p-2 rounded-md">
             <a href="https://www.openstreetmap.org/edit#map={{zoom}}/{{lat}}/{{lng}}" target="_blank" class="flex">
@@ -14,7 +14,7 @@
             </a>
         </div>
         {% else %}
-        <img src="/pub/menu.png" id="menu-icon" class="h-10 w-10 cursor-pointer" hx-get="/menu/open" hx-target="#menu"
+        <img src="/pub/menu.png" id="menu-icon" class="h-8 w-8 cursor-pointer" hx-get="/menu/open" hx-target="#menu"
             hx-swap="outerHTML" />
         {% endif %}
     </div>
