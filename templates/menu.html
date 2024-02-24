@@ -1,23 +1,21 @@
 <div id="menu">
     <div class="absolute top-2 left-2 z-10 flex flex-col">
-    {% if open == true %}
-        <img src="/pub/menu.png" id="menu-icon" class="h-6 w-6 cursor-pointer"
-            hx-get="/menu/closed" hx-target="#menu" hx-swap="outerHTML" />
+        {% if open == true %}
+        <img src="/pub/menu.png" id="menu-icon" class="h-10 w-10 cursor-pointer" hx-get="/menu/closed" hx-target="#menu"
+            hx-swap="outerHTML" />
         <div class="flex flex-col bg-white p-2 rounded-md">
-            <a href="https://www.openstreetmap.org/edit#map={{zoom}}/{{lat}}/{{lng}}" 
-                target="_blank" 
-                class="flex"
-                >
+            <a href="https://www.openstreetmap.org/edit#map={{zoom}}/{{lat}}/{{lng}}" target="_blank" class="flex">
                 <div class="flex" hx-get="/menu/closed" hx-target="#menu" hx-swap="outerHTML">
-                <img src="/pub/osm.svg" alt="osm" 
-                    class="h-4 mr-2">
-                Editer sur OpenStreetMap
+                    <img src="/pub/osm.svg" alt="osm" class="h-6 mr-2">
+                    <div class="text-lg">
+                        Editer sur OpenStreetMap
+                    </div>
                 </div>
             </a>
         </div>
-    {% else %}
-        <img src="/pub/menu.png" id="menu-icon" class="h-6 w-6 cursor-pointer"
-            hx-get="/menu/open" hx-target="#menu" hx-swap="outerHTML" />
-    {% endif %}
+        {% else %}
+        <img src="/pub/menu.png" id="menu-icon" class="h-10 w-10 cursor-pointer" hx-get="/menu/open" hx-target="#menu"
+            hx-swap="outerHTML" />
+        {% endif %}
     </div>
 </div>
