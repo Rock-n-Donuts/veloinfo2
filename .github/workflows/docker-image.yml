@@ -24,5 +24,5 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Push Docker image
-      run: docker push martinhamel/veloinfo  docker://docker.io/martinhamel/veloinfo
+      run: docker push martinhamel/veloinfo
      
