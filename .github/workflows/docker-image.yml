@@ -15,4 +15,14 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      run: docker build . --file Dockerfile --tag martinhamel/veloinfo:$(date +%s)
+       
+    - name: Log in to Docker Hub
+      uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+      with:
+          username: ${{ secrets.docker_user }}
+          password: ${{ secrets.docker_password }}
+
+    - name: Push Docker image
+      run: docker push martinhamel/veloinfo  docker://docker.io/martinhamel/veloinfo
+     
