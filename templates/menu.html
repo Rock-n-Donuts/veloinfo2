@@ -1,10 +1,27 @@
 <div id="menu">
     <div class="absolute top-2 left-2 z-10 flex flex-col">
         {% if open == true %}
-        <img src="/pub/menu.png" id="menu-icon" class="h-8 w-8 cursor-pointer" hx-get="/menu/closed" hx-target="#menu"
-            hx-swap="outerHTML" />
-        <div class="flex flex-col bg-white p-2 rounded-md">
-            <a href="https://www.openstreetmap.org/edit#map={{zoom}}/{{lat}}/{{lng}}" target="_blank" class="flex">
+        <div href="" class="fixed h-full w-full bg-opacity-50 bg-white z-20" hx-get="/menu/closed" hx-target="#menu"
+            hx-swap="outerHTML"></div>
+        <img src="/pub/menu.png" id="menu-icon" class="h-8 w-8 z-30 cursor-pointer"
+            hx-get="/menu/closed" hx-target="#menu" hx-swap="outerHTML" />
+        <div class="flex flex-col bg-white p-2 rounded-md z-30">
+            <div class="flex">
+                {% if login %}
+                <a href="{{ keycloak_url }}/auth?client_id=veloinfo&response_type=code" class="text-lg flex">
+                    <img src="/pub/login.jpg" alt="velo" class="h-6 mr-2">
+                    se connecter
+                </a>
+                {% else %}
+                <a href="{{ keycloak_url }}/logout?client_id=veloinfo&response_type=code&post_logout_redirect_uri=http://localhost:3000/logout"
+                    class="text-lg flex">
+                    <img src="/pub/logout.jpg" alt="velo" class="h-6 mr-2">
+                    se déconnecter
+                </a>
+                {% endif %}
+            </div>
+            <hr class="m-2">
+            <a href="https://www.openstreetmap.org/#map={{zoom}}/{{lat}}/{{lng}}" target="_blank" class="flex">
                 <div class="flex" hx-get="/menu/closed" hx-target="#menu" hx-swap="outerHTML">
                     <img src="/pub/osm.svg" alt="osm" class="h-6 mr-2">
                     <div class="text-lg">
@@ -12,10 +29,9 @@
                     </div>
                 </div>
             </a>
+            {% else %}
+            <img src="/pub/menu.png" id="menu-icon" class="h-8 w-8 cursor-pointer" hx-get="/menu/open" hx-target="#menu"
+                hx-swap="outerHTML" />
+            {% endif %}
         </div>
-        {% else %}
-        <img src="/pub/menu.png" id="menu-icon" class="h-8 w-8 cursor-pointer" hx-get="/menu/open" hx-target="#menu"
-            hx-swap="outerHTML" />
-        {% endif %}
     </div>
-</div>
