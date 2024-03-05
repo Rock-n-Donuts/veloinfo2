@@ -25,7 +25,7 @@ pub async fn route(
     let conn = state.conn;
     let way_ids_i64 = re
         .find_iter(&way_ids)
-        .map(|m| m.as_str().parse::<i64>().unwrap())
+        .map(|m| m.as_str().parse::<i64>().unwrap_or_default())
         .collect::<Vec<i64>>();
     let start_segment: Cycleway = Cycleway::get(&way_id1, conn.clone()).await?;
     let cycleways: Vec<Cycleway> = join_all(
@@ -45,7 +45,7 @@ pub async fn route(
     routes.push(
         Cycleway::route(
             &start_segment.source,
-            &cycleways.first().unwrap().target,
+            &cycleways.first().expect("uncomplete cycleways").target,
             conn.clone(),
         )
         .await?,
@@ -53,7 +53,7 @@ pub async fn route(
     routes.push(
         Cycleway::route(
             &start_segment.source,
-            &cycleways.first().unwrap().source,
+            &cycleways.first().expect("uncomplete cycleways").source,
             conn.clone(),
         )
         .await?,
@@ -61,7 +61,7 @@ pub async fn route(
     routes.push(
         Cycleway::route(
             &start_segment.source,
-            &cycleways.last().unwrap().target,
+            &cycleways.last().expect("uncomplete cycleways").target,
             conn.clone(),
         )
         .await?,
@@ -69,7 +69,7 @@ pub async fn route(
     routes.push(
         Cycleway::route(
             &start_segment.source,
-            &cycleways.last().unwrap().source,
+            &cycleways.last().expect("uncomplete cycleways").source,
             conn.clone(),
         )
         .await?,
@@ -77,7 +77,7 @@ pub async fn route(
     routes.push(
         Cycleway::route(
             &start_segment.target,
-            &cycleways.first().unwrap().target,
+            &cycleways.first().expect("uncomplete cycleways").target,
             conn.clone(),
         )
         .await?,
@@ -85,7 +85,7 @@ pub async fn route(
     routes.push(
         Cycleway::route(
             &start_segment.target,
-            &cycleways.first().unwrap().source,
+            &cycleways.first().expect("uncomplete cycleways").source,
             conn.clone(),
         )
         .await?,
@@ -93,7 +93,7 @@ pub async fn route(
     routes.push(
         Cycleway::route(
             &start_segment.target,
-            &cycleways.last().unwrap().target,
+            &cycleways.last().expect("uncomplete cycleways").target,
             conn.clone(),
         )
         .await?,
@@ -101,7 +101,7 @@ pub async fn route(
     routes.push(
         Cycleway::route(
             &start_segment.target,
-            &cycleways.last().unwrap().source,
+            &cycleways.last().expect("uncomplete cycleways").source,
             conn.clone(),
         )
         .await?,

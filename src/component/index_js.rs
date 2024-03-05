@@ -10,7 +10,7 @@ struct IndexJs {
 }
 
 pub async fn indexjs() -> impl IntoResponse {
-    let martin_url = env::var("MARTIN_URL").unwrap();
+    let martin_url = env::var("MARTIN_URL").expect("MARTIN_URL must be set");
 
     let mut headers = HeaderMap::new();
     headers.insert(

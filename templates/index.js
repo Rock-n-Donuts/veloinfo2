@@ -43,7 +43,7 @@ map.on("load", () => {
 
 
 map.on("click", async function (event) {
-    if (map.getZoom() > 15) {
+    if (map.getZoom() > 14) {
         select(event);
     }
 });

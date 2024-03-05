@@ -1,3 +1,4 @@
+use crate::auth::logout;
 use crate::component::index_js::indexjs;
 use crate::component::info_panel::info_panel_down;
 use crate::component::info_panel::info_panel_up;
@@ -8,7 +9,7 @@ use crate::component::segment_panel::segment_panel_edit;
 use crate::component::segment_panel::segment_panel_post;
 use crate::component::segment_panel::select_score_id;
 use crate::score_selector_controler::score_bounds_controler;
-use anyhow::Result;
+use crate::auth::auth;
 use askama::Template;
 use askama_axum::IntoResponse;
 use axum::extract::DefaultBodyLimit;
@@ -16,7 +17,6 @@ use axum::http::HeaderMap;
 use axum::http::HeaderValue;
 use axum::http::Request;
 use axum::http::StatusCode;
-use axum::response::Html;
 use axum::response::Response;
 use axum::routing::post;
 use axum::routing::{get, Router};
@@ -39,6 +39,7 @@ mod component;
 mod db;
 mod score_selector_controler;
 mod segment;
+mod auth;
 
 lazy_static! {
     static ref IMAGE_DIR: String = env::var("IMAGE_DIR").unwrap();
@@ -86,6 +87,8 @@ async fn main() {
 
     let mut app = Router::new()
         .route("/", get(index))
+        .route("/auth", get(auth))
+        .route("/logout", get(logout))
         .route("/segment_panel/id/:id", get(select_score_id))
         .route(
             "/segment_panel/ways/:way_ids",
@@ -160,17 +163,16 @@ impl IntoResponse for VIError {
 
 #[derive(Template)]
 #[template(path = "index.html", escape = "none")]
-struct IndexTemplate {}
+pub struct IndexTemplate {}
 
-async fn index() -> Result<impl IntoResponse, VIError> {
+pub async fn index() -> (HeaderMap, IndexTemplate) {
     let template = IndexTemplate {};
-    let body = template.render()?;
     let mut headers = HeaderMap::new();
     headers.insert(
         "Content-Type",
         HeaderValue::from_static("text/html; charset=utf-8"),
     );
-    Ok((headers, Html(body)))
+    (headers, template)
 }
 
 pub struct VeloInfoError(anyhow::Error);

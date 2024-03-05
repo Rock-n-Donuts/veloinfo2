@@ -684,6 +684,10 @@ video {
   height: 2rem;
 }
 
+.h-auto {
+  height: auto;
+}
+
 .h-full {
   height: 100%;
 }
@@ -696,20 +700,12 @@ video {
   max-height: 50%;
 }
 
-.max-h-full {
-  max-height: 100%;
-}
-
 .w-8 {
   width: 2rem;
 }
 
 .w-full {
   width: 100%;
-}
-
-.max-w-full {
-  max-width: 100%;
 }
 
 .cursor-pointer {

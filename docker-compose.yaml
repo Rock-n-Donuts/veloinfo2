@@ -49,7 +49,7 @@ services:
       KEYCLOAK_DATABASE_HOST: db
       KEYCLOAK_DATABASE_PORT: 5432
       KEYCLOAK_DATABASE_USER: postgres
-      KEYCLOAK_DATABASE_NAME: carte
+      KEYCLOAK_DATABASE_NAME: keycloak
       KEYCLOAK_DATABASE_PASSWORD: postgres
     ports:
       - 8080:8080

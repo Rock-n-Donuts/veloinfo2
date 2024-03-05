@@ -35,45 +35,36 @@ pub struct InfopanelContribution {
 }
 
 impl InfopanelContribution {
-    pub async fn get(
-        bounds: Bounds,
-        conn: sqlx::Pool<Postgres>,
-    ) -> Result<Vec<InfopanelContribution>> {
-        let scores = CyclabilityScore::get_recents(&bounds, conn.clone()).await?;
+    pub async fn get(bounds: Bounds, conn: sqlx::Pool<Postgres>) -> Vec<InfopanelContribution> {
+        let scores = match CyclabilityScore::get_recents(&bounds, conn.clone()).await{
+            Result::Ok(cs) => cs,
+            Err(e) => {
+                eprintln!("Error getting contributions {:?}", e);
+                Vec::new()
+            }
+        };
 
-        let r: Vec<std::prelude::v1::Result<InfopanelContribution, _>> =
-            join_all(scores.iter().map(|score| async {
-                Ok(InfopanelContribution {
-                    created_at: score
-                        .created_at
-                        .with_timezone(&Montreal)
-                        .format_localized("%H:%M - %d %B", Locale::fr_CA)
-                        .to_string(),
-                    timeago: timeago::Formatter::with_language(French)
-                        .convert_chrono(score.created_at, Local::now()),
-                    score_circle: ScoreCircle { score: score.score },
-                    name: get_name(score.way_ids.as_ref(), conn.clone()).await,
-                    comment: score.comment.clone().unwrap_or("".to_string()),
-                    score_id: score.id,
-                    photo_path_thumbnail: score.photo_path_thumbnail.clone(),
-                })
-            }))
-            .await;
-
-        Ok(r.iter()
-            .filter(
-                |result: &&std::prelude::v1::Result<InfopanelContribution, _>| match result {
-                    Result::Ok(_) => true,
-                    Err(_) => false,
-                },
-            )
-            .map(
-                |result: &std::prelude::v1::Result<InfopanelContribution, _>| {
-                    result.as_ref().unwrap()
-                },
-            )
-            .cloned()
-            .collect::<Vec<InfopanelContribution>>())
+        join_all(scores.iter().map(|score| async {
+            Ok(InfopanelContribution {
+                created_at: score
+                    .created_at
+                    .with_timezone(&Montreal)
+                    .format_localized("%H:%M - %d %B", Locale::fr_CA)
+                    .to_string(),
+                timeago: timeago::Formatter::with_language(French)
+                    .convert_chrono(score.created_at, Local::now()),
+                score_circle: ScoreCircle { score: score.score },
+                name: get_name(score.way_ids.as_ref(), conn.clone()).await,
+                comment: score.comment.clone().unwrap_or("".to_string()),
+                score_id: score.id,
+                photo_path_thumbnail: score.photo_path_thumbnail.clone(),
+            })
+        }))
+        .await
+        .iter()
+        .filter_map(|result| result.as_ref().ok())
+        .cloned()
+        .collect::<Vec<InfopanelContribution>>()
     }
 
     pub async fn get_history(
@@ -147,12 +138,7 @@ pub async fn info_panel_up(
     State(state): State<VeloinfoState>,
     Json(bounds): Json<Bounds>,
 ) -> InfoPanelTemplate {
-    let contributions = match InfopanelContribution::get(bounds, state.conn).await{
-        Result::Ok(c) => c,
-        Err(e) => {
-            eprintln!("Error getting contributions {:?}", e);
-            Vec::new()},
-    };
+    let contributions = InfopanelContribution::get(bounds, state.conn).await;
     InfoPanelTemplate {
         arrow: "▼".to_string(),
         contributions: contributions,
