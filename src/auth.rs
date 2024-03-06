@@ -38,7 +38,7 @@ pub async fn auth(auth: Query<Auth>, jar: CookieJar) -> (CookieJar, Redirect) {
         .post(format!(
             "{}{}",
             KEYCLOAK_LOCAL_URL.to_string(),
-            "/realms/master/protocol/openid-connect/token"
+            "/protocol/openid-connect/token"
         ))
         .form(&params)
         .send()
@@ -60,7 +60,7 @@ pub async fn auth(auth: Query<Auth>, jar: CookieJar) -> (CookieJar, Redirect) {
     println!("token: {:?}", token_string);
 
     let userinfo = match client
-        .get(KEYCLOAK_LOCAL_URL.to_string() + "/realms/master/protocol/openid-connect/userinfo")
+        .get(KEYCLOAK_LOCAL_URL.to_string() + "/protocol/openid-connect/userinfo")
         .header("Content-Type", "application/x-www-form-urlencoded")
         .header("Authorization", format!("Bearer {}", token.access_token))
         .send()
@@ -133,7 +133,7 @@ mod tests {
             .post(format!(
                 "{}{}",
                 crate::auth::KEYCLOAK_LOCAL_URL.to_string(),
-                "/realms/master/protocol/openid-connect/token"
+                "/protocol/openid-connect/token"
             ))
             .form(&[
                 ("grant_type", "password"),
@@ -156,7 +156,7 @@ mod tests {
             .get(format!(
                 "{}{}",
                 crate::auth::KEYCLOAK_LOCAL_URL.to_string(),
-                "/realms/master/protocol/openid-connect/userinfo"
+                "/protocol/openid-connect/userinfo"
             ))
             .header("Content-Type", "application/x-www-form-urlencoded")
             .header("Authorization", format!("Bearer {}", token.access_token))

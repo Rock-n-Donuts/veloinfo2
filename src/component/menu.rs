@@ -25,7 +25,7 @@ impl Menu {
             lat,
             lng,
             zoom,
-            keycloak_url: KEYCLOAK_EXTERN_URL.to_string() + "/realms/master/protocol/openid-connect",
+            keycloak_url: KEYCLOAK_EXTERN_URL.to_string() + "/protocol/openid-connect",
             login: true,
         }
     }
@@ -69,7 +69,7 @@ pub async fn menu_open(jar: CookieJar) -> (CookieJar, Menu) {
             lat,
             lng,
             zoom,
-            keycloak_url: KEYCLOAK_EXTERN_URL.to_string() + "realms/master/protocol/openid-connect",
+            keycloak_url: KEYCLOAK_EXTERN_URL.to_string() + "/protocol/openid-connect",
             login: true,
         },
     )
@@ -84,7 +84,7 @@ pub async fn menu_close() -> Menu {
         lat,
         lng,
         zoom,
-        keycloak_url: KEYCLOAK_EXTERN_URL.to_string() + "realms/master/protocol/openid-connect",
+        keycloak_url: KEYCLOAK_EXTERN_URL.to_string() + "/protocol/openid-connect",
         login: false,
     }
 }
