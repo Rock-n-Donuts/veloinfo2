@@ -4,7 +4,7 @@ use lazy_static::lazy_static;
 use std::env;
 
 lazy_static! {
-    static ref KEYCLOAK_URL: String = env::var("KEYCLOAK_URL").expect("KEYCLOAK_URL must be set");
+    static ref KEYCLOAK_EXTERN_URL: String = env::var("KEYCLOAK_EXTERN_URL").expect("KEYCLOAK_URL must be set");
 }
 
 #[derive(Template)]
@@ -25,7 +25,7 @@ impl Menu {
             lat,
             lng,
             zoom,
-            keycloak_url: KEYCLOAK_URL.clone(),
+            keycloak_url: KEYCLOAK_EXTERN_URL.to_string() + "/realms/master/protocol/openid-connect",
             login: true,
         }
     }
@@ -69,7 +69,7 @@ pub async fn menu_open(jar: CookieJar) -> (CookieJar, Menu) {
             lat,
             lng,
             zoom,
-            keycloak_url: KEYCLOAK_URL.clone(),
+            keycloak_url: KEYCLOAK_EXTERN_URL.to_string() + "realms/master/protocol/openid-connect",
             login: true,
         },
     )
@@ -84,61 +84,8 @@ pub async fn menu_close() -> Menu {
         lat,
         lng,
         zoom,
-        keycloak_url: KEYCLOAK_URL.clone(),
+        keycloak_url: KEYCLOAK_EXTERN_URL.to_string() + "realms/master/protocol/openid-connect",
         login: false,
     }
 }
 
-//test call to keycloak
-#[cfg(test)]
-mod tests{
-    use serde::Serialize;
-    use serde_json::from_str;
-
-    #[derive(Debug, serde::Deserialize)]
-    struct Token{
-        access_token: String,
-    }
-
-    #[derive(Debug, serde::Deserialize, Serialize)]
-    struct Userinfo{
-        sub: String,
-        email: String,
-        email_verified: bool,
-        name: String,
-        preferred_username: String,
-        given_name: String,
-        family_name: String,
-    }
-
-    #[tokio::test]
-    pub async fn test_keycloak(){
-        let client = reqwest::Client::new();
-        let token = client
-            .post("http://keycloak:8080/realms/master/protocol/openid-connect/token")
-            .form(&[
-                ("grant_type", "password"),
-                ("client_id", "veloinfo"),
-                ("username", "martinhamel"),
-                ("password", ":5@$>C=8:rMEhTs"),
-                ("scope", "openid")
-            ])
-            .send()
-            .await.unwrap().text().await.unwrap();
-        println!("token 1: {:?}", token);
-        let token = from_str::<Token>(&token).unwrap();
-
-        // we call userinfo to get the user info
-        let userinfo: Userinfo = client
-            .get("http://keycloak:8080/realms/master/protocol/openid-connect/userinfo")
-            .header("Content-Type", "application/x-www-form-urlencoded")
-            .header("Authorization", format!("Bearer {}", token.access_token))
-            .send()
-            .await
-            .unwrap()
-            .json().await.unwrap();
-
-        println!("userinfo: {:?}", userinfo);
-        assert!(userinfo.email == "martin@ma4s.org");
-    }
-}
