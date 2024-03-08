@@ -75,7 +75,7 @@ pub async fn auth(auth: Query<Auth>, jar: CookieJar) -> (CookieJar, Redirect) {
         .await
     {
         Ok(userinfo) => {
-            match userinfo.text().await {
+            match userinfo.json::<Userinfo>().await {
             Ok(userinfo) => userinfo,
             Err(e) => {
                 eprintln!("Error json: {:?}", e);
@@ -88,10 +88,17 @@ pub async fn auth(auth: Query<Auth>, jar: CookieJar) -> (CookieJar, Redirect) {
         }
     };
 
-    println!("userinfo: {}", userinfo);
+    println!("userinfo: {:?}", userinfo);
 
     (
-        jar.add(Cookie::new("userinfo", userinfo)),
+        jar.clone().add(Cookie::new("userinfo", match serde_json::to_string(&userinfo){
+            Ok(userinfo) => userinfo,
+            Err(e) => {
+                eprintln!("Error json: {:?}", e);
+                return (jar, Redirect::to("/"));
+            }
+        
+        })),
         Redirect::to("/"),
     )
 }
