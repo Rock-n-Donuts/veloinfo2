@@ -33,6 +33,7 @@ pub async fn auth(auth: Query<Auth>, jar: CookieJar) -> (CookieJar, Redirect) {
         ("grant_type", "authorization_code"),
         ("client_id", "veloinfo"),
         ("scope", "openid"),
+        ("redirect_uri", "http://localhost:3000/auth"),
     ];
     let (token, token_string) = match client
         .post(format!(
@@ -45,7 +46,14 @@ pub async fn auth(auth: Query<Auth>, jar: CookieJar) -> (CookieJar, Redirect) {
         .await
     {
         Ok(token) => match token.text().await {
-            Ok(token) => (from_str::<Token>(&token).unwrap(), token),
+            Ok(token) => (match from_str::<Token>(&token) {
+                Ok(token) => token,
+                Err(e) => {
+                    eprintln!("Token: {:?}", token);
+                    eprintln!("Error json: {:?}", e);
+                    return (jar.clone(), Redirect::to("/"));
+                }
+            }, token),
             Err(e) => {
                 eprintln!("Error get text from the response: {:?}", e);
                 return (jar.clone(), Redirect::to("/"));
@@ -66,23 +74,24 @@ pub async fn auth(auth: Query<Auth>, jar: CookieJar) -> (CookieJar, Redirect) {
         .send()
         .await
     {
-        Ok(userinfo) => match userinfo.json::<Userinfo>().await {
+        Ok(userinfo) => {
+            match userinfo.text().await {
             Ok(userinfo) => userinfo,
             Err(e) => {
                 eprintln!("Error json: {:?}", e);
                 return (jar.clone(), Redirect::to("/"));
             }
-        },
+        }},
         Err(e) => {
             eprintln!("Error calling keycloak: {:?}", e);
             return (jar.clone(), Redirect::to("/"));
         }
     };
 
-    println!("userinfo: {:?}", userinfo);
+    println!("userinfo: {}", userinfo);
 
     (
-        jar.add(Cookie::new("token", token_string)),
+        jar.add(Cookie::new("userinfo", userinfo)),
         Redirect::to("/"),
     )
 }
@@ -101,7 +110,7 @@ struct Userinfo {
 pub async fn logout(jar: CookieJar) -> (CookieJar, Redirect) {
     println!("Logout");
 
-    (jar.remove(Cookie::build("jwt")), Redirect::to("/"))
+    (jar.remove(Cookie::build("userinfo")), Redirect::to("/"))
 }
 
 //test call to keycloak
@@ -129,6 +138,10 @@ mod tests {
     #[tokio::test]
     pub async fn test_keycloak() {
         let client = reqwest::Client::new();
+        println!(
+            "KEYCLOAK_LOCAL_URL: {:?}",
+            crate::auth::KEYCLOAK_LOCAL_URL.to_string() + "/protocol/openid-connect/token"
+        );
         let token = client
             .post(format!(
                 "{}{}",

@@ -8,7 +8,7 @@
         <div class="flex flex-col bg-white p-2 rounded-md z-30">
             <div class="flex">
                 {% if login %}
-                <a href="{{ keycloak_url }}/auth?client_id=veloinfo&response_type=code" class="text-lg flex">
+                <a href="{{ keycloak_url }}/auth?client_id=veloinfo&response_type=code&scope=openid&redirect_uri=http://localhost:3000/auth" class="text-lg flex">
                     <img src="/pub/login.jpg" alt="velo" class="h-6 mr-2">
                     se connecter
                 </a>

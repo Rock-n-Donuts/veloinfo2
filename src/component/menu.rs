@@ -50,17 +50,17 @@ pub async fn menu_open(jar: CookieJar) -> (CookieJar, Menu) {
             return (jar, Menu::login(0.0, 0.0, 0));
         }
     };
-    let openid = match jar.get("openid") {
-        Some(openid) => {
-            openid.value()
+    let userinfo = match jar.get("userinfo") {
+        Some(userinfo) => {
+            userinfo.value()
         }
         None => {
-            eprintln!("No openid in cookie jar");
+            eprintln!("No userinfo in cookie jar");
             return (jar, Menu::login(lat, lng, zoom));
         }
     };
 
-    println!("OpenID: {:?}", openid);
+    println!("userinfo: {:?}", userinfo);
 
     (
         jar,
@@ -70,7 +70,7 @@ pub async fn menu_open(jar: CookieJar) -> (CookieJar, Menu) {
             lng,
             zoom,
             keycloak_url: KEYCLOAK_EXTERN_URL.to_string() + "/protocol/openid-connect",
-            login: true,
+            login: false,
         },
     )
 }
