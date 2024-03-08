@@ -2,11 +2,12 @@ use axum::{extract::Query, response::Redirect};
 use axum_extra::extract::cookie::{Cookie, CookieJar};
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
-use serde_json::from_str;
 
 lazy_static! {
-    static ref KEYCLOAK_LOCAL_URL: String =
-        std::env::var("KEYCLOAK_LOCAL_URL").expect("KEYCLOAK_URL must be set");
+    static ref KEYCLOAK_SERVER_URL: String =
+        std::env::var("KEYCLOAK_SERVER_URL").expect("KEYCLOAK_SERVER_URL must be set");
+    static ref VELOINFO_URL: String =
+        std::env::var("VELOINFO_URL").expect("VELOINFO_URL must be set");
 }
 
 #[derive(Debug, Deserialize)]
@@ -26,34 +27,35 @@ struct Token {
 pub async fn auth(auth: Query<Auth>, jar: CookieJar) -> (CookieJar, Redirect) {
     let code = auth.code.clone();
 
-    println!("Auth: {:?}", code);
     let client = reqwest::Client::new();
+    let redirect_uri = format!("{}{}", VELOINFO_URL.to_string(), "/auth");
+    println!("redirect_uri: {:?}", redirect_uri);
     let params = [
         ("code", code.as_str()),
         ("grant_type", "authorization_code"),
         ("client_id", "veloinfo"),
         ("scope", "openid"),
-        ("redirect_uri", "http://localhost:3000/auth"),
+        ("redirect_uri", redirect_uri.as_str()),
     ];
-    let (token, token_string) = match client
-        .post(format!(
-            "{}{}",
-            KEYCLOAK_LOCAL_URL.to_string(),
-            "/protocol/openid-connect/token"
-        ))
+    let token_url = format!("{}{}", KEYCLOAK_SERVER_URL.to_string(), "/protocol/openid-connect/token");
+    println!("POST url: {:?}", token_url);
+    let token = match client
+        .post(token_url.as_str())
         .form(&params)
         .send()
         .await
     {
         Ok(token) => match token.text().await {
-            Ok(token) => (match from_str::<Token>(&token) {
-                Ok(token) => token,
-                Err(e) => {
-                    eprintln!("Token: {:?}", token);
-                    eprintln!("Error json: {:?}", e);
-                    return (jar.clone(), Redirect::to("/"));
+            Ok(token) => {
+                match serde_json::from_str::<Token>(&token){
+                    Ok(token) => token,
+                    Err(e) => {
+                        eprintln!("Token: {:?}", token);    
+                        eprintln!("Error deserialize Token: {:?}", e);
+                        return (jar.clone(), Redirect::to("/"));
+                    }
                 }
-            }, token),
+            },
             Err(e) => {
                 eprintln!("Error get text from the response: {:?}", e);
                 return (jar.clone(), Redirect::to("/"));
@@ -65,40 +67,37 @@ pub async fn auth(auth: Query<Auth>, jar: CookieJar) -> (CookieJar, Redirect) {
         }
     };
 
-    println!("token: {:?}", token_string);
-
     let userinfo = match client
-        .get(KEYCLOAK_LOCAL_URL.to_string() + "/protocol/openid-connect/userinfo")
+        .get(KEYCLOAK_SERVER_URL.to_string() + "/protocol/openid-connect/userinfo")
         .header("Content-Type", "application/x-www-form-urlencoded")
         .header("Authorization", format!("Bearer {}", token.access_token))
         .send()
         .await
     {
-        Ok(userinfo) => {
-            match userinfo.json::<Userinfo>().await {
+        Ok(userinfo) => match userinfo.json::<Userinfo>().await {
             Ok(userinfo) => userinfo,
             Err(e) => {
                 eprintln!("Error json: {:?}", e);
                 return (jar.clone(), Redirect::to("/"));
             }
-        }},
+        },
         Err(e) => {
             eprintln!("Error calling keycloak: {:?}", e);
             return (jar.clone(), Redirect::to("/"));
         }
     };
 
-    println!("userinfo: {:?}", userinfo);
-
     (
-        jar.clone().add(Cookie::new("userinfo", match serde_json::to_string(&userinfo){
-            Ok(userinfo) => userinfo,
-            Err(e) => {
-                eprintln!("Error json: {:?}", e);
-                return (jar, Redirect::to("/"));
-            }
-        
-        })),
+        jar.clone().add(Cookie::new(
+            "userinfo",
+            match serde_json::to_string(&userinfo) {
+                Ok(userinfo) => userinfo,
+                Err(e) => {
+                    eprintln!("Error json: {:?}", e);
+                    return (jar, Redirect::to("/"));
+                }
+            },
+        )),
         Redirect::to("/"),
     )
 }
@@ -120,74 +119,3 @@ pub async fn logout(jar: CookieJar) -> (CookieJar, Redirect) {
     (jar.remove(Cookie::build("userinfo")), Redirect::to("/"))
 }
 
-//test call to keycloak
-#[cfg(test)]
-mod tests {
-    use serde::Serialize;
-    use serde_json::from_str;
-
-    #[derive(Debug, serde::Deserialize)]
-    struct Token {
-        access_token: String,
-    }
-
-    #[derive(Debug, serde::Deserialize, Serialize)]
-    struct Userinfo {
-        sub: String,
-        email: String,
-        email_verified: bool,
-        name: String,
-        preferred_username: String,
-        given_name: String,
-        family_name: String,
-    }
-
-    #[tokio::test]
-    pub async fn test_keycloak() {
-        let client = reqwest::Client::new();
-        println!(
-            "KEYCLOAK_LOCAL_URL: {:?}",
-            crate::auth::KEYCLOAK_LOCAL_URL.to_string() + "/protocol/openid-connect/token"
-        );
-        let token = client
-            .post(format!(
-                "{}{}",
-                crate::auth::KEYCLOAK_LOCAL_URL.to_string(),
-                "/protocol/openid-connect/token"
-            ))
-            .form(&[
-                ("grant_type", "password"),
-                ("client_id", "veloinfo"),
-                ("username", "martinhamel"),
-                ("password", ":5@$>C=8:rMEhTs"),
-                ("scope", "openid"),
-            ])
-            .send()
-            .await
-            .unwrap()
-            .text()
-            .await
-            .unwrap();
-        println!("token 1: {:?}", token);
-        let token = from_str::<Token>(&token).unwrap();
-
-        // we call userinfo to get the user info
-        let userinfo: Userinfo = client
-            .get(format!(
-                "{}{}",
-                crate::auth::KEYCLOAK_LOCAL_URL.to_string(),
-                "/protocol/openid-connect/userinfo"
-            ))
-            .header("Content-Type", "application/x-www-form-urlencoded")
-            .header("Authorization", format!("Bearer {}", token.access_token))
-            .send()
-            .await
-            .unwrap()
-            .json()
-            .await
-            .unwrap();
-
-        println!("userinfo: {:?}", userinfo);
-        assert!(userinfo.email == "martin@ma4s.org");
-    }
-}

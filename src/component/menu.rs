@@ -4,7 +4,8 @@ use lazy_static::lazy_static;
 use std::env;
 
 lazy_static! {
-    static ref KEYCLOAK_EXTERN_URL: String = env::var("KEYCLOAK_EXTERN_URL").expect("KEYCLOAK_URL must be set");
+    static ref KEYCLOAK_BROWSER_URL: String = env::var("KEYCLOAK_BROWSER_URL").expect("KEYCLOAK_URL must be set");
+    static ref VELOINFO_URL: String = env::var("VELOINFO_URL").expect("VELOINFO_URL must be set");
 }
 
 #[derive(Template)]
@@ -16,6 +17,7 @@ pub struct Menu {
     zoom: i32,
     keycloak_url: String,
     login: bool,
+    veloinfo_url: String,
 }
 
 impl Menu {
@@ -25,8 +27,9 @@ impl Menu {
             lat,
             lng,
             zoom,
-            keycloak_url: KEYCLOAK_EXTERN_URL.to_string() + "/protocol/openid-connect",
+            keycloak_url: KEYCLOAK_BROWSER_URL.to_string() + "/protocol/openid-connect",
             login: true,
+            veloinfo_url: VELOINFO_URL.to_string(),
         }
     }
 }
@@ -69,8 +72,9 @@ pub async fn menu_open(jar: CookieJar) -> (CookieJar, Menu) {
             lat,
             lng,
             zoom,
-            keycloak_url: KEYCLOAK_EXTERN_URL.to_string() + "/protocol/openid-connect",
+            keycloak_url: KEYCLOAK_BROWSER_URL.to_string() + "/protocol/openid-connect",
             login: false,
+            veloinfo_url: VELOINFO_URL.to_string(),
         },
     )
 }
@@ -84,8 +88,9 @@ pub async fn menu_close() -> Menu {
         lat,
         lng,
         zoom,
-        keycloak_url: KEYCLOAK_EXTERN_URL.to_string() + "/protocol/openid-connect",
+        keycloak_url: KEYCLOAK_BROWSER_URL.to_string() + "/protocol/openid-connect",
         login: false,
+        veloinfo_url: VELOINFO_URL.to_string(),
     }
 }
 

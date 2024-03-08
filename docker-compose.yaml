@@ -1,5 +1,5 @@
 services:
-  dev:
+  veloinfo:
     build:
       context: .
       dockerfile: Dockerfile
@@ -17,8 +17,9 @@ services:
       - PGUSER=postgres
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/carte
       - MARTIN_URL=http://localhost:3001
-      - KEYCLOAK_EXTERN_URL=http://keycloak:8080/realms/master
-      - KEYCLOAK_LOCAL_URL=http://keycloak:8080/realms/master
+      - KEYCLOAK_BROWSER_URL=http://keycloak.veloinfo.ca/realms/master
+      - KEYCLOAK_SERVER_URL=http://keycloak.veloinfo.ca/realms/master
+      - VELOINFO_URL=http://localhost:3000
       - ENV=dev
     depends_on:
       - db
@@ -42,18 +43,6 @@ services:
       - db:/var/lib/postgresql/data:z
     ports:
       - 5432:5432
-  keycloak:
-    image: bitnami/keycloak
-    environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
-      KEYCLOAK_DATABASE_HOST: db
-      KEYCLOAK_DATABASE_PORT: 5432
-      KEYCLOAK_DATABASE_USER: postgres
-      KEYCLOAK_DATABASE_NAME: keycloak
-      KEYCLOAK_DATABASE_PASSWORD: postgres
-    ports:
-      - 8080:8080
 volumes:
   root:
   db:
