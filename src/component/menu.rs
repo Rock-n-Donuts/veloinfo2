@@ -4,7 +4,7 @@ use lazy_static::lazy_static;
 use std::env;
 
 lazy_static! {
-    static ref KEYCLOAK_BROWSER_URL: String = env::var("KEYCLOAK_BROWSER_URL").expect("KEYCLOAK_URL must be set");
+    static ref KEYCLOAK_BROWSER_URL: String = env::var("KEYCLOAK_BROWSER_URL").expect("KEYCLOAK_BROWSER_URL must be set");
     static ref VELOINFO_URL: String = env::var("VELOINFO_URL").expect("VELOINFO_URL must be set");
 }
 
