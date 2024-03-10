@@ -1,14 +1,23 @@
-FROM rust as dev
+FROM rust:1.76 as dev
+
+RUN git clone https://github.com/helix-editor/helix.git /helix
+RUN cd /helix && cargo install --path helix-term --locked
+RUN mkdir -p /root/.config/helix
+RUN ln -Ts $PWD/runtime ~/.config/helix/runtime
+ENV HELIX_RUNTIME /helix/runtime
 
 RUN apt-get update && apt-get install -y \
     fish \
     rustfmt \
     osm2pgsql \
-    nodejs npm  
+    nodejs \
+    npm 
+
+RUN rustup component add rust-analyzer
+RUN chsh -s $(which fish)
 
 RUN install -d tailwindcss
     
-RUN chsh -s $(which fish)
 RUN cargo install cargo-watch
 RUN cargo install sqlx-cli --no-default-features --features postgres
 RUN rustup component add rustfmt
