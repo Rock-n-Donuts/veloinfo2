@@ -37,23 +37,20 @@ pub async fn auth(auth: Query<Auth>, jar: CookieJar) -> (CookieJar, Redirect) {
         ("scope", "openid"),
         ("redirect_uri", redirect_uri.as_str()),
     ];
-    let token_url = format!("{}{}", KEYCLOAK_SERVER_URL.to_string(), "/protocol/openid-connect/token");
+    let token_url = format!(
+        "{}{}",
+        KEYCLOAK_SERVER_URL.to_string(),
+        "/protocol/openid-connect/token"
+    );
     println!("POST url: {:?}", token_url);
-    let token = match client
-        .post(token_url.as_str())
-        .form(&params)
-        .send()
-        .await
-    {
+    let token = match client.post(token_url.as_str()).form(&params).send().await {
         Ok(token) => match token.text().await {
-            Ok(token) => {
-                match serde_json::from_str::<Token>(&token){
-                    Ok(token) => token,
-                    Err(e) => {
-                        eprintln!("Token: {:?}", token);    
-                        eprintln!("Error deserialize Token: {:?}", e);
-                        return (jar.clone(), Redirect::to("/"));
-                    }
+            Ok(token) => match serde_json::from_str::<Token>(&token) {
+                Ok(token) => token,
+                Err(e) => {
+                    eprintln!("Token: {:?}", token);
+                    eprintln!("Error deserialize Token: {:?}", e);
+                    return (jar.clone(), Redirect::to("/"));
                 }
             },
             Err(e) => {
@@ -118,4 +115,3 @@ pub async fn logout(jar: CookieJar) -> (CookieJar, Redirect) {
 
     (jar.remove(Cookie::build("userinfo")), Redirect::to("/"))
 }
-
