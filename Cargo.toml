@@ -11,6 +11,7 @@ askama = { version = "0.12.1", features = ["with-axum"] }
 askama_axum = "0.4.0"
 axum = { version = "0.7.2", features = ["multipart"] }
 axum-extra = { version = "0.9.1", features = ["cookie", "typed-header"] }
+axum-macros = "0.4.1"
 chrono = { version = "0.4.34", features = ["unstable-locales"] }
 chrono-tz = "0.8.6"
 futures = "0.3.30"

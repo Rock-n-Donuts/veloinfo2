@@ -3,12 +3,13 @@
         {% if open == true %}
         <div href="" class="fixed h-full w-full bg-opacity-50 bg-white z-20" hx-get="/menu/closed" hx-target="#menu"
             hx-swap="outerHTML"></div>
-        <img src="/pub/menu.png" id="menu-icon" class="h-8 w-8 z-30 cursor-pointer"
-            hx-get="/menu/closed" hx-target="#menu" hx-swap="outerHTML" />
+        <img src="/pub/menu.png" id="menu-icon" class="h-8 w-8 z-30 cursor-pointer" hx-get="/menu/closed"
+            hx-target="#menu" hx-swap="outerHTML" />
         <div class="flex flex-col bg-white p-2 rounded-md z-30">
             <div class="flex">
                 {% if login %}
-                <a href="{{ keycloak_url }}/auth?client_id=veloinfo&response_type=code&scope=openid&redirect_uri={{veloinfo_url}}/auth" class="text-lg flex">
+                <a href="{{ keycloak_url }}/auth?client_id=veloinfo&response_type=code&scope=openid&redirect_uri={{veloinfo_url}}/auth"
+                    class="text-lg flex">
                     <img src="/pub/login.jpg" alt="velo" class="h-6 mr-2">
                     se connecter
                 </a>
@@ -21,7 +22,7 @@
                 {% endif %}
             </div>
             <hr class="m-2">
-            <a href="https://www.openstreetmap.org/#map={{zoom}}/{{lat}}/{{lng}}" target="_blank" class="flex">
+            <a href="https://www.openstreetmap.org/#map={{zoom}}/{{lat}}/{{lng}}&layers=Y" target="_blank" class="flex">
                 <div class="flex" hx-get="/menu/closed" hx-target="#menu" hx-swap="outerHTML">
                     <img src="/pub/osm.svg" alt="osm" class="h-6 mr-2">
                     <div class="text-lg">

@@ -1,3 +1,4 @@
+use crate::auth::auth;
 use crate::auth::logout;
 use crate::component::index_js::indexjs;
 use crate::component::info_panel::info_panel_down;
@@ -8,8 +9,9 @@ use crate::component::segment_panel::segment_panel;
 use crate::component::segment_panel::segment_panel_edit;
 use crate::component::segment_panel::segment_panel_post;
 use crate::component::segment_panel::select_score_id;
+use crate::node::select_node;
+use crate::node::select_nodes;
 use crate::score_selector_controler::score_bounds_controler;
-use crate::auth::auth;
 use askama::Template;
 use askama_axum::IntoResponse;
 use axum::extract::DefaultBodyLimit;
@@ -21,8 +23,8 @@ use axum::response::Response;
 use axum::routing::post;
 use axum::routing::{get, Router};
 use component::style::style;
+use lazy_static::lazy_static;
 use score_selector_controler::score_selector_controler;
-use segment::route;
 use segment::select;
 use sqlx::PgPool;
 use std::env;
@@ -33,13 +35,13 @@ use tower_http::trace::TraceLayer;
 use tower_livereload::LiveReloadLayer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
-use lazy_static::lazy_static;
 
+mod auth;
 mod component;
 mod db;
+mod node;
 mod score_selector_controler;
 mod segment;
-mod auth;
 
 lazy_static! {
     static ref IMAGE_DIR: String = env::var("IMAGE_DIR").unwrap();
@@ -89,20 +91,19 @@ async fn main() {
         .route("/", get(index))
         .route("/auth", get(auth))
         .route("/logout", get(logout))
+        .route("/select/node/:lng/:lat", get(select_node))
+        .route(
+            "/select/nodes/:start_lng/:start_lat/:end_lng/:end_lat",
+            get(select_nodes),
+        )
         .route("/segment_panel/id/:id", get(select_score_id))
-        .route(
-            "/segment_panel/ways/:way_ids",
-            get(segment_panel),
-        )
-        .route(
-            "/segment_panel/edit/ways/:way_ids",
-            get(segment_panel_edit),
-        )
+        .route("/segment_panel/ways/:way_ids", get(segment_panel))
+        .route("/segment_panel/edit/ways/:way_ids", get(segment_panel_edit))
         .route("/segment_panel", post(segment_panel_post))
         .route("/menu/open", get(menu_open))
         .route("/menu/closed", get(menu_close))
         .route("/segment/select/:way_id", get(select))
-        .route("/segment/route/:way_id1/:way_ids", get(route))
+        // .route("/segment/route/:way_id1/:way_ids", get(route))
         .route(
             "/cyclability_score/geom/:cyclability_score_id",
             get(score_bounds_controler),
@@ -120,7 +121,7 @@ async fn main() {
         .layer(DefaultBodyLimit::max(1024 * 1024 * 10));
 
     if dev {
-        let livereload = LiveReloadLayer::new();   
+        let livereload = LiveReloadLayer::new();
         app = app.layer(livereload.request_predicate(not_htmx_predicate));
     }
 

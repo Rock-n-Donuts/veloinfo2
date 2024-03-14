@@ -42,7 +42,7 @@ impl WayInfo {
                 c.name,
                 cs.score,
                 cs.comment
-               from cycleway c
+               from cycleway_way c
                left join cyclability_score cs on c.way_id = any(cs.way_ids)
                where c.way_id = $1
                order by created_at desc"#,
@@ -110,10 +110,12 @@ pub async fn segment_panel_post(
 
     if let Some(photo) = photo {
         let img = image::load_from_memory(&photo).unwrap();
-        let img = img.resize(1500, 1500, image::imageops::FilterType::Lanczos3);  
-        img.save(IMAGE_DIR.to_string() + "/"+id.to_string().as_str()+".jpeg").unwrap();
+        let img = img.resize(1500, 1500, image::imageops::FilterType::Lanczos3);
+        img.save(IMAGE_DIR.to_string() + "/" + id.to_string().as_str() + ".jpeg")
+            .unwrap();
         let img = img.resize(300, 300, image::imageops::FilterType::Lanczos3);
-        img.save(IMAGE_DIR.to_string() + "/"+id.to_string().as_str()+"_thumbnail.jpeg").unwrap();
+        img.save(IMAGE_DIR.to_string() + "/" + id.to_string().as_str() + "_thumbnail.jpeg")
+            .unwrap();
     }
 
     segment_panel(State(state), Path(way_ids)).await
@@ -213,7 +215,7 @@ pub async fn segment_panel(
             None => acc,
         });
     let history = InfopanelContribution::get_history(&way_ids_i64, state.conn.clone()).await;
-    let photo_ids = CyclabilityScore::get_photo_by_way_ids(&way_ids_i64, state.conn.clone()).await; 
+    let photo_ids = CyclabilityScore::get_photo_by_way_ids(&way_ids_i64, state.conn.clone()).await;
     let info_panel = SegmentPanel {
         way_ids: way_ids.clone(),
         score_circle: ScoreCircle {

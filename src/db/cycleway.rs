@@ -21,20 +21,35 @@ struct CyclewayDb {
     target: i64,
 }
 
-#[derive(Debug, Serialize, Clone)]
-pub struct Route {
-    pub way_ids: Vec<i64>,
-    pub geom: Vec<[f64; 2]>,
-    pub source: i64,
-    pub target: i64,
+#[derive(Debug, Serialize, Deserialize, Clone, sqlx::FromRow)]
+pub struct NodeDb {
+    pub way_id: i64,
+    pub geom: String,
+    pub node_id: i64,
+    pub lng: f64,
+    pub lat: f64,
 }
 
-#[derive(Debug, sqlx::FromRow)]
-struct RouteDB {
-    way_id: i64,
-    source: i64,
-    target: i64,
-    geom: String,
+#[derive(Debug, Serialize, Deserialize, Clone, sqlx::FromRow)]
+pub struct Node {
+    pub way_id: i64,
+    pub geom: Vec<[f64; 2]>,
+    pub node_id: i64,
+    pub lng: f64,
+    pub lat: f64,
+}
+
+#[derive(Debug, sqlx::FromRow, Serialize, Deserialize, Clone)]
+pub struct RouteDB {
+    seq: i32,
+    path_seq: i32,
+    node: i64,
+    edge: i64,
+    cost: f64,
+    agg_cost: f64,
+    pub x1: f64,
+    pub y1: f64,
+    pub way_id: i64,
 }
 
 impl Cycleway {
@@ -46,7 +61,7 @@ impl Cycleway {
                 source,
                 target,
                 ST_AsText(ST_Transform(geom, 4326)) as geom  
-               from cycleway where way_id = $1"#,
+               from cycleway_way where way_id = $1"#,
         )
         .bind(way_id)
         .fetch_one(&conn)
@@ -65,7 +80,7 @@ impl Cycleway {
                 c.source,
                 c.target,
                 ST_AsText(ST_Transform(c.geom, 4326)) as geom  
-               from cycleway c
+               from cycleway_way c
                join cyclability_score cs on c.way_id = any(cs.way_ids)
                where cs.id = $1
                "#,
@@ -76,123 +91,79 @@ impl Cycleway {
         Ok(responses.iter().map(|response| response.into()).collect())
     }
 
-    pub async fn route(source: &i64, target: &i64, conn: sqlx::Pool<Postgres>) -> Result<Route> {
-        let responses: Vec<RouteDB> = sqlx::query_as(
-            r#"select   way_id,
-                        $1 as source,
-                        $2 as target, 
+    pub async fn find(
+        lng: &f64,
+        lat: &f64,
+        conn: sqlx::Pool<Postgres>,
+    ) -> Result<Node, sqlx::Error> {
+        let response: NodeDb = match sqlx::query_as(
+            r#"        
+            SELECT
+                way_id,
+                geom,
+                unnest(nodes) as node_id,
+                ST_X(st_transform((dp).geom, 4326)) as lng,
+                ST_Y(st_transform((dp).geom, 4326)) as lat
+            FROM (  
+                SELECT (ST_DumpPoints(geom)) as dp, 
+                        way_id,
                         ST_AsText(ST_Transform(geom, 4326)) as geom,
-                        path_seq
-                from pgr_bdastar(
-                    FORMAT(
-                        $FORMAT$
-                        select  way_id as id, 
-                            source,
-                            target, 
-                            st_length(geom) as cost, 
-                            st_length(geom) as reverse_cost, 
-                            st_x(st_startpoint(geom)) as x1,
-                            st_y(st_startpoint(geom)) as y1,
-                            st_x(st_endpoint(geom)) as x2,
-                            st_y(st_endpoint(geom)) as y2
-                        from cycleway                        
-                        $FORMAT$
-                    )
-                , 
-                $1, 
-                $2
-                ) as pa join cycleway c on pa.edge = c.way_id
-                order by path_seq asc"#,
+                        nodes
+                FROM cycleway_way
+                WHERE ST_DWithin(geom, ST_Transform(ST_SetSRID(ST_MakePoint($1, $2), 4326), 3857), 1000)
+            ) as subquery
+            ORDER BY (dp).geom <-> ST_Transform(ST_SetSRID(ST_MakePoint($1, $2), 4326), 3857)
+            LIMIT 1"#,
         )
-        .bind(source)
-        .bind(target)
-        .fetch_all(&conn)
+        .bind(lng)
+        .bind(lat)
+        .fetch_one(&conn)
         .await
-        .unwrap();
-        let segment: Route = responses.iter().fold(
-            Route {
-                way_ids: Vec::new(),
-                geom: vec![],
-                source: *source,
-                target: *target,
-            },
-            |mut acc, response| {
-                let this_merge: Route = response.into();
-                acc.way_ids.extend(this_merge.way_ids);
-                acc.geom.extend(this_merge.geom);
-                acc
-            },
-        );
-        Ok(segment)
+        {
+            Ok(response) => response,
+            Err(e) => return Err(e),
+        };
+        Ok(response.into())
     }
 
-    // todo: Finish to have a route from node to node
-    #[allow(dead_code)]
-    pub async fn route2(source: &i64, target: &i64, conn: sqlx::Pool<Postgres>) -> Result<Route> {
-        let responses: Vec<RouteDB> = sqlx::query_as(
-            r#"select   way_id,
-                        $1 as source,
-                        $2 as target, 
-                        ST_AsText(ST_Transform(geom, 4326)) as geom,
-                        path_seq
-                from pgr_bdastar(
+    pub async fn route(source: &i64, target: &i64, conn: sqlx::Pool<Postgres>) -> Vec<RouteDB> {
+        println!("source: {}, target: {}", source, target);
+        let responses: Vec<RouteDB> = match sqlx::query_as(
+            r#"SELECT 
+                    pa.*,
+                    x1,
+                    y1,
+                    way_id         
+                FROM pgr_bdastar(
                     FORMAT(
                         $FORMAT$
-                        WITH c_points AS (
-                            SELECT 
-                                (ST_DumpPoints(geom)).geom AS point, 
-                                (ST_DumpPoints(geom)).path[1] AS ord,
-                                way_id
-                            FROM cycleway
-                        ),
-                        cycleway_pairs AS (
-                            SELECT 
-                                way_id as id, 
-                                point AS point1, 
-                                LAG(point) OVER (PARTITION BY way_id ORDER BY ord) AS point2
-                            FROM c_points
-                        )
-                        SELECT cpa.id,
-                            cp1.node_id as source,
-                            cp2.node_id as target,
-                            ST_Length(st_makeline(cpa.point1, cpa.point2)) as cost,
-                            ST_Length(st_makeline(cpa.point1, cpa.point2)) as reverse_cost,
-                            ST_X(cpa.point1) AS x1, 
-                            ST_Y(cpa.point1) AS y1, 
-                            ST_X(cpa.point2) AS x2, 
-                            ST_Y(cpa.point2) AS y2
-                        FROM cycleway_pairs cpa
-                        join cycleway_point cp1 on cp1.geom = point1
-                        join cycleway_point cp2 on cp2.geom = point2
-                        WHERE point2 IS NOT NULL;                        
+                        SELECT *,
+                        st_length(ST_MakeLine(ST_Point(x1, y2), ST_Point(x2, y2))) as cost,
+                        st_length(ST_MakeLine(ST_Point(x1, y2), ST_Point(x2, y2))) as reverse_cost
+                        from edge 
+                        where target is not null                         
                         $FORMAT$
                     )
                 , 
                 $1, 
                 $2
-                ) as pa join cycleway c on pa.edge = c.way_id
-                order by path_seq asc"#,
+                ) as pa
+                left join edge on node = source and target is not null 
+            ORDER BY pa.path_seq ASC"#,
         )
         .bind(source)
         .bind(target)
         .fetch_all(&conn)
         .await
-        .unwrap();
-        let segment: Route = responses.iter().fold(
-            Route {
-                way_ids: Vec::new(),
-                geom: vec![],
-                source: *source,
-                target: *target,
-            },
-            |mut acc, response| {
-                let this_merge: Route = response.into();
-                acc.way_ids.extend(this_merge.way_ids);
-                acc.geom.extend(this_merge.geom);
-                acc
-            },
-        );
-        Ok(segment)
+        {
+            Ok(response) => response,
+            Err(e) => {
+                eprintln!("could not make route {:?}", e);
+                vec![]
+            }
+        };
+        println!("responses: {:?}", responses);
+        responses
     }
 }
 
@@ -224,22 +195,44 @@ impl From<&CyclewayDb> for Cycleway {
     }
 }
 
-impl From<&RouteDB> for Route {
-    fn from(response: &RouteDB) -> Self {
+impl From<NodeDb> for Node {
+    fn from(response: NodeDb) -> Self {
         let re = Regex::new(r"(-?\d+\.*\d*) (-?\d+\.*\d*)").unwrap();
         let points = re
             .captures_iter(response.geom.as_str())
             .map(|cap| {
                 let x = cap[1].parse::<f64>().unwrap();
                 let y = cap[2].parse::<f64>().unwrap();
+
                 [x, y]
             })
             .collect::<Vec<[f64; 2]>>();
-        Route {
-            way_ids: vec![response.way_id],
+        Node {
+            node_id: response.node_id,
+            way_id: response.way_id,
             geom: points,
-            source: response.source,
-            target: response.target,
+            lng: response.lng,
+            lat: response.lat,
         }
     }
 }
+
+// impl From<&RouteDB> for Route {
+//     fn from(response: &RouteDB) -> Self {
+//         let re = Regex::new(r"(-?\d+\.*\d*) (-?\d+\.*\d*)").unwrap();
+//         let points = re
+//             .captures_iter(response.geom.as_str())
+//             .map(|cap| {
+//                 let x = cap[1].parse::<f64>().unwrap();
+//                 let y = cap[2].parse::<f64>().unwrap();
+//                 [x, y]
+//             })
+//             .collect::<Vec<[f64; 2]>>();
+//         Route {
+//             way_ids: vec![response.way_id],
+//             geom: points,
+//             source: response.source,
+//             target: response.target,
+//         }
+//     }
+// }

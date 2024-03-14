@@ -1,14 +1,6 @@
-getCookie = (name) => {
-    let matches = document.cookie.match(new RegExp(
-        "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
-    ));
-    return matches ? decodeURIComponent(matches[1]) : undefined;
-}
-
 if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("/pub/service-worker.js");
 }
-var way_ids = "";
 
 // Set the initial map center and zoom level
 // the url parameters take precedence over the cookies
@@ -56,7 +48,9 @@ map.on("move", function (e) {
     update_url();
 });
 
-select = async (event) => {
+var start_marker = null;
+var end_marker = null;
+async function select(event) {
     let width = 40;
     var features = map.queryRenderedFeatures(
         [
@@ -65,26 +59,35 @@ select = async (event) => {
         ], { layers: ['cycleway', "designated", "shared_lane"] });
     if (!features.length) {
         clear();
+        remove_markers();
         return;
     }
     var feature = features[0];
 
-
-    var fetch_response = await fetch('/segment/select/' + feature.properties.way_id);
-    var response = await fetch_response.json();
-
-    const segment_panel = document.getElementById("segment_panel");
-    if (segment_panel) {
-        fetch_response = await fetch('/segment/route/' + feature.properties.way_id + "/" + way_ids);
-        response = await fetch_response.json();
-        if (response.way_ids.length == 0) {
-            return;
-        }
-        way_ids = response.way_ids;
+    if (!start_marker) {
+        var point = await fetch('/select/node/' + event.lngLat.lng + "/" + event.lngLat.lat);
+        var point = await point.json();
+        console.log("point: ", point);
+        start_marker = new maplibregl.Marker({ color: "#00f" }).setLngLat([point.lng, point.lat]).addTo(map);
+        way_ids = point.way_id;
+        display_segment_geom([point.geom]);
     } else {
-        way_ids = feature.properties.way_id;
+        var point = await fetch('/select/node/' + event.lngLat.lng + "/" + event.lngLat.lat);
+        var point = await point.json();
+        if (end_marker) {
+            end_marker.remove();
+        }
+        end_marker = new maplibregl.Marker({ color: "#f00" }).setLngLat([point.lng, point.lat]).addTo(map);
+
+        var nodes = await fetch('/select/nodes/' + start_marker.getLngLat().lng + "/" + start_marker.getLngLat().lat + "/" + event.lngLat.lng + "/" + event.lngLat.lat);
+        var nodes = await nodes.json();
+        var multiLineString = nodes.map((node) => node.geom);
+        way_ids = nodes.map((node) => node.way_id);
+        way_ids = [...new Set(way_ids)].join(" ");
+
+        display_segment_geom(multiLineString);
     }
-    display_segment_geom(response.geom);
+
     if (way_ids) {
         // Display info panel
         var info_panel = document.getElementById("info");
@@ -95,31 +98,42 @@ select = async (event) => {
         info_panel = document.getElementById("info");
         htmx.process(info_panel);
     }
-
 }
 
-zoomToSegment = async (score_id) => {
-    var fetch_response = await fetch('/cyclability_score/geom/' + score_id);
-    var response = await fetch_response.json();
-    way_ids = response.reduce((way_ids, score) => {
-        return way_ids + " " + score.way_id;
-    }, "");
-    var geom = response.reduce((geom, cycleway) => {
-        cycleway.geom.forEach((coords) => {
-            geom.push(coords);
-        });
-        return geom;
-    }, []);
-    display_segment_geom(geom);
+function remove_markers() {
+    if (start_marker) {
+        start_marker.remove();
+        start_marker = null;
+    }
+    if (end_marker) {
+        end_marker.remove();
+        end_marker = null;
+    }
 }
 
-display_segment_geom = async (geom) => {
+async function zoomToSegment(score_id) {
+    // var fetch_response = await fetch('/cyclability_score/geom/' + score_id);
+    // var response = await fetch_response.json();
+    // way_ids = response.reduce((way_ids, score) => {
+    //     return way_ids + " " + score.way_id;
+    // }, "");
+    // var geom = response.reduce((geom, cycleway) => {
+    //     cycleway.geom.forEach((coords) => {
+    //         geom.push(coords);
+    //     });
+    //     return geom;
+    // }, []);
+    // display_segment_geom(geom);
+}
+
+function display_segment_geom(geom) {
+    console.log("geom: ", geom);
     if (map.getLayer("selected")) {
         map.getSource("selected").setData({
             "type": "Feature",
             "properties": {},
             "geometry": {
-                "type": "LineString",
+                "type": "MultiLineString",
                 "coordinates": geom
             }
         })
@@ -130,7 +144,7 @@ display_segment_geom = async (geom) => {
                 "type": "Feature",
                 "properties": {},
                 "geometry": {
-                    "type": "LineString",
+                    "type": "MultiLineString",
                     "coordinates": geom
                 }
             }
@@ -148,17 +162,17 @@ display_segment_geom = async (geom) => {
     }
 
     // find the largest bounds
-    var bounds = geom.reduce((currentBounds, coord) => {
-        return [
-            [Math.min(coord[0], currentBounds[0][0]), Math.min(coord[1], currentBounds[0][1])], // min coordinates
-            [Math.max(coord[0], currentBounds[1][0]), Math.max(coord[1], currentBounds[1][1])]  // max coordinates
-        ];
-    }, [[Infinity, Infinity], [-Infinity, -Infinity]]);
-    map.fitBounds(bounds, { padding: window.innerWidth * .10 });
+    // var bounds = geom.reduce((currentBounds, coord) => {
+    //     return [
+    //         [Math.min(coord[0], currentBounds[0][0]), Math.min(coord[1], currentBounds[0][1])], // min coordinates
+    //         [Math.max(coord[0], currentBounds[1][0]), Math.max(coord[1], currentBounds[1][1])]  // max coordinates
+    //     ];
+    // }, [[Infinity, Infinity], [-Infinity, -Infinity]]);
+    // map.fitBounds(bounds, { padding: window.innerWidth * .10 });
 }
 
 let timeout_info = null;
-update_info = async () => {
+async function update_info() {
     if (timeout_info) {
         clearTimeout(timeout_info);
     }
@@ -172,7 +186,7 @@ update_info = async () => {
 }
 
 let timeout_url = null;
-const update_url = () => {
+function update_url() {
     if (timeout_url) {
         clearTimeout(timeout_url);
     }
@@ -183,7 +197,7 @@ const update_url = () => {
 }
 
 
-clear = async () => {
+async function clear() {
     const selected = map.getSource("selected");
     if (selected) {
         selected.setData({
@@ -219,9 +233,14 @@ clear = async () => {
     htmx.process(segment_panel);
 }
 
-reset = async () => {
+async function reset() {
     map.getSource("veloinfo").setUrl("{{martin_url}}/bike_path");
 }
 
 
-
+function getCookie(name) {
+    let matches = document.cookie.match(new RegExp(
+        "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+    ));
+    return matches ? decodeURIComponent(matches[1]) : undefined;
+}

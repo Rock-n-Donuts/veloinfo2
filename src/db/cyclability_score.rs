@@ -21,7 +21,7 @@ impl CyclabilityScore {
         sqlx::query_as(
             r#"select DISTINCT ON (cs.created_at) cs.id, cs.score, cs.comment, cs.way_ids, cs.created_at, cs.photo_path, cs.photo_path_thumbnail
                from cyclability_score cs
-               join cycleway c on c.way_id = any(cs.way_ids) 
+               join cycleway_way c on c.way_id = any(cs.way_ids) 
                where
                c.geom && ST_Transform(st_makeenvelope($1, $2, $3, $4, 4326), 3857)
                order by cs.created_at desc
@@ -39,7 +39,7 @@ impl CyclabilityScore {
         way_ids: &Vec<i64>,
         conn: sqlx::Pool<Postgres>,
     ) -> Vec<CyclabilityScore> {
-        let result = sqlx::query_as(
+        match sqlx::query_as(
             r#"select id, score, comment, way_ids, created_at, photo_path, photo_path_thumbnail
                from cyclability_score
                where way_ids = $1
@@ -48,9 +48,8 @@ impl CyclabilityScore {
         )
         .bind(way_ids)
         .fetch_all(&conn)
-        .await;
-
-        match result {
+        .await
+        {
             Ok(scores) => scores,
             Err(_) => vec![],
         }
@@ -86,10 +85,7 @@ impl CyclabilityScore {
         .ok()
     }
 
-    pub async fn get_photo_by_way_ids(
-        way_ids: &Vec<i64>,
-        conn: sqlx::Pool<Postgres>,
-    ) -> Vec<i32> {
+    pub async fn get_photo_by_way_ids(way_ids: &Vec<i64>, conn: sqlx::Pool<Postgres>) -> Vec<i32> {
         let result = sqlx::query(
             r#"select id
                from cyclability_score
