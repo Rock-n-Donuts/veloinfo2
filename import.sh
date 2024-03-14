@@ -1,8 +1,8 @@
 #!/usr/bin/bash
-#rm quebec-latest.osm.pbf
-#wget https://download.geofabrik.de/north-america/canada/quebec-latest.osm.pbf -O quebec-latest.osm.pbf
+rm quebec-latest.osm.pbf
+wget https://download.geofabrik.de/north-america/canada/quebec-latest.osm.pbf -O quebec-latest.osm.pbf
 
-#osm2pgsql -H db -U postgres -d carte -O flex -S import.lua quebec-latest.osm.pbf
+osm2pgsql -H db -U postgres -d carte -O flex -S import.lua quebec-latest.osm.pbf
 
 psql -h db -U postgres -d carte -c "CREATE OR REPLACE VIEW bike_path AS
                                         SELECT *
@@ -15,7 +15,7 @@ psql -h db -U postgres -d carte -c "CREATE OR REPLACE VIEW bike_path AS
                                         WHERE t.rn = 1;
                                         
                                         drop materialized view if exists edge;
-                                        drop sequence edge_id;
+                                        drop sequence if exists edge_id;
                                         CREATE SEQUENCE edge_id;
                                         CREATE MATERIALIZED VIEW edge 
                                         AS SELECT  
