@@ -27,6 +27,31 @@ local cycleway = osm2pgsql.define_way_table("cycleway_way", {
     }
 })
 
+local all_way = osm2pgsql.define_way_table("all_way", { 
+    {
+        column = 'name',
+        type = 'text'
+    }, {
+        column = 'geom',
+        type = 'LineString',
+        not_null = true
+    }, {
+        column = 'source',
+        type = 'int8',
+        not_null = true
+    }, {
+        column = 'target',
+        type = 'int8',
+        not_null = true
+    }, {
+        column = 'tags', type = 'jsonb',
+        not_null = true
+    }, {
+        column = 'nodes',
+        sql_type = 'int8[] NOT NULL'
+    }
+})
+
 local cycleway_point = osm2pgsql.define_node_table('cycleway_node', {
     { column = 'name', type = 'text' },
     { column = 'geom', type = 'Point' },
@@ -80,6 +105,20 @@ function osm2pgsql.process_way(object)
                 source = object.nodes[1],
                 target = object.nodes[#object.nodes],
                 kind = 'shared_lane',
+                tags = object.tags,
+                nodes = "{" .. table.concat(object.nodes, ",") .. "}"
+            })
+    end
+
+    if object.tags.highway ~= 'motorway' and
+        object.tags.bicycle ~= 'no' and
+        object.tags.highway then
+
+            all_way:insert({
+                name = object.tags.name,
+                geom = object:as_linestring(),
+                source = object.nodes[1],
+                target = object.nodes[#object.nodes],
                 tags = object.tags,
                 nodes = "{" .. table.concat(object.nodes, ",") .. "}"
             })
