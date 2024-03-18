@@ -4,7 +4,9 @@ wget https://download.geofabrik.de/north-america/canada/quebec-latest.osm.pbf -O
 
 osm2pgsql -H db -U postgres -d carte -O flex -S import.lua quebec-latest.osm.pbf
 
-psql -h db -U postgres -d carte -c "CREATE OR REPLACE VIEW bike_path AS
+psql -h db -U postgres -d carte -c "
+                                    drop materialized view if exists bike_path;
+                                    CREATE MATERIALIZED VIEW bike_path AS
                                         SELECT *
                                             FROM (
                                                 SELECT c.*, cs.score,
@@ -13,6 +15,7 @@ psql -h db -U postgres -d carte -c "CREATE OR REPLACE VIEW bike_path AS
                                                 JOIN cycleway_way c ON c.way_id = ANY(cs.way_ids)
                                             ) t
                                         WHERE t.rn = 1;
+
                                         
                                         drop materialized view if exists edge;
                                         drop sequence if exists edge_id;
@@ -29,6 +32,15 @@ psql -h db -U postgres -d carte -c "CREATE OR REPLACE VIEW bike_path AS
                                             way_id
                                         from (
                                             select way_id, unnest(nodes) as node, generate_series(1, array_length(nodes, 1)) as seq, geom
-                                            from cycleway_way
-                                        ) as edges;                           
+                                            from all_way
+                                        ) as edges;       
+
+                                        CREATE INDEX bike_path_way_id_idx ON bike_path(way_id);
+                                        CREATE INDEX edge_geom_gist ON bike_path USING gist(geom);
+
+                                        CREATE INDEX edge_way_id_idx ON edge(way_id);
+                                        CREATE INDEX edge_source_idx ON edge(source);
+                                        CREATE INDEX edge_target_idx ON edge(target);                    
+                                        CREATE INDEX edge_x1_idx ON edge(x1);                    
+                                        CREATE INDEX edge_y1_idx ON edge(y1);                    
                                         "
