@@ -141,13 +141,9 @@ impl CyclabilityScore {
             .await?;
         };
 
-        sqlx::query(
-            r#"UPDATE cycleway_way 
-                    SET cyclability_score_id = $1
-                    WHERE way_id = any($2)"#,
-        )
-        .execute(&conn)
-        .await?;
+        sqlx::query(r#"REFRESH MATERIALIZED VIEW bike_path"#)
+            .execute(&conn)
+            .await?;
 
         Ok(id)
     }
