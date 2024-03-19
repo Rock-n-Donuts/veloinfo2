@@ -9,6 +9,7 @@ use crate::component::segment_panel::segment_panel;
 use crate::component::segment_panel::segment_panel_edit;
 use crate::component::segment_panel::segment_panel_post;
 use crate::component::segment_panel::select_score_id;
+use crate::node::route;
 use crate::node::select_node;
 use crate::node::select_nodes;
 use crate::score_selector_controler::score_bounds_controler;
@@ -103,6 +104,7 @@ async fn main() {
         .route("/menu/open", get(menu_open))
         .route("/menu/closed", get(menu_close))
         .route("/segment/select/:way_id", get(select))
+        .route("/route/:start_lng/:start_lat/:end_lgt/:end_lat", get(route))
         // .route("/segment/route/:way_id1/:way_ids", get(route))
         .route(
             "/cyclability_score/geom/:cyclability_score_id",

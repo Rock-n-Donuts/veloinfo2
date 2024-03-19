@@ -1,4 +1,5 @@
 use crate::db::cycleway::{Cycleway, Node};
+use crate::db::edge::{Edge, Point};
 use crate::VeloinfoState;
 use axum::{
     extract::{Path, State},
@@ -80,4 +81,40 @@ pub async fn select_nodes(
     .await;
 
     Json(segments)
+}
+
+pub async fn route(
+    State(state): State<VeloinfoState>,
+    Path((start_lng, start_lat, end_lng, end_lat)): Path<(f64, f64, f64, f64)>,
+) -> Json<Vec<Point>> {
+    println!("start: {}, {}", start_lng, start_lat);
+    let start = match Cycleway::find(&start_lng, &start_lat, state.conn.clone()).await {
+        Ok(start) => start,
+        Err(e) => {
+            eprintln!("Error while fetching start node: {}", e);
+            Node {
+                way_id: 0,
+                geom: vec![],
+                node_id: 0,
+                lng: 0.,
+                lat: 0.,
+            }
+        }
+    };
+    println!("start: {:?}", start);
+    let end = match Cycleway::find(&end_lng, &end_lat, state.conn.clone()).await {
+        Ok(end) => end,
+        Err(e) => {
+            eprintln!("Error while fetching end node: {}", e);
+            Node {
+                way_id: 0,
+                geom: vec![],
+                node_id: 0,
+                lng: 0.,
+                lat: 0.,
+            }
+        }
+    };
+    println!("end: {:?}", end);
+    Json(Edge::route(&start, &end, state.conn.clone()).await)
 }

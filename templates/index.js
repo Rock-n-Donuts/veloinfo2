@@ -2,6 +2,15 @@ if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("/pub/service-worker.js");
 }
 
+(async () => {
+    try {
+        const wakeLock = await navigator.wakeLock.request("screen");
+    } catch (err) {
+        // the wake lock request fails - usually system related, such being low on battery
+        console.log(`${err.name}, ${err.message}`);
+    }
+})();
+
 // Set the initial map center and zoom level
 // the url parameters take precedence over the cookies
 var lng = getCookie("lng") ? getCookie("lng") : -72.45272261855519;
@@ -35,9 +44,7 @@ map.on("load", () => {
 
 
 map.on("click", async function (event) {
-    if (map.getZoom() > 14) {
-        select(event);
-    }
+    select(event);
 });
 
 map.on("move", function (e) {
@@ -67,7 +74,6 @@ async function select(event) {
     if (!start_marker) {
         var point = await fetch('/select/node/' + event.lngLat.lng + "/" + event.lngLat.lat);
         var point = await point.json();
-        console.log("point: ", point);
         start_marker = new maplibregl.Marker({ color: "#00f" }).setLngLat([point.lng, point.lat]).addTo(map);
         way_ids = point.way_id;
         display_segment_geom([point.geom]);
@@ -79,13 +85,16 @@ async function select(event) {
         }
         end_marker = new maplibregl.Marker({ color: "#f00" }).setLngLat([point.lng, point.lat]).addTo(map);
 
-        var nodes = await fetch('/select/nodes/' + start_marker.getLngLat().lng + "/" + start_marker.getLngLat().lat + "/" + event.lngLat.lng + "/" + event.lngLat.lat);
+        var nodes = await fetch('/route/' + start_marker.getLngLat().lng + "/" + start_marker.getLngLat().lat + "/" + event.lngLat.lng + "/" + event.lngLat.lat);
         var nodes = await nodes.json();
-        var multiLineString = nodes.map((node) => node.geom);
+        console.log("nodes: ", nodes);
+        var route = nodes.map((coords) => {
+            return [coords.x, coords.y];
+        });
         way_ids = nodes.map((node) => node.way_id);
         way_ids = [...new Set(way_ids)].join(" ");
 
-        display_segment_geom(multiLineString);
+        display_segment_geom([route]);
     }
 
     if (way_ids) {
@@ -112,23 +121,32 @@ function remove_markers() {
 }
 
 async function zoomToSegment(score_id) {
-    // var fetch_response = await fetch('/cyclability_score/geom/' + score_id);
-    // var response = await fetch_response.json();
-    // way_ids = response.reduce((way_ids, score) => {
-    //     return way_ids + " " + score.way_id;
-    // }, "");
-    // var geom = response.reduce((geom, cycleway) => {
-    //     cycleway.geom.forEach((coords) => {
-    //         geom.push(coords);
-    //     });
-    //     return geom;
-    // }, []);
-    // display_segment_geom(geom);
+    var fetch_response = await fetch('/cyclability_score/geom/' + score_id);
+    var response = await fetch_response.json();
+    way_ids = response.reduce((way_ids, score) => {
+        return way_ids + " " + score.way_id;
+    }, "");
+    var geom = response.reduce((geom, cycleway) => {
+        cycleway.geom.forEach((coords) => {
+            geom.push(coords);
+        });
+        return geom;
+    }, []);
+    display_segment_geom(geom);
+    // find the largest bounds
+    var bounds = geom.reduce((currentBounds, coord) => {
+        return [
+            [Math.min(coord[0], currentBounds[0][0]), Math.min(coord[1], currentBounds[0][1])], // min coordinates
+            [Math.max(coord[0], currentBounds[1][0]), Math.max(coord[1], currentBounds[1][1])]  // max coordinates
+        ];
+    }, [[Infinity, Infinity], [-Infinity, -Infinity]]);
+    map.fitBounds(bounds, { padding: window.innerWidth * .10 });
 }
 
 function display_segment_geom(geom) {
     console.log("geom: ", geom);
     if (map.getLayer("selected")) {
+        console.log("updating selected layer");
         map.getSource("selected").setData({
             "type": "Feature",
             "properties": {},
@@ -136,7 +154,7 @@ function display_segment_geom(geom) {
                 "type": "MultiLineString",
                 "coordinates": geom
             }
-        })
+        });
     } else {
         map.addSource("selected", {
             "type": "geojson",
@@ -155,20 +173,12 @@ function display_segment_geom(geom) {
             "source": "selected",
             "paint": {
                 "line-width": 12,
-                "line-color": "#000",
+                "line-color": "#800",
                 "line-opacity": 0.3
             }
         });
     }
 
-    // find the largest bounds
-    // var bounds = geom.reduce((currentBounds, coord) => {
-    //     return [
-    //         [Math.min(coord[0], currentBounds[0][0]), Math.min(coord[1], currentBounds[0][1])], // min coordinates
-    //         [Math.max(coord[0], currentBounds[1][0]), Math.max(coord[1], currentBounds[1][1])]  // max coordinates
-    //     ];
-    // }, [[Infinity, Infinity], [-Infinity, -Infinity]]);
-    // map.fitBounds(bounds, { padding: window.innerWidth * .10 });
 }
 
 let timeout_info = null;
@@ -243,4 +253,22 @@ function getCookie(name) {
         "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
     ));
     return matches ? decodeURIComponent(matches[1]) : undefined;
+}
+
+async function route() {
+    var end = start_marker.getLngLat();
+    // get the position of the device
+    var start = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition((position) => {
+            resolve(position);
+        });
+    });
+    console.log(start.coords, end);
+    var route = await fetch('/route/' + start.coords.longitude + "/" + start.coords.latitude + "/" + end.lng + "/" + end.lat);
+    var route = await route.json();
+    console.log(route);
+    var route = route.map((coords) => {
+        return [coords.x, coords.y];
+    });
+    display_segment_geom([route]);
 }

@@ -127,7 +127,6 @@ impl Cycleway {
     }
 
     pub async fn route(source: &i64, target: &i64, conn: sqlx::Pool<Postgres>) -> Vec<RouteDB> {
-        println!("source: {}, target: {}", source, target);
         let responses: Vec<RouteDB> = match sqlx::query_as(
             r#"SELECT 
                     pa.*,
@@ -162,7 +161,6 @@ impl Cycleway {
                 vec![]
             }
         };
-        println!("responses: {:?}", responses);
         responses
     }
 }
@@ -216,23 +214,3 @@ impl From<NodeDb> for Node {
         }
     }
 }
-
-// impl From<&RouteDB> for Route {
-//     fn from(response: &RouteDB) -> Self {
-//         let re = Regex::new(r"(-?\d+\.*\d*) (-?\d+\.*\d*)").unwrap();
-//         let points = re
-//             .captures_iter(response.geom.as_str())
-//             .map(|cap| {
-//                 let x = cap[1].parse::<f64>().unwrap();
-//                 let y = cap[2].parse::<f64>().unwrap();
-//                 [x, y]
-//             })
-//             .collect::<Vec<[f64; 2]>>();
-//         Route {
-//             way_ids: vec![response.way_id],
-//             geom: points,
-//             source: response.source,
-//             target: response.target,
-//         }
-//     }
-// }
