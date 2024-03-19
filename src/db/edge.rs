@@ -66,9 +66,11 @@ impl Edge {
                                             when aw.tags->>'cycleway' = 'shared_lane' then 1 / 0.5
                                             when aw.tags->>'bicycle' = 'yes' then 1 / 0.5
                                             when aw.tags->>'highway' = 'residential' then 1 / 0.5
+                                            when aw.tags->>'highway' = 'secondary' then 1 / 0.5
                                             when aw.tags->>'highway' = 'tertiary' then 1 / 0.5
                                             when aw.tags->>'highway' = 'proposed' then 100
-                                            else 100
+                                            when aw.tags->>'highway' is not null then 1 / 0.25
+                                            else 1 / 0.25
                                         end
                                     WHEN cs.score = 0 THEN 100
                                     ELSE 1 / cs.score
@@ -89,9 +91,11 @@ impl Edge {
                                             when aw.tags->>'cycleway' = 'shared_lane' then 1 / 0.5
                                             when aw.tags->>'bicycle' = 'yes' then 1 / 0.5
                                             when aw.tags->>'highway' = 'residential' then 1 / 0.5
+                                            when aw.tags->>'highway' = 'secondary' then 1 / 0.5
                                             when aw.tags->>'highway' = 'tertiary' then 1 / 0.5
                                             when aw.tags->>'highway' = 'proposed' then 100
-                                            else 100
+                                            when aw.tags->>'highway' is not null then 1 / 0.25
+                                            else 1 / 0.25
                                         end
                                     WHEN cs.score = 0 THEN 100
                                     ELSE 1 / cs.score
