@@ -60,9 +60,12 @@ impl Edge {
                                             when aw.tags->>'highway' = 'cycleway' then 1 / 1
                                             when aw.tags->>'cycleway' = 'lane' then 1 / 1
                                             when aw.tags->>'bicycle' = 'designated' then 1 / 1
-                                            when aw.tags->>'cycleway:right' = 'lane' then 1 / 1
-                                            when aw.tags->>'cycleway:both' = 'lane' then 1 / 1
-                                            when aw.tags->>'cycleway:left' = 'lane' then 1 / 1
+                                            when aw.tags->>'cycleway:both' = 'track' then 1 / 1
+                                            when aw.tags->>'cycleway:left' = 'track' then 1 / 1
+                                            when aw.tags->>'cycleway:right' = 'track' then 1 / 1
+                                            when aw.tags->>'cycleway:both' = 'lane' then 1 / 0.75
+                                            when aw.tags->>'cycleway:left' = 'lane' then 1 / 0.75
+                                            when aw.tags->>'cycleway:right' = 'lane' then 1 / 0.75
                                             when aw.tags->>'cycleway' = 'shared_lane' then 1 / 0.5
                                             when aw.tags->>'bicycle' = 'yes' then 1 / 0.5
                                             when aw.tags->>'highway' = 'residential' then 1 / 0.5
@@ -70,7 +73,7 @@ impl Edge {
                                             when aw.tags->>'highway' = 'secondary' then 1 / 0.25
                                             when aw.tags->>'highway' = 'footway' then 1 / 0.25
                                             when aw.tags->>'highway' = 'proposed' then 100
-                                            when aw.tags->>'highway' = 'steps' then 30
+                                            when aw.tags->>'highway' = 'steps' then 1 / 0.05
                                             when aw.tags->>'highway' is not null then 1 / 0.25
                                             else 1 / 0.25
                                         end
@@ -87,9 +90,12 @@ impl Edge {
                                             when aw.tags->>'highway' = 'cycleway' then 1 / 1
                                             when aw.tags->>'cycleway' = 'lane' then 1 / 1
                                             when aw.tags->>'bicycle' = 'designated' then 1 / 1
-                                            when aw.tags->>'cycleway:right' = 'lane' then 1 / 1
-                                            when aw.tags->>'cycleway:both' = 'lane' then 1 / 1
-                                            when aw.tags->>'cycleway:left' = 'lane' then 1 / 1
+                                            when aw.tags->>'cycleway:both' = 'track' then 1 / 1
+                                            when aw.tags->>'cycleway:left' = 'track' then 1 / 1
+                                            when aw.tags->>'cycleway:right' = 'track' then 1 / 1
+                                            when aw.tags->>'cycleway:both' = 'lane' then 1 / 0.75
+                                            when aw.tags->>'cycleway:left' = 'lane' then 1 / 0.75
+                                            when aw.tags->>'cycleway:right' = 'lane' then 1 / 0.75
                                             when aw.tags->>'cycleway' = 'shared_lane' then 1 / 0.5
                                             when aw.tags->>'bicycle' = 'yes' then 1 / 0.5
                                             when aw.tags->>'highway' = 'residential' then 1 / 0.5
@@ -97,10 +103,10 @@ impl Edge {
                                             when aw.tags->>'highway' = 'secondary' then 1 / 0.25
                                             when aw.tags->>'highway' = 'footway' then 1 / 0.25
                                             when aw.tags->>'highway' = 'proposed' then 100
-                                            when aw.tags->>'highway' = 'steps' then 30
+                                            when aw.tags->>'highway' = 'steps' then 1 / 0.05
                                             when aw.tags->>'highway' is not null then 1 / 0.25
                                             else 1 / 0.25
-                                        end
+                                    end
                                     WHEN cs.score = 0 THEN 100
                                     ELSE 1 / cs.score
                                 END as reverse_cost
