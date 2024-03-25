@@ -12,4 +12,7 @@ From 'https://download.geofabrik.de/north-america/canada/quebec.html' get the pb
 # Import the data
 run import.sh
 
+when it is done reload the martin server: 
+docker-compose restart martin
+
 look at the map from localhost:3000
