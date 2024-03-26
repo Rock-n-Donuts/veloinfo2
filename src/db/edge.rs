@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use sqlx::Postgres;
 
-use super::cycleway::Node;
+use super::cycleway::{Node, NodeDb};
 
 #[derive(Debug, sqlx::FromRow, Serialize, Deserialize, Clone)]
 pub struct Point {
@@ -60,20 +60,25 @@ impl Edge {
                                             when aw.tags->>'highway' = 'cycleway' then 1 / 1
                                             when aw.tags->>'cycleway' = 'lane' then 1 / 1
                                             when aw.tags->>'bicycle' = 'designated' then 1 / 1
+                                            when aw.tags->>'cycleway' = 'track' then 1 / 1
                                             when aw.tags->>'cycleway:both' = 'track' then 1 / 1
                                             when aw.tags->>'cycleway:left' = 'track' then 1 / 1
                                             when aw.tags->>'cycleway:right' = 'track' then 1 / 1
                                             when aw.tags->>'cycleway:both' = 'lane' then 1 / 0.75
                                             when aw.tags->>'cycleway:left' = 'lane' then 1 / 0.75
                                             when aw.tags->>'cycleway:right' = 'lane' then 1 / 0.75
+                                            when aw.tags->>'cycleway' = 'shared_lane' then 1 / 0.75
+                                            when aw.tags->>'cycleway:both' = 'shared_lane' then 1 / 0.50
+                                            when aw.tags->>'cycleway:left' = 'shared_lane' then 1 / 0.50
+                                            when aw.tags->>'cycleway:right' = 'shared_lane' then 1 / 0.50
                                             when aw.tags->>'cycleway' = 'shared_lane' then 1 / 0.5
-                                            when aw.tags->>'bicycle' = 'yes' then 1 / 0.5
+                                            when aw.tags->>'bicycle' = 'yes' then 1 / 1
                                             when aw.tags->>'highway' = 'residential' then 1 / 0.5
                                             when aw.tags->>'highway' = 'tertiary' then 1 / 0.5
-                                            when aw.tags->>'highway' = 'secondary' then 1 / 0.25
+                                            when aw.tags->>'highway' = 'secondary' then 1 / 0.5
                                             when aw.tags->>'highway' = 'footway' then 1 / 0.25
-                                            when aw.tags->>'highway' = 'proposed' then 100
                                             when aw.tags->>'highway' = 'steps' then 1 / 0.05
+                                            when aw.tags->>'highway' = 'proposed' then 1 / 0.001
                                             when aw.tags->>'highway' is not null then 1 / 0.25
                                             else 1 / 0.25
                                         end
@@ -90,20 +95,25 @@ impl Edge {
                                             when aw.tags->>'highway' = 'cycleway' then 1 / 1
                                             when aw.tags->>'cycleway' = 'lane' then 1 / 1
                                             when aw.tags->>'bicycle' = 'designated' then 1 / 1
+                                            when aw.tags->>'cycleway' = 'track' then 1 / 1
                                             when aw.tags->>'cycleway:both' = 'track' then 1 / 1
                                             when aw.tags->>'cycleway:left' = 'track' then 1 / 1
                                             when aw.tags->>'cycleway:right' = 'track' then 1 / 1
                                             when aw.tags->>'cycleway:both' = 'lane' then 1 / 0.75
                                             when aw.tags->>'cycleway:left' = 'lane' then 1 / 0.75
                                             when aw.tags->>'cycleway:right' = 'lane' then 1 / 0.75
+                                            when aw.tags->>'cycleway' = 'shared_lane' then 1 / 0.75
+                                            when aw.tags->>'cycleway:both' = 'shared_lane' then 1 / 0.50
+                                            when aw.tags->>'cycleway:left' = 'shared_lane' then 1 / 0.50
+                                            when aw.tags->>'cycleway:right' = 'shared_lane' then 1 / 0.50
                                             when aw.tags->>'cycleway' = 'shared_lane' then 1 / 0.5
-                                            when aw.tags->>'bicycle' = 'yes' then 1 / 0.5
+                                            when aw.tags->>'bicycle' = 'yes' then 1 / 1
                                             when aw.tags->>'highway' = 'residential' then 1 / 0.5
                                             when aw.tags->>'highway' = 'tertiary' then 1 / 0.5
-                                            when aw.tags->>'highway' = 'secondary' then 1 / 0.25
+                                            when aw.tags->>'highway' = 'secondary' then 1 / 0.5
                                             when aw.tags->>'highway' = 'footway' then 1 / 0.25
-                                            when aw.tags->>'highway' = 'proposed' then 100
                                             when aw.tags->>'highway' = 'steps' then 1 / 0.05
+                                            when aw.tags->>'highway' = 'proposed' then 1 / 0.001
                                             when aw.tags->>'highway' is not null then 1 / 0.25
                                             else 1 / 0.25
                                     end
@@ -149,5 +159,40 @@ impl Edge {
             }
         };
         response
+    }
+
+    pub async fn find_closest_node(
+        lng: &f64,
+        lat: &f64,
+        conn: sqlx::Pool<Postgres>,
+    ) -> Result<Node, sqlx::Error> {
+        let response: NodeDb = match sqlx::query_as(
+            r#"        
+            SELECT
+                way_id,
+                geom,
+                unnest(nodes) as node_id,
+                ST_X(st_transform((dp).geom, 4326)) as lng,
+                ST_Y(st_transform((dp).geom, 4326)) as lat
+            FROM (  
+                SELECT (ST_DumpPoints(geom)) as dp, 
+                        way_id,
+                        ST_AsText(ST_Transform(geom, 4326)) as geom,
+                        nodes
+                FROM all_way
+                WHERE ST_DWithin(geom, ST_Transform(ST_SetSRID(ST_MakePoint($1, $2), 4326), 3857), 1000)
+            ) as subquery
+            ORDER BY (dp).geom <-> ST_Transform(ST_SetSRID(ST_MakePoint($1, $2), 4326), 3857)
+            LIMIT 1"#,
+        )
+        .bind(lng)
+        .bind(lat)
+        .fetch_one(&conn)
+        .await
+        {
+            Ok(response) => response,
+            Err(e) => return Err(e),
+        };
+        Ok(response.into())
     }
 }
