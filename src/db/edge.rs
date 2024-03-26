@@ -76,6 +76,7 @@ impl Edge {
                                             when aw.tags->>'highway' = 'residential' then 1 / 0.5
                                             when aw.tags->>'highway' = 'tertiary' then 1 / 0.5
                                             when aw.tags->>'highway' = 'secondary' then 1 / 0.5
+                                            when aw.tags->>'highway' = 'primary' then 1 / 0.25
                                             when aw.tags->>'highway' = 'footway' then 1 / 0.25
                                             when aw.tags->>'highway' = 'steps' then 1 / 0.05
                                             when aw.tags->>'highway' = 'proposed' then 1 / 0.001
@@ -111,6 +112,7 @@ impl Edge {
                                             when aw.tags->>'highway' = 'residential' then 1 / 0.5
                                             when aw.tags->>'highway' = 'tertiary' then 1 / 0.5
                                             when aw.tags->>'highway' = 'secondary' then 1 / 0.5
+                                            when aw.tags->>'highway' = 'primary' then 1 / 0.25
                                             when aw.tags->>'highway' = 'footway' then 1 / 0.25
                                             when aw.tags->>'highway' = 'steps' then 1 / 0.05
                                             when aw.tags->>'highway' = 'proposed' then 1 / 0.001
