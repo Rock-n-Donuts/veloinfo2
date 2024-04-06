@@ -64,7 +64,7 @@ local all_area = osm2pgsql.define_table({
         type = 'text'
     }, {
         column = 'geom',
-        type = 'polygon',
+        type = 'multipolygon',
         not_null = true
     }, {
         column = 'tags',
@@ -72,6 +72,9 @@ local all_area = osm2pgsql.define_table({
         not_null = true
     }, {
         column = 'landuse',
+        type = 'text'
+    }, {
+        column = 'natural',
         type = 'text'
     }},
     indexes = {{
@@ -148,6 +151,25 @@ function osm2pgsql.process_way(object)
             geom = object:as_polygon(),
             tags = object.tags,
             landuse = object.tags.landuse
+        })
+    end
+    if object.is_closed and object.tags.natural == 'wood' then
+        all_area:insert({
+            name = object.tags.name,
+            geom = object:as_polygon(),
+            tags = object.tags,
+            natural = object.tags.natural
+        })
+    end
+end
+
+function osm2pgsql.process_relation(object)
+    if object.tags["natural"] == "wood" then
+        all_area:insert({
+            name = object.tags.name,
+            geom = object:as_multipolygon(),
+            tags = object.tags,
+            natural = object.tags.natural
         })
     end
 end

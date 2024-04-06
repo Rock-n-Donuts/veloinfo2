@@ -67,8 +67,8 @@
         {
             "id": "Landcover",
             "type": "fill",
-            "source": "maptiler_planet",
-            "source-layer": "landcover",
+            "source": "veloinfo_all_area",
+            "source-layer": "all_area",
             "layout": {
                 "visibility": "visible"
             },
@@ -93,10 +93,12 @@
                 "fill-antialias": false
             },
             "filter": [
-                "in",
-                "class",
-                "wood",
-                "grass"
+                "any" ,
+                    ["==",
+                    "natural",
+                    "wood"]
+                    
+                
             ]
         },
         {
