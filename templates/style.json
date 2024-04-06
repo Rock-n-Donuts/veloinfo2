@@ -7,10 +7,6 @@
             "url": "https://api.maptiler.com/tiles/v3/tiles.json?key=STFS4MYo3i7OemN8CY5b",
             "type": "vector"
         },
-        "maptiler_attribution": {
-            "attribution": "<a href=\"https://www.maptiler.com/copyright/\" target=\"_blank\">&copy; MapTiler</a> <a href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\">&copy; OpenStreetMap contributors</a>",
-            "type": "vector"
-        },
         "veloinfo": {
             "type": "vector",
             "url": "{{martin_url}}/bike_path"
@@ -18,6 +14,10 @@
         "veloinfo_cycleway": {
             "type": "vector",
             "url": "{{martin_url}}/cycleway_way"
+        },
+        "veloinfo_all_area": {
+            "type": "vector",
+            "url": "{{martin_url}}/all_area"
         }
     },
     "layers": [
@@ -35,8 +35,8 @@
         {
             "id": "Residential",
             "type": "fill",
-            "source": "maptiler_planet",
-            "source-layer": "landuse",
+            "source": "veloinfo_all_area",
+            "source-layer": "all_area",
             "minzoom": 6,
             "maxzoom": 13,
             "layout": {
@@ -60,7 +60,7 @@
             },
             "filter": [
                 "==",
-                "class",
+                "landuse",
                 "residential"
             ]
         },
@@ -2702,7 +2702,6 @@
                 ]
             ]
         },
-
         {
             "id": "shared_lane",
             "source": "veloinfo_cycleway",
@@ -2853,7 +2852,6 @@
                 ]
             ]
         },
-  
         {
             "id": "Ocean labels",
             "type": "symbol",
