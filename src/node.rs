@@ -87,8 +87,7 @@ pub async fn route(
     State(state): State<VeloinfoState>,
     Path((start_lng, start_lat, end_lng, end_lat)): Path<(f64, f64, f64, f64)>,
 ) -> Json<Vec<Point>> {
-    println!("start: {}, {}", start_lng, start_lat);
-    let start = match Cycleway::find(&start_lng, &start_lat, state.conn.clone()).await {
+    let start = match Edge::find_closest_node(&start_lng, &start_lat, state.conn.clone()).await {
         Ok(start) => start,
         Err(e) => {
             eprintln!("Error while fetching start node: {}", e);
@@ -102,7 +101,7 @@ pub async fn route(
         }
     };
     println!("start: {:?}", start);
-    let end = match Cycleway::find(&end_lng, &end_lat, state.conn.clone()).await {
+    let end = match Edge::find_closest_node(&end_lng, &end_lat, state.conn.clone()).await {
         Ok(end) => end,
         Err(e) => {
             eprintln!("Error while fetching end node: {}", e);
@@ -116,5 +115,18 @@ pub async fn route(
         }
     };
     println!("end: {:?}", end);
-    Json(Edge::route(&start, &end, state.conn.clone()).await)
+    let mut edges = Edge::route(&start, &end, state.conn.clone()).await;
+    edges.insert(
+        0,
+        Point {
+            x: start_lng,
+            y: start_lat,
+        },
+    );
+    edges.push(Point {
+        x: end_lng,
+        y: end_lat,
+    });
+    println!("edges: {:?}", edges);
+    Json(edges)
 }

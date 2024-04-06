@@ -35,7 +35,7 @@ map.addControl(new maplibregl.GeolocateControl({
     positionOptions: {
         enableHighAccuracy: true
     },
-    trackUserLocation: true
+    trackUserLocation: false
 }));
 
 map.on("load", () => {
@@ -43,8 +43,13 @@ map.on("load", () => {
 })
 
 
+const state = {
+    mode: "select"
+};
 map.on("click", async function (event) {
-    select(event);
+    if (state.mode == "select") {
+        select(event);
+    }
 });
 
 map.on("move", function (e) {
@@ -55,49 +60,28 @@ map.on("move", function (e) {
     update_url();
 });
 
-var start_marker = null;
-var end_marker = null;
+let start_marker = null;
+let end_marker = null;
 async function select(event) {
-    let width = 40;
+    if (start_marker) {
+        start_marker.remove();
+    }
+    start_marker = new maplibregl.Marker({ color: "#00f" }).setLngLat([event.lngLat.lng, event.lngLat.lat]).addTo(map);
+
+    let width = 20;
     var features = map.queryRenderedFeatures(
         [
             [event.point.x - width / 2, event.point.y - width / 2],
             [event.point.x + width / 2, event.point.y + width / 2]
         ], { layers: ['cycleway', "designated", "shared_lane"] });
-    if (!features.length) {
-        clear();
-        remove_markers();
-        return;
-    }
-    var feature = features[0];
 
-    if (!start_marker) {
+    if (features.length) {
+        var feature = features[0];
         var point = await fetch('/select/node/' + event.lngLat.lng + "/" + event.lngLat.lat);
         var point = await point.json();
-        start_marker = new maplibregl.Marker({ color: "#00f" }).setLngLat([point.lng, point.lat]).addTo(map);
         way_ids = point.way_id;
         display_segment_geom([point.geom]);
-    } else {
-        var point = await fetch('/select/node/' + event.lngLat.lng + "/" + event.lngLat.lat);
-        var point = await point.json();
-        if (end_marker) {
-            end_marker.remove();
-        }
-        end_marker = new maplibregl.Marker({ color: "#f00" }).setLngLat([point.lng, point.lat]).addTo(map);
 
-        var nodes = await fetch('/route/' + start_marker.getLngLat().lng + "/" + start_marker.getLngLat().lat + "/" + event.lngLat.lng + "/" + event.lngLat.lat);
-        var nodes = await nodes.json();
-        console.log("nodes: ", nodes);
-        var route = nodes.map((coords) => {
-            return [coords.x, coords.y];
-        });
-        way_ids = nodes.map((node) => node.way_id);
-        way_ids = [...new Set(way_ids)].join(" ");
-
-        display_segment_geom([route]);
-    }
-
-    if (way_ids) {
         // Display info panel
         var info_panel = document.getElementById("info");
         const response = await fetch("/segment_panel/ways/" + way_ids);
@@ -106,17 +90,33 @@ async function select(event) {
         // reprocess htmx for the new info panel
         info_panel = document.getElementById("info");
         htmx.process(info_panel);
-    }
-}
+    } else {
+        clear();
 
-function remove_markers() {
-    if (start_marker) {
-        start_marker.remove();
-        start_marker = null;
     }
-    if (end_marker) {
-        end_marker.remove();
-        end_marker = null;
+
+    if (!start_marker) {
+    } else {
+        // var point = await fetch('/select/node/' + event.lngLat.lng + "/" + event.lngLat.lat);
+        // var point = await point.json();
+        // if (end_marker) {
+        //     end_marker.remove();
+        // }
+        // end_marker = new maplibregl.Marker({ color: "#f00" }).setLngLat([point.lng, point.lat]).addTo(map);
+
+        // var nodes = await fetch('/route/' + start_marker.getLngLat().lng + "/" + start_marker.getLngLat().lat + "/" + event.lngLat.lng + "/" + event.lngLat.lat);
+        // var nodes = await nodes.json();
+        // console.log("nodes: ", nodes);
+        // var route = nodes.map((coords) => {
+        //     return [coords.x, coords.y];
+        // });
+        // way_ids = nodes.map((node) => node.way_id);
+        // way_ids = [...new Set(way_ids)].join(" ");
+
+        // display_segment_geom([route]);
+    }
+
+    if (way_ids) {
     }
 }
 

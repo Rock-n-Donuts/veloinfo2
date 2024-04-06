@@ -42,7 +42,7 @@ impl WayInfo {
                 c.name,
                 cs.score,
                 cs.comment
-               from cycleway_way c
+               from all_way c
                left join cyclability_score cs on c.way_id = any(cs.way_ids)
                where c.way_id = $1
                order by created_at desc"#,
@@ -193,9 +193,19 @@ pub async fn segment_panel(
         return segment_panel_score_id(state.conn.clone(), score.id, false).await;
     }
 
-    let ways = join_all(way_ids_i64.iter().map(|way_id| async {
+    let ways: Vec<WayInfo> = join_all(way_ids_i64.iter().map(|way_id| async {
         let conn = state.conn.clone();
-        WayInfo::get(*way_id, conn).await.unwrap()
+        match WayInfo::get(*way_id, conn).await {
+            Ok(way) => way,
+            Err(e) => {
+                eprintln!("Error while fetching way: {}", e);
+                WayInfo {
+                    way_id: 0,
+                    name: Some("".to_string()),
+                    score: Some(-1.),
+                }
+            }
+        }
     }))
     .await;
     let all_same_score = ways.iter().all(|way| way.score == ways[0].score);
