@@ -33,14 +33,6 @@ impl Edge {
         let smallest_lng = start_node.lng.min(end_node.lng) - 0.02;
         let smallest_lat = start_node.lat.min(end_node.lat) - 0.02;
 
-        println!("start: {}", start_node.node_id);
-        println!("end: {}", end_node.node_id);
-
-        println!(
-            "big: {}, {}, small: {}, {}",
-            biggest_lng, biggest_lat, smallest_lng, smallest_lat
-        );
-
         let case_score_null = r#"case
                                                                 when aw.tags->>'highway' = 'cycleway' then 1 / 1
                                                                 when aw.tags->>'bicycle' = 'designated' then 1 / 1
@@ -121,8 +113,6 @@ impl Edge {
                                     left join edge on node = source and source is not null 
                                     ORDER BY pa.path_seq ASC"#
         );
-
-        println!("request: {}", request);
 
         let response: Vec<Point> = match sqlx::query_as(request.as_str())
             .bind(start_node.node_id)
