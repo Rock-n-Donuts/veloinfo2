@@ -41,118 +41,98 @@ impl Edge {
             biggest_lng, biggest_lat, smallest_lng, smallest_lat
         );
 
-        let response: Vec<Point> = match sqlx::query_as(
+        let case_score_null = r#"case
+                                                                when aw.tags->>'highway' = 'cycleway' then 1 / 1
+                                                                when aw.tags->>'bicycle' = 'designated' then 1 / 1
+                                                                when aw.tags->>'bicycle' = 'yes' then 1 / 1
+                                                                when aw.tags->>'cycleway' = 'track' then 1 / 1
+                                                                when aw.tags->>'cycleway:both' = 'track' then 1 / 1
+                                                                when aw.tags->>'cycleway:left' = 'track' then 1 / 1
+                                                                when aw.tags->>'cycleway:right' = 'track' then 1 / 1
+                                                                when aw.tags->>'cycleway' = 'lane' then 1 / 0.75
+                                                                when aw.tags->>'cycleway:both' = 'lane' then 1 / 0.75
+                                                                when aw.tags->>'cycleway:left' = 'lane' then 1 / 0.75
+                                                                when aw.tags->>'cycleway:right' = 'lane' then 1 / 0.75
+                                                                when aw.tags->>'cycleway:both' = 'shared_lane' then 1 / 0.75
+                                                                when aw.tags->>'cycleway:left' = 'shared_lane' then 1 / 0.75
+                                                                when aw.tags->>'cycleway:right' = 'shared_lane' then 1 / 0.75
+                                                                when aw.tags->>'cycleway' = 'shared_lane' then 1 / 0.75
+                                                                when aw.tags->>'highway' = 'residential' then 1 / 0.75
+                                                                when aw.tags->>'highway' = 'tertiary' then 1 / 0.5
+                                                                when aw.tags->>'highway' = 'secondary' then 1 / 0.25
+                                                                when aw.tags->>'highway' = 'service' then 1 / 0.25
+                                                                when aw.tags->>'highway' = 'primary' then 1 / 0.1
+                                                                when aw.tags->>'highway' = 'footway' then 1 / 0.1
+                                                                when aw.tags->>'highway' = 'steps' then 1 / 0.05
+                                                                when aw.tags->>'highway' = 'proposed' then 1 / 0.001
+                                                                when aw.tags->>'highway' is not null then 1 / 0.25
+                                                                else 1 / 0.25
+                                                            end"#;
+
+        let request = format!(
             r#"SELECT distinct on (pa.path_seq)
-                x1 as x,
-                y1 as y
-                    FROM pgr_bdastar(
-                        FORMAT(
-                            $FORMAT$
-                            SELECT *,
-                            cost,
-                            reverse_cost
-                            from (
-                                select e.*, 
-                                st_length(ST_MakeLine(ST_Point(x1, y2), ST_Point(x2, y2))) * 
-                                CASE
-                                    WHEN cs.score IS NULL THEN 
-                                        case
-                                            when aw.tags->>'highway' = 'cycleway' then 1 / 1
-                                            when aw.tags->>'bicycle' = 'designated' then 1 / 1
-                                            when aw.tags->>'cycleway' = 'track' then 1 / 1
-                                            when aw.tags->>'cycleway:both' = 'track' then 1 / 1
-                                            when aw.tags->>'cycleway:left' = 'track' then 1 / 1
-                                            when aw.tags->>'cycleway:right' = 'track' then 1 / 1
-                                            when aw.tags->>'cycleway' = 'lane' then 1 / 0.75
-                                            when aw.tags->>'cycleway:both' = 'lane' then 1 / 0.75
-                                            when aw.tags->>'cycleway:left' = 'lane' then 1 / 0.75
-                                            when aw.tags->>'cycleway:right' = 'lane' then 1 / 0.75
-                                            when aw.tags->>'cycleway:both' = 'shared_lane' then 1 / 0.50
-                                            when aw.tags->>'cycleway:left' = 'shared_lane' then 1 / 0.50
-                                            when aw.tags->>'cycleway:right' = 'shared_lane' then 1 / 0.50
-                                            when aw.tags->>'cycleway' = 'shared_lane' then 1 / 0.5
-                                            when aw.tags->>'bicycle' = 'yes' then 1 / 1
-                                            when aw.tags->>'highway' = 'residential' then 1 / 0.5
-                                            when aw.tags->>'highway' = 'tertiary' then 1 / 0.5
-                                            when aw.tags->>'highway' = 'secondary' then 1 / 0.5
-                                            when aw.tags->>'highway' = 'service' then 1 / 0.25
-                                            when aw.tags->>'highway' = 'primary' then 1 / 0.1
-                                            when aw.tags->>'highway' = 'footway' then 1 / 0.1
-                                            when aw.tags->>'highway' = 'steps' then 1 / 0.05
-                                            when aw.tags->>'highway' = 'proposed' then 1 / 0.001
-                                            when aw.tags->>'highway' is not null then 1 / 0.25
-                                            else 1 / 0.25
-                                        end
-                                    WHEN cs.score = 0 THEN 100
-                                    ELSE 1 / cs.score
-                                END as cost,
-                                st_length(ST_MakeLine(ST_Point(x1, y2), ST_Point(x2, y2))) * 
-                                CASE
-                                    when aw.tags->>'oneway:bicycle' = 'no' and cs.score is not null and cs.score != 0 then 1 / cs.score
-                                    when aw.tags->>'oneway:bicycle' = 'yes' then 100
-                                    when aw.tags->>'oneway' = 'yes' and aw.tags->>'oneway:bicycle' is null  or aw.tags->>'oneway:bicycle' = 'yes' then 100
-                                    WHEN cs.score IS NULL THEN
-                                        case
-                                            when aw.tags->>'highway' = 'cycleway' then 1 / 1
-                                            when aw.tags->>'bicycle' = 'designated' then 1 / 1
-                                            when aw.tags->>'cycleway' = 'track' then 1 / 1
-                                            when aw.tags->>'cycleway:both' = 'track' then 1 / 1
-                                            when aw.tags->>'cycleway:left' = 'track' then 1 / 1
-                                            when aw.tags->>'cycleway:right' = 'track' then 1 / 1
-                                            when aw.tags->>'cycleway' = 'lane' then 1 / 0.75
-                                            when aw.tags->>'cycleway:both' = 'lane' then 1 / 0.75
-                                            when aw.tags->>'cycleway:left' = 'lane' then 1 / 0.75
-                                            when aw.tags->>'cycleway:right' = 'lane' then 1 / 0.75
-                                            when aw.tags->>'cycleway:both' = 'shared_lane' then 1 / 0.75
-                                            when aw.tags->>'cycleway:left' = 'shared_lane' then 1 / 0.75
-                                            when aw.tags->>'cycleway:right' = 'shared_lane' then 1 / 0.75
-                                            when aw.tags->>'cycleway' = 'shared_lane' then 1 / 0.75
-                                            when aw.tags->>'bicycle' = 'yes' then 1 / 1
-                                            when aw.tags->>'highway' = 'residential' then 1 / 0.5
-                                            when aw.tags->>'highway' = 'tertiary' then 1 / 0.5
-                                            when aw.tags->>'highway' = 'secondary' then 1 / 0.5
-                                            when aw.tags->>'highway' = 'service' then 1 / 0.25
-                                            when aw.tags->>'highway' = 'primary' then 1 / 0.1
-                                            when aw.tags->>'highway' = 'footway' then 1 / 0.1
-                                            when aw.tags->>'highway' = 'steps' then 1 / 0.05
-                                            when aw.tags->>'highway' = 'proposed' then 1 / 0.001
-                                            when aw.tags->>'highway' is not null then 1 / 0.25
-                                            else 1 / 0.25
-                                    end
-                                    WHEN cs.score = 0 THEN 100
-                                    ELSE 1 / cs.score
-                                END as reverse_cost
-                                from edge e
-                                left join (
-		                            select unnest(way_ids) as way_id, avg(score) as score
-		                            from cyclability_score
-		                            group by way_id
-		                        ) cs on e.way_id = cs.way_id
-                                left join all_way aw on e.way_id = aw.way_id
-                                where e.target is not null and
-                                      x1 <= %s and
-                                      y1 <= %s and
-                                      x1 >= %s and
-                                      y1 >= %s 
-                                )as sub                    
-                            $FORMAT$,
-                            $3, $4, $5, $6
-                        )
-                    , 
-                    $1, 
-                    $2
-                    ) as pa
-                left join edge on node = source and source is not null 
-                ORDER BY pa.path_seq ASC"#,
-        )
-        .bind(start_node.node_id)
-        .bind(end_node.node_id)
-        .bind(biggest_lng)
-        .bind(biggest_lat)
-        .bind(smallest_lng)
-        .bind(smallest_lat)
-        .fetch_all(&conn)
-        .await
+                                    x1 as x,
+                                    y1 as y
+                                        FROM pgr_bdastar(
+                                            FORMAT(
+                                                $FORMAT$
+                                                SELECT *,
+                                                cost,
+                                                reverse_cost
+                                                from (
+                                                    select e.*, 
+                                                    st_length(ST_MakeLine(ST_Point(x1, y2), ST_Point(x2, y2))) * 
+                                                    CASE
+                                                        WHEN cs.score IS NULL THEN 
+                                                            {case_score_null}
+                                                        WHEN cs.score = 0 THEN 1 / 0.01
+                                                        ELSE 1 / cs.score
+                                                    END as cost,
+                                                    st_length(ST_MakeLine(ST_Point(x1, y2), ST_Point(x2, y2))) * 
+                                                    CASE
+                                                        when aw.tags->>'oneway:bicycle' = 'no' and cs.score is not null then 1 / cs.score
+                                                        when aw.tags->>'oneway:bicycle' = 'yes' then 1 / 0.01
+                                                        when aw.tags->>'oneway' = 'yes' then 1 / 0.01
+                                                        WHEN cs.score IS NULL THEN
+                                                            {case_score_null}
+                                                        WHEN cs.score = 0 THEN 1 / 0.01
+                                                        ELSE 1 / cs.score
+                                                    END as reverse_cost
+                                                    from edge e
+                                                    left join (
+                                                        select unnest(way_ids) as way_id, avg(score) as score
+                                                        from cyclability_score
+                                                        group by way_id
+                                                    ) cs on e.way_id = cs.way_id
+                                                    left join all_way aw on e.way_id = aw.way_id
+                                                    where e.target is not null and
+                                                            x1 <= %s and
+                                                            y1 <= %s and
+                                                            x1 >= %s and
+                                                            y1 >= %s 
+                                                    )as sub                    
+                                                $FORMAT$,
+                                                $3, $4, $5, $6
+                                            )
+                                        , 
+                                        $1, 
+                                        $2
+                                        ) as pa
+                                    left join edge on node = source and source is not null 
+                                    ORDER BY pa.path_seq ASC"#
+        );
+
+        println!("request: {}", request);
+
+        let response: Vec<Point> = match sqlx::query_as(request.as_str())
+            .bind(start_node.node_id)
+            .bind(end_node.node_id)
+            .bind(biggest_lng)
+            .bind(biggest_lat)
+            .bind(smallest_lng)
+            .bind(smallest_lat)
+            .fetch_all(&conn)
+            .await
         {
             Ok(response) => response,
             Err(e) => {
