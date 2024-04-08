@@ -35,7 +35,7 @@ map.addControl(new maplibregl.GeolocateControl({
     positionOptions: {
         enableHighAccuracy: true
     },
-    trackUserLocation: false
+    trackUserLocation: true
 }));
 
 map.on("load", () => {
