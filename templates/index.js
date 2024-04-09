@@ -33,7 +33,7 @@ var map = new maplibregl.Map({
 map.addControl(new maplibregl.NavigationControl());
 map.addControl(new maplibregl.GeolocateControl({
     positionOptions: {
-        enableHighAccuracy: true
+        enableHighAccuracy: false
     },
     trackUserLocation: true
 }));
@@ -256,6 +256,8 @@ function getCookie(name) {
 }
 
 async function route() {
+    const button = document.getElementById("route_button");
+    button.classList.add("htmx-request");
     var end = start_marker.getLngLat();
     // get the position of the device
     var start = await new Promise((resolve, reject) => {
@@ -263,12 +265,5 @@ async function route() {
             resolve(position);
         });
     });
-    console.log(start.coords, end);
-    var route = await fetch('/route/' + start.coords.longitude + "/" + start.coords.latitude + "/" + end.lng + "/" + end.lat);
-    var route = await route.json();
-    console.log(route);
-    var route = route.map((coords) => {
-        return [coords.x, coords.y];
-    });
-    display_segment_geom([route]);
+    await htmx.ajax("GET", "/route/" + start.coords.longitude + "/" + start.coords.latitude + "/" + end.lng + "/" + end.lat, "#info");
 }

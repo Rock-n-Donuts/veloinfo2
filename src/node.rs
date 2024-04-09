@@ -1,6 +1,8 @@
+use crate::component::route_panel::RoutePanel;
 use crate::db::cycleway::{Cycleway, Node};
 use crate::db::edge::{Edge, Point};
 use crate::VeloinfoState;
+use axum::routing::Route;
 use axum::{
     extract::{Path, State},
     Json,
@@ -86,7 +88,7 @@ pub async fn select_nodes(
 pub async fn route(
     State(state): State<VeloinfoState>,
     Path((start_lng, start_lat, end_lng, end_lat)): Path<(f64, f64, f64, f64)>,
-) -> Json<Vec<Point>> {
+) -> RoutePanel {
     let start = match Edge::find_closest_node(&start_lng, &start_lat, state.conn.clone()).await {
         Ok(start) => start,
         Err(e) => {
@@ -128,5 +130,13 @@ pub async fn route(
         y: end_lat,
     });
     println!("edges: {:?}", edges);
-    Json(edges)
+    let edges: Vec<(f64, f64)> = edges.iter().map(|edge| (edge.x, edge.y)).collect();
+    let route_json = match serde_json::to_string(&edges) {
+        Ok(edges) => edges,
+        Err(e) => {
+            eprintln!("Error while serializing edges: {}", e);
+            "[]".to_string()
+        }
+    };
+    RoutePanel { route_json }
 }

@@ -114,6 +114,8 @@ impl Edge {
                                     ORDER BY pa.path_seq ASC"#
         );
 
+        println!("request: {}", request);
+
         let response: Vec<Point> = match sqlx::query_as(request.as_str())
             .bind(start_node.node_id)
             .bind(end_node.node_id)
