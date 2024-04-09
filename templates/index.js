@@ -208,6 +208,7 @@ function update_url() {
 
 
 async function clear() {
+    state.mode = "select";
     const selected = map.getSource("selected");
     if (selected) {
         selected.setData({
