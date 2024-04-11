@@ -82,7 +82,8 @@ impl Edge {
                                                     END as cost,
                                                     st_length(ST_MakeLine(ST_Point(x1, y2), ST_Point(x2, y2))) * 
                                                     CASE
-                                                        when aw.tags->>'oneway:bicycle' = 'no' and cs.score is not null then 1 / cs.score
+                                                        when aw.tags->>'oneway:bicycle' = 'no' and cs.score is not null then 1 / cs.score * 2
+                                                        when aw.tags->>'oneway' = 'no' and cs.score is not null then 1 / cs.score * 2
                                                         when aw.tags->>'oneway:bicycle' = 'yes' then 1 / 0.01
                                                         when aw.tags->>'oneway' = 'yes' then 1 / 0.01
                                                         WHEN cs.score IS NULL THEN
