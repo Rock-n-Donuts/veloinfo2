@@ -7,6 +7,7 @@ use crate::component::menu::{menu_close, menu_open};
 use crate::component::photo_scroll::photo_scroll;
 use crate::component::point_panel::PointPanel;
 use crate::component::segment_panel::segment_panel;
+use crate::component::segment_panel::segment_panel_bigger;
 use crate::component::segment_panel::segment_panel_edit;
 use crate::component::segment_panel::segment_panel_post;
 use crate::component::segment_panel::select_score_id;
@@ -102,6 +103,7 @@ async fn main() {
         .route("/segment_panel/ways/:way_ids", get(segment_panel))
         .route("/segment_panel/edit/ways/:way_ids", get(segment_panel_edit))
         .route("/segment_panel", post(segment_panel_post))
+        .route("/segment_panel_bigger", get(segment_panel_bigger))
         .route("/menu/open", get(menu_open))
         .route("/menu/closed", get(menu_close))
         .route("/segment/select/:way_id", get(select))

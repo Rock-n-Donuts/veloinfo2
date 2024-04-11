@@ -242,6 +242,14 @@ pub async fn segment_panel(
     Ok(info_panel)
 }
 
+pub async fn segment_panel_bigger() -> SegmentPanelBigger {
+    SegmentPanelBigger {}
+}
+
+#[derive(Template)]
+#[template(path = "segment_panel_bigger.html", escape = "none")]
+pub struct SegmentPanelBigger {}
+
 async fn segment_panel_score_id(
     conn: sqlx::Pool<Postgres>,
     id: i32,
