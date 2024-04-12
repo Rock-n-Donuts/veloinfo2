@@ -1,4 +1,4 @@
-local cycleway = osm2pgsql.define_way_table("cycleway_way", {{
+local cycleway = osm2pgsql.define_way_table("cycleway_way", { {
     column = 'name',
     type = 'text'
 }, {
@@ -24,9 +24,9 @@ local cycleway = osm2pgsql.define_way_table("cycleway_way", {{
 }, {
     column = 'nodes',
     sql_type = 'int8[] NOT NULL'
-}})
+} })
 
-local all_way = osm2pgsql.define_way_table("all_way", {{
+local all_way = osm2pgsql.define_way_table("all_way", { {
     column = 'name',
     type = 'text'
 }, {
@@ -51,7 +51,7 @@ local all_way = osm2pgsql.define_way_table("all_way", {{
 }, {
     column = 'landuse',
     type = 'text'
-}})
+} })
 
 local all_area = osm2pgsql.define_table({
     name = 'all_area',
@@ -59,7 +59,7 @@ local all_area = osm2pgsql.define_table({
         type = 'area',
         id_column = 'way_id'
     },
-    columns = {{
+    columns = { {
         column = 'name',
         type = 'text'
     }, {
@@ -76,15 +76,19 @@ local all_area = osm2pgsql.define_table({
     }, {
         column = 'natural',
         type = 'text'
-    }},
-    indexes = {{
+    }, {
+        column = 'leisure',
+        type = 'text'
+    }
+    },
+    indexes = { {
         column = 'geom',
         method = 'gist'
-    }}
+    } }
 
 })
 
-local cycleway_point = osm2pgsql.define_node_table('cycleway_point', {{
+local cycleway_point = osm2pgsql.define_node_table('cycleway_point', { {
     column = 'name',
     type = 'text'
 }, {
@@ -93,7 +97,7 @@ local cycleway_point = osm2pgsql.define_node_table('cycleway_point', {{
 }, {
     column = 'tags',
     type = 'jsonb'
-}})
+} })
 
 function osm2pgsql.process_way(object)
     if object.tags.highway == 'cycleway' or object.tags.cycleway == "track" or object.tags["cycleway:left"] == "track" or
@@ -145,7 +149,7 @@ function osm2pgsql.process_way(object)
         })
     end
 
-    if object.is_closed and object.tags.landuse == 'residential' then
+    if object.is_closed and object.tags.landuse then
         all_area:insert({
             name = object.tags.name,
             geom = object:as_polygon(),
@@ -153,7 +157,7 @@ function osm2pgsql.process_way(object)
             landuse = object.tags.landuse
         })
     end
-    if object.is_closed and object.tags.natural == 'wood' then
+    if object.is_closed and object.tags.natural then
         all_area:insert({
             name = object.tags.name,
             geom = object:as_polygon(),
@@ -161,10 +165,27 @@ function osm2pgsql.process_way(object)
             natural = object.tags.natural
         })
     end
+    if object.tags.leisure then
+        -- print("This is a leisure park")
+        all_area:insert({
+            name = object.tags.name,
+            geom = object:as_polygon(),
+            tags = object.tags,
+            leisure = object.tags.leisure
+        })
+    end
 end
 
 function osm2pgsql.process_relation(object)
-    if object.tags["natural"] == "wood" then
+    if object.tags.natural then
+        all_area:insert({
+            name = object.tags.name,
+            geom = object:as_multipolygon(),
+            tags = object.tags,
+            natural = object.tags.natural
+        })
+    end
+    if object.tags.landuse then
         all_area:insert({
             name = object.tags.name,
             geom = object:as_multipolygon(),

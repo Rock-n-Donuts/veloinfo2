@@ -93,38 +93,29 @@
                 "fill-antialias": false
             },
             "filter": [
-                "any" ,
-                    ["==",
+                "any",
+                [
+                    "==",
                     "natural",
-                    "wood"]
-                    
-                
-            ]
-        },
-        {
-            "id": "Forest",
-            "type": "fill",
-            "source": "maptiler_planet",
-            "source-layer": "globallandcover",
-            "maxzoom": 7,
-            "layout": {
-                "visibility": "visible"
-            },
-            "paint": {
-                "fill-color": "hsla(96, 44%, 79%, 0.15)"
-            },
-            "filter": [
-                "in",
-                "class",
-                "forest",
-                "tree"
+                    "wood"
+                ],
+                [
+                    "==",
+                    "leisure",
+                    "park"
+                ],
+                [
+                    "==",
+                    "landuse",
+                    "cemetery"
+                ]
             ]
         },
         {
             "id": "Stadium",
             "type": "fill",
-            "source": "maptiler_planet",
-            "source-layer": "landuse",
+            "source": "veloinfo_all_area",
+            "source-layer": "all_area",
             "minzoom": 10,
             "maxzoom": 22,
             "layout": {
@@ -148,38 +139,16 @@
                 "fill-outline-color": "hsl(85,26%,77%)"
             },
             "filter": [
-                "in",
-                "class",
-                "stadium",
-                "pitch"
-            ]
-        },
-        {
-            "id": "Cemetery",
-            "type": "fill",
-            "source": "maptiler_planet",
-            "source-layer": "landuse",
-            "minzoom": 10,
-            "maxzoom": 22,
-            "layout": {
-                "visibility": "visible"
-            },
-            "paint": {
-                "fill-color": "hsl(0, 0%, 89%)",
-                "fill-opacity": 1,
-                "fill-antialias": true
-            },
-            "filter": [
                 "==",
-                "class",
-                "cemetery"
+                "leisure",
+                "stadium"
             ]
         },
         {
             "id": "River",
             "type": "line",
-            "source": "maptiler_planet",
-            "source-layer": "waterway",
+            "source": "veloinfo_all_area",
+            "source-layer": "all_area",
             "layout": {
                 "visibility": "visible"
             },
@@ -202,43 +171,18 @@
                     16,
                     2.5
                 ]
-            }
-        },
-        {
-            "id": "Water shadow",
-            "type": "fill",
-            "source": "maptiler_planet",
-            "source-layer": "water",
-            "minzoom": 0,
-            "maxzoom": 22,
-            "layout": {
-                "visibility": "visible"
-            },
-            "paint": {
-                "fill-color": "hsl(196,28%,74%)",
-                "fill-opacity": 1,
-                "fill-antialias": true,
-                "fill-translate-anchor": "map"
             },
             "filter": [
-                "all",
-                [
-                    "==",
-                    "$type",
-                    "Polygon"
-                ],
-                [
-                    "!=",
-                    "brunnel",
-                    "tunnel"
-                ]
+                "==",
+                "natural",
+                "water"
             ]
         },
         {
             "id": "Water",
             "type": "fill",
-            "source": "maptiler_planet",
-            "source-layer": "water",
+            "source": "veloinfo_all_area",
+            "source-layer": "all_area",
             "minzoom": 0,
             "layout": {
                 "visibility": "visible"
@@ -282,17 +226,9 @@
                 "fill-translate-anchor": "map"
             },
             "filter": [
-                "all",
-                [
-                    "==",
-                    "$type",
-                    "Polygon"
-                ],
-                [
-                    "!=",
-                    "brunnel",
-                    "tunnel"
-                ]
+                "==",
+                "natural",
+                "water"
             ]
         },
         {
