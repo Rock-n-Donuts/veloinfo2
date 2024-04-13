@@ -36,7 +36,6 @@ impl Edge {
         let case_score_null = r#"case
                                                                 when aw.tags->>'highway' = 'cycleway' then 1 / 1 * 2
                                                                 when aw.tags->>'bicycle' = 'designated' then 1 / 1 * 2
-                                                                when aw.tags->>'bicycle' = 'yes' then 1 / 1 * 2
                                                                 when aw.tags->>'cycleway' = 'track' then 1 / 1 * 2
                                                                 when aw.tags->>'cycleway:both' = 'track' then 1 / 1 * 2
                                                                 when aw.tags->>'cycleway:left' = 'track' then 1 / 1 * 2
@@ -53,6 +52,7 @@ impl Edge {
                                                                 when aw.tags->>'highway' = 'tertiary' then 1 / 0.5 * 2
                                                                 when aw.tags->>'highway' = 'secondary' then 1 / 0.33 * 2
                                                                 when aw.tags->>'highway' = 'service' then 1 / 0.33 * 2
+                                                                when aw.tags->>'bicycle' = 'yes' then 1 / 1 * 2
                                                                 when aw.tags->>'highway' = 'primary' then 1 / 0.1 * 2
                                                                 when aw.tags->>'highway' = 'footway' then 1 / 0.1 * 2
                                                                 when aw.tags->>'highway' = 'steps' then 1 / 0.05 * 2
