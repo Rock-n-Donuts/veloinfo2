@@ -123,7 +123,7 @@ async fn get_name(way_ids: &Vec<i64>, conn: sqlx::Pool<Postgres>) -> String {
         Ok(Cycleway::get(way_id, conn.clone())
             .await?
             .name
-            .unwrap_or("Non inconnu".to_string()))
+            .unwrap_or("Nom inconnu".to_string()))
     }))
     .await
     .iter()
