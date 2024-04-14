@@ -120,7 +120,6 @@ async function zoomToSegment(score_id) {
 }
 
 function display_segment_geom(geom) {
-    console.log("geom: ", geom);
     if (map.getLayer("selected")) {
         console.log("updating selected layer");
         map.getSource("selected").setData({
@@ -154,7 +153,7 @@ function display_segment_geom(geom) {
             }
         });
     }
-
+    map.getSource("veloinfo").setUrl("{{martin_url}}/bike_path");
 }
 
 let timeout_info = null;
@@ -219,11 +218,6 @@ async function clear() {
     segment_panel = document.getElementById("info");
     htmx.process(segment_panel);
 }
-
-async function reset() {
-    map.getSource("veloinfo").setUrl("{{martin_url}}/bike_path");
-}
-
 
 function getCookie(name) {
     let matches = document.cookie.match(new RegExp(
