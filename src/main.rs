@@ -6,13 +6,13 @@ use crate::component::info_panel::info_panel_up;
 use crate::component::menu::{menu_close, menu_open};
 use crate::component::photo_scroll::photo_scroll;
 use crate::component::point_panel::PointPanel;
-use crate::component::segment_panel::segment_panel;
 use crate::component::segment_panel::segment_panel_bigger;
+use crate::component::segment_panel::segment_panel_bigger_route;
 use crate::component::segment_panel::segment_panel_edit;
+use crate::component::segment_panel::segment_panel_lng_lat;
 use crate::component::segment_panel::segment_panel_post;
 use crate::component::segment_panel::select_score_id;
 use crate::node::route;
-use crate::node::select_node;
 use crate::node::select_nodes;
 use crate::score_selector_controler::score_bounds_controler;
 use askama::Template;
@@ -94,22 +94,27 @@ async fn main() {
         .route("/", get(index))
         .route("/auth", get(auth))
         .route("/logout", get(logout))
-        .route("/select/node/:lng/:lat", get(select_node))
         .route(
             "/select/nodes/:start_lng/:start_lat/:end_lng/:end_lat",
             get(select_nodes),
         )
         .route("/segment_panel/id/:id", get(select_score_id))
-        .route("/segment_panel/ways/:way_ids", get(segment_panel))
+        .route(
+            "/segment_panel_lng_lat/:lng/:lat",
+            get(segment_panel_lng_lat),
+        )
         .route("/segment_panel/edit/ways/:way_ids", get(segment_panel_edit))
         .route("/segment_panel", post(segment_panel_post))
         .route("/segment_panel_bigger", get(segment_panel_bigger))
+        .route(
+            "/segment_panel_bigger/:start_lng/:start_lat/:end_lng/:end_lat",
+            get(segment_panel_bigger_route),
+        )
         .route("/menu/open", get(menu_open))
         .route("/menu/closed", get(menu_close))
         .route("/segment/select/:way_id", get(select))
         .route("/point/select/:lng/:lat", get(PointPanel::select))
         .route("/route/:start_lng/:start_lat/:end_lgt/:end_lat", get(route))
-        // .route("/segment/route/:way_id1/:way_ids", get(route))
         .route(
             "/cyclability_score/geom/:cyclability_score_id",
             get(score_bounds_controler),
@@ -137,35 +142,6 @@ async fn main() {
 
 fn not_htmx_predicate<T>(req: &Request<T>) -> bool {
     !req.headers().contains_key("hx-request")
-}
-struct VIError(anyhow::Error);
-
-impl From<anyhow::Error> for VIError {
-    fn from(error: anyhow::Error) -> Self {
-        VIError(error)
-    }
-}
-
-impl From<askama::Error> for VIError {
-    fn from(error: askama::Error) -> Self {
-        VIError(anyhow::Error::from(error))
-    }
-}
-
-impl From<regex::Error> for VIError {
-    fn from(error: regex::Error) -> Self {
-        VIError(anyhow::Error::from(error))
-    }
-}
-
-impl IntoResponse for VIError {
-    fn into_response(self) -> Response {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Something went wrong: {}", self.0),
-        )
-            .into_response()
-    }
 }
 
 #[derive(Template)]

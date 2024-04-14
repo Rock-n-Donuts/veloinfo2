@@ -63,6 +63,12 @@ map.on("move", function (e) {
 let start_marker = null;
 let end_marker = null;
 async function select(event) {
+    const segment_panel_bigger = document.getElementById("segment_panel_bigger");
+    if (segment_panel_bigger) {
+        selectBigger(event);
+        return;
+    }
+
     if (start_marker) {
         start_marker.remove();
     }
@@ -77,47 +83,17 @@ async function select(event) {
 
     if (features.length) {
         var feature = features[0];
-        var point = await fetch('/select/node/' + event.lngLat.lng + "/" + event.lngLat.lat);
-        var point = await point.json();
-        way_ids = point.way_id;
-        display_segment_geom([point.geom]);
-
-        // Display info panel
-        var info_panel = document.getElementById("info");
-        const response = await fetch("/segment_panel/ways/" + way_ids);
-        const html = await response.text();
-        info_panel.innerHTML = html;
-        // reprocess htmx for the new info panel
-        info_panel = document.getElementById("info");
-        htmx.process(info_panel);
+        htmx.ajax('GET', '/segment_panel_lng_lat/' + event.lngLat.lng + "/" + event.lngLat.lat, "#info");
     } else {
         clear();
-
     }
+}
 
-    if (!start_marker) {
-    } else {
-        // var point = await fetch('/select/node/' + event.lngLat.lng + "/" + event.lngLat.lat);
-        // var point = await point.json();
-        // if (end_marker) {
-        //     end_marker.remove();
-        // }
-        // end_marker = new maplibregl.Marker({ color: "#f00" }).setLngLat([point.lng, point.lat]).addTo(map);
+async function selectBigger(event) {
+    console.log("selectBigger");
+    end_marker = new maplibregl.Marker({ color: "#f00" }).setLngLat([event.lngLat.lng, event.lngLat.lat]).addTo(map);
 
-        // var nodes = await fetch('/route/' + start_marker.getLngLat().lng + "/" + start_marker.getLngLat().lat + "/" + event.lngLat.lng + "/" + event.lngLat.lat);
-        // var nodes = await nodes.json();
-        // console.log("nodes: ", nodes);
-        // var route = nodes.map((coords) => {
-        //     return [coords.x, coords.y];
-        // });
-        // way_ids = nodes.map((node) => node.way_id);
-        // way_ids = [...new Set(way_ids)].join(" ");
-
-        // display_segment_geom([route]);
-    }
-
-    if (way_ids) {
-    }
+    var nodes = await htmx.ajax('GET', '/segment_panel_bigger/' + start_marker.getLngLat().lng + "/" + start_marker.getLngLat().lat + "/" + event.lngLat.lng + "/" + event.lngLat.lat, "#info");
 }
 
 async function zoomToSegment(score_id) {
