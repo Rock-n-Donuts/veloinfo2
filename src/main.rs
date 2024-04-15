@@ -9,6 +9,7 @@ use crate::component::point_panel::PointPanel;
 use crate::component::segment_panel::segment_panel_bigger;
 use crate::component::segment_panel::segment_panel_bigger_route;
 use crate::component::segment_panel::segment_panel_edit;
+use crate::component::segment_panel::segment_panel_get;
 use crate::component::segment_panel::segment_panel_lng_lat;
 use crate::component::segment_panel::segment_panel_post;
 use crate::component::segment_panel::select_score_id;
@@ -103,6 +104,7 @@ async fn main() {
             "/segment_panel_lng_lat/:lng/:lat",
             get(segment_panel_lng_lat),
         )
+        .route("/segment_panel/ways/:way_ids", get(segment_panel_get))
         .route("/segment_panel/edit/ways/:way_ids", get(segment_panel_edit))
         .route("/segment_panel", post(segment_panel_post))
         .route("/segment_panel_bigger", get(segment_panel_bigger))
@@ -120,7 +122,7 @@ async fn main() {
             get(score_bounds_controler),
         )
         .route("/info_panel/down", get(info_panel_down))
-        .route("/info_panel/up", post(info_panel_up))
+        .route("/info_panel/up/:lng1/:lat1/:lng2/:lat2", get(info_panel_up))
         .route("/score_selector/:score", get(score_selector_controler))
         .route("/photo_scroll/:photo/:way_ids", get(photo_scroll))
         .route("/style.json", get(style))

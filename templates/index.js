@@ -90,7 +90,9 @@ async function select(event) {
 }
 
 async function selectBigger(event) {
-    console.log("selectBigger");
+    if (end_marker) {
+        end_marker.remove();
+    }
     end_marker = new maplibregl.Marker({ color: "#f00" }).setLngLat([event.lngLat.lng, event.lngLat.lat]).addTo(map);
 
     var nodes = await htmx.ajax('GET', '/segment_panel_bigger/' + start_marker.getLngLat().lng + "/" + start_marker.getLngLat().lat + "/" + event.lngLat.lng + "/" + event.lngLat.lat, "#info");
@@ -183,6 +185,12 @@ function update_url() {
 
 
 async function clear() {
+    if (start_marker) {
+        start_marker.remove();
+    }
+    if (end_marker) {
+        end_marker.remove();
+    }
     state.mode = "select";
     const selected = map.getSource("selected");
     if (selected) {
@@ -196,27 +204,8 @@ async function clear() {
         });
     }
     // Display info panel
-    var segment_panel = document.getElementById("info");
-    var hx_indicator = document.getElementsByClassName("htmx-indicator")[0];
-    if (hx_indicator) {
-        hx_indicator.classList.add("htmx-request");
-    }
-    const response = await fetch("/info_panel/up", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(map.getBounds())
-    });
-    var hx_indicator = document.getElementsByClassName("htmx-indicator")[0];
-    if (hx_indicator) {
-        hx_indicator.classList.remove("htmx-request");
-    }
-    const html = await response.text();
-    segment_panel.innerHTML = html;
-    // reprocess htmx for the new info panel
-    segment_panel = document.getElementById("info");
-    htmx.process(segment_panel);
+    const bounds = map.getBounds();
+    htmx.ajax("GET", "/info_panel/up/" + bounds._sw.lng + "/" + bounds._sw.lng + "/" + bounds._ne.lng + "/" + bounds._ne.lat, "#info");
 }
 
 function getCookie(name) {

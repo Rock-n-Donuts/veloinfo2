@@ -1,4 +1,3 @@
-use crate::component::info_panel::Bounds;
 use chrono::{DateTime, Local};
 use sqlx::{Postgres, Row};
 
@@ -15,7 +14,10 @@ pub struct CyclabilityScore {
 
 impl CyclabilityScore {
     pub async fn get_recents(
-        bounds: &Bounds,
+        lng1: f64,
+        lat1: f64,
+        lng2: f64,
+        lat2: f64,
         conn: sqlx::Pool<Postgres>,
     ) -> Result<Vec<CyclabilityScore>, sqlx::Error> {
         sqlx::query_as(
@@ -27,10 +29,10 @@ impl CyclabilityScore {
                order by cs.created_at desc
                limit 100"#,
         )
-        .bind(bounds._ne.lng)
-        .bind(bounds._ne.lat)
-        .bind(bounds._sw.lng)
-        .bind(bounds._sw.lat)
+        .bind(lng1)
+        .bind(lat1)
+        .bind(lng2)
+        .bind(lat2)
         .fetch_all(&conn)
         .await
     }

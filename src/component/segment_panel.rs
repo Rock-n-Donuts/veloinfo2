@@ -198,6 +198,13 @@ pub async fn segment_panel_edit(
     segment_panel
 }
 
+pub async fn segment_panel_get(
+    State(state): State<VeloinfoState>,
+    Path(way_ids): Path<String>,
+) -> SegmentPanel {
+    segment_panel(state, way_ids).await
+}
+
 pub async fn segment_panel(state: VeloinfoState, way_ids: String) -> SegmentPanel {
     let re = Regex::new(r"\d+").unwrap();
     let way_ids_i64 = re
@@ -264,7 +271,6 @@ pub async fn segment_panel_bigger() -> SegmentPanelBigger {
 }
 
 pub async fn segment_panel_bigger_route() -> SegmentPanelBigger {
-    println!("segment_panel_bigger_route");
     SegmentPanelBigger {}
 }
 

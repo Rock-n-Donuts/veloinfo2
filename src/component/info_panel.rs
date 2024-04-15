@@ -4,8 +4,7 @@ use crate::VeloinfoState;
 use anyhow::Ok;
 use anyhow::Result;
 use askama::Template;
-use axum::extract::State;
-use axum::Json;
+use axum::extract::{Path, State};
 use chrono::Locale;
 use chrono_tz::America::Montreal;
 use futures::future::join_all;
@@ -35,8 +34,15 @@ pub struct InfopanelContribution {
 }
 
 impl InfopanelContribution {
-    pub async fn get(bounds: Bounds, conn: sqlx::Pool<Postgres>) -> Vec<InfopanelContribution> {
-        let scores = match CyclabilityScore::get_recents(&bounds, conn.clone()).await {
+    pub async fn get(
+        lng1: f64,
+        lat1: f64,
+        lng2: f64,
+        lat2: f64,
+        conn: sqlx::Pool<Postgres>,
+    ) -> Vec<InfopanelContribution> {
+        let scores = match CyclabilityScore::get_recents(lng1, lat1, lng2, lat2, conn.clone()).await
+        {
             Result::Ok(cs) => cs,
             Err(e) => {
                 eprintln!("Error getting contributions {:?}", e);
@@ -153,17 +159,11 @@ pub struct LatLng {
     pub lng: f64,
 }
 
-#[derive(Deserialize, Debug)]
-pub struct Bounds {
-    pub _ne: LatLng,
-    pub _sw: LatLng,
-}
-
 pub async fn info_panel_up(
     State(state): State<VeloinfoState>,
-    Json(bounds): Json<Bounds>,
+    Path((lng1, lat1, lng2, lat2)): Path<(f64, f64, f64, f64)>,
 ) -> InfoPanelTemplate {
-    let contributions = InfopanelContribution::get(bounds, state.conn).await;
+    let contributions = InfopanelContribution::get(lng1, lat1, lng2, lat2, state.conn).await;
     InfoPanelTemplate {
         arrow: "▼".to_string(),
         contributions: contributions,
