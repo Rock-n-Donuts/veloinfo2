@@ -125,44 +125,6 @@ impl Cycleway {
         };
         Ok(response.into())
     }
-
-    pub async fn route(source: &i64, target: &i64, conn: sqlx::Pool<Postgres>) -> Vec<RouteDB> {
-        let responses: Vec<RouteDB> = match sqlx::query_as(
-            r#"SELECT 
-                    pa.*,
-                    x1,
-                    y1,
-                    way_id         
-                FROM pgr_bdastar(
-                    FORMAT(
-                        $FORMAT$
-                        SELECT *,
-                        st_length(ST_MakeLine(ST_Point(x1, y2), ST_Point(x2, y2))) as cost,
-                        st_length(ST_MakeLine(ST_Point(x1, y2), ST_Point(x2, y2))) as reverse_cost
-                        from edge 
-                        where target is not null                         
-                        $FORMAT$
-                    )
-                , 
-                $1, 
-                $2
-                ) as pa
-                left join edge on node = source and target is not null 
-            ORDER BY pa.path_seq ASC"#,
-        )
-        .bind(source)
-        .bind(target)
-        .fetch_all(&conn)
-        .await
-        {
-            Ok(response) => response,
-            Err(e) => {
-                eprintln!("could not make route {:?}", e);
-                vec![]
-            }
-        };
-        responses
-    }
 }
 
 impl From<CyclewayDb> for Cycleway {
