@@ -7,4 +7,15 @@
     <div>
         <button hx-on:click="clear()" class="ml-2 bg-teal-300 rounded uppercase p-2">annuler</button>
     </div>
+    <div>
+        {% for way in ways %}
+        {{ way.way_id}}
+        {% endfor %}
+    </div>
 </div>
+
+<script>
+    {% if geom_json != "" %}
+    display_segment_geom([{{ geom_json }}]);
+    {% endif %}
+</script>

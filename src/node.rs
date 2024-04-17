@@ -42,11 +42,13 @@ pub async fn route(
         Point {
             x: start_lng,
             y: start_lat,
+            way_id: 0,
         },
     );
     edges.push(Point {
         x: end_lng,
         y: end_lat,
+        way_id: 0,
     });
     println!("edges: {:?}", edges);
     let edges_coordinate: Vec<(f64, f64)> = edges.iter().map(|edge| (edge.x, edge.y)).collect();

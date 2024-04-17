@@ -4,6 +4,7 @@ use super::{
     info_panel::InfopanelContribution, score_circle::ScoreCircle, score_selector::ScoreSelector,
 };
 use crate::db::cycleway::{Cycleway, Node};
+use crate::db::edge::Edge;
 use crate::{db::cyclability_score::CyclabilityScore, VeloinfoState};
 use anyhow::Result;
 use askama::Template;
@@ -267,16 +268,87 @@ pub async fn segment_panel(state: VeloinfoState, way_ids: String) -> SegmentPane
 }
 
 pub async fn segment_panel_bigger() -> SegmentPanelBigger {
-    SegmentPanelBigger {}
+    SegmentPanelBigger {
+        ways: vec![],
+        geom_json: "".to_string(),
+    }
 }
 
-pub async fn segment_panel_bigger_route() -> SegmentPanelBigger {
-    SegmentPanelBigger {}
+pub async fn segment_panel_bigger_route(
+    State(state): State<VeloinfoState>,
+    Path((lng1, lat1, lng2, lat2)): Path<(f64, f64, f64, f64)>,
+) -> SegmentPanelBigger {
+    let node1 = match Cycleway::find(&lng1, &lat1, state.conn.clone()).await {
+        Ok(node) => node,
+        Err(e) => {
+            eprintln!("Error while fetching node1: {}", e);
+            Node {
+                way_id: 0,
+                geom: vec![],
+                node_id: 0,
+                lng: 0.,
+                lat: 0.,
+            }
+        }
+    };
+    let node2 = match Cycleway::find(&lng2, &lat2, state.conn.clone()).await {
+        Ok(node) => node,
+        Err(e) => {
+            eprintln!("Error while fetching node2: {}", e);
+            Node {
+                way_id: 0,
+                geom: vec![],
+                node_id: 0,
+                lng: 0.,
+                lat: 0.,
+            }
+        }
+    };
+
+    let edges = Edge::route(&node1, &node2, state.conn.clone()).await;
+    let (geom, ways): (Vec<[f64; 2]>, Vec<Cycleway>) = join_all(
+        edges
+            .iter()
+            .fold(&mut vec![], |ways, edge| {
+                let way_id = edge.way_id;
+                if !ways.contains(&way_id) {
+                    ways.push(way_id);
+                }
+                ways
+            })
+            .iter()
+            .map(|way_id| Cycleway::get(way_id, state.clone().conn)),
+    )
+    .await
+    .iter()
+    .filter_map(|way| match way {
+        Ok(way) => Some(way),
+        _ => None,
+    })
+    .fold((vec![], vec![]), |mut acc, way| {
+        acc.0.extend(&way.geom);
+        acc.1.push(way.clone());
+        acc
+    });
+
+    SegmentPanelBigger {
+        ways,
+        geom_json: match serde_json::to_string(&geom) {
+            Ok(geom) => geom,
+            Err(e) => {
+                eprintln!("Error while serializing geom: {}", e);
+                "".to_string()
+            }
+        },
+    }
 }
 
 #[derive(Template)]
 #[template(path = "segment_panel_bigger.html", escape = "none")]
-pub struct SegmentPanelBigger {}
+pub struct SegmentPanelBigger {
+    ways: Vec<Cycleway>,
+    geom_json: String,
+}
 
 async fn segment_panel_score_id(conn: sqlx::Pool<Postgres>, id: i32, edit: bool) -> SegmentPanel {
     println!("segment_panel_score_id");

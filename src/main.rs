@@ -15,13 +15,10 @@ use crate::component::segment_panel::select_score_id;
 use crate::node::route;
 use crate::score_selector_controler::score_bounds_controler;
 use askama::Template;
-use askama_axum::IntoResponse;
 use axum::extract::DefaultBodyLimit;
 use axum::http::HeaderMap;
 use axum::http::HeaderValue;
 use axum::http::Request;
-use axum::http::StatusCode;
-use axum::response::Response;
 use axum::routing::post;
 use axum::routing::{get, Router};
 use component::style::style;
@@ -148,34 +145,4 @@ pub async fn index() -> (HeaderMap, IndexTemplate) {
         HeaderValue::from_static("text/html; charset=utf-8"),
     );
     (headers, template)
-}
-
-pub struct VeloInfoError(anyhow::Error);
-
-// Tell axum how to convert `AppError` into a response.
-impl IntoResponse for VeloInfoError {
-    fn into_response(self) -> Response {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Something went wrong: {}", self.0),
-        )
-            .into_response()
-    }
-}
-
-impl From<regex::Error> for VeloInfoError {
-    fn from(error: regex::Error) -> Self {
-        VeloInfoError(anyhow::Error::from(error))
-    }
-}
-
-impl From<anyhow::Error> for VeloInfoError {
-    fn from(error: anyhow::Error) -> Self {
-        VeloInfoError(error)
-    }
-}
-impl From<sqlx::Error> for VeloInfoError {
-    fn from(error: sqlx::Error) -> Self {
-        VeloInfoError(anyhow::Error::from(error))
-    }
 }

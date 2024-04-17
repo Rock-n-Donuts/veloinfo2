@@ -7,6 +7,7 @@ use super::cycleway::{Node, NodeDb};
 pub struct Point {
     pub x: f64,
     pub y: f64,
+    pub way_id: i64,
 }
 
 #[derive(Debug, sqlx::FromRow, Serialize, Deserialize, Clone)]
@@ -34,6 +35,7 @@ impl Edge {
         let smallest_lat = start_node.lat.min(end_node.lat) - 0.02;
 
         let case_score_null = r#"case
+                                                                when aw.tags->>'bicycle' = 'no' then 1 / 0.0001 * 2
                                                                 when aw.tags->>'highway' = 'cycleway' then 1 / 1 * 2
                                                                 when aw.tags->>'bicycle' = 'designated' then 1 / 1 * 2
                                                                 when aw.tags->>'cycleway' = 'track' then 1 / 1 * 2
@@ -64,7 +66,8 @@ impl Edge {
         let request = format!(
             r#"SELECT distinct on (pa.path_seq)
                                     x1 as x,
-                                    y1 as y
+                                    y1 as y,
+                                    way_id
                                         FROM pgr_bdastar(
                                             FORMAT(
                                                 $FORMAT$
