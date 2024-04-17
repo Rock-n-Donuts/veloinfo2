@@ -239,8 +239,8 @@
         {
             "id": "Aeroway",
             "type": "line",
-            "source": "maptiler_planet",
-            "source-layer": "aeroway",
+            "source": "veloinfo_all_area",
+            "source-layer": "all_area",
             "minzoom": 12,
             "layout": {
                 "line-cap": "round",
@@ -302,8 +302,8 @@
             "metadata": {},
             "filter": [
                 "==",
-                "$type",
-                "LineString"
+                "aeroway",
+                "aerodrome"
             ]
         },
         {

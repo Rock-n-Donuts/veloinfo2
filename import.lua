@@ -79,7 +79,11 @@ local all_area = osm2pgsql.define_table({
     }, {
         column = 'leisure',
         type = 'text'
+    }, {
+        column = 'aeroway',
+        type = 'text'
     }
+
     },
     indexes = { {
         column = 'geom',
@@ -149,48 +153,30 @@ function osm2pgsql.process_way(object)
         })
     end
 
-    if object.is_closed and object.tags.landuse then
+    if object.is_closed and (object.tags.natural or object.tags.landuse or object.tags.leisure or object.tags.aeroway) then
         all_area:insert({
             name = object.tags.name,
             geom = object:as_polygon(),
             tags = object.tags,
-            landuse = object.tags.landuse
-        })
-    end
-    if object.is_closed and object.tags.natural then
-        all_area:insert({
-            name = object.tags.name,
-            geom = object:as_polygon(),
-            tags = object.tags,
-            natural = object.tags.natural
-        })
-    end
-    if object.tags.leisure then
-        -- print("This is a leisure park")
-        all_area:insert({
-            name = object.tags.name,
-            geom = object:as_polygon(),
-            tags = object.tags,
-            leisure = object.tags.leisure
+            landuse = object.tags.landuse,
+            natural = object.tags.natural,
+            leisure = object.tags.leisure,
+            aeroway = object.tags.aeroway
         })
     end
 end
 
 function osm2pgsql.process_relation(object)
-    if object.tags.natural then
+    if object.tags.natural or object.tags.landuse or object.tags.leisure or object.tags.aeroway then
         all_area:insert({
             name = object.tags.name,
             geom = object:as_multipolygon(),
             tags = object.tags,
-            natural = object.tags.natural
-        })
-    end
-    if object.tags.landuse then
-        all_area:insert({
-            name = object.tags.name,
-            geom = object:as_multipolygon(),
-            tags = object.tags,
-            natural = object.tags.natural
+            landuse = object.tags.landuse,
+            natural = object.tags.natural,
+            leisure = object.tags.leisure,
+            aeroway = object.tags.aeroway
+
         })
     end
 end
