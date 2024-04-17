@@ -108,6 +108,11 @@
                     "==",
                     "landuse",
                     "cemetery"
+                ],
+                [
+                    "==",
+                    "landuse",
+                    "grass"
                 ]
             ]
         },
