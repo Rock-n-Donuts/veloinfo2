@@ -26,32 +26,44 @@ local cycleway = osm2pgsql.define_way_table("cycleway_way", { {
     sql_type = 'int8[] NOT NULL'
 } })
 
-local all_way = osm2pgsql.define_way_table("all_way", { {
-    column = 'name',
-    type = 'text'
-}, {
-    column = 'geom',
-    type = 'LineString',
-    not_null = true
-}, {
-    column = 'source',
-    type = 'int8',
-    not_null = true
-}, {
-    column = 'target',
-    type = 'int8',
-    not_null = true
-}, {
-    column = 'tags',
-    type = 'jsonb',
-    not_null = true
-}, {
-    column = 'nodes',
-    sql_type = 'int8[] NOT NULL'
-}, {
-    column = 'landuse',
-    type = 'text'
-} })
+local all_way = osm2pgsql.define_way_table("all_way", {
+    {
+        column = 'name',
+        type = 'text'
+    },
+    {
+        column = 'geom',
+        type = 'LineString',
+        not_null = true
+    },
+    {
+        column = 'source',
+        type = 'int8',
+        not_null = true
+    },
+    {
+        column = 'target',
+        type = 'int8',
+        not_null = true
+    },
+    {
+        column = 'tags',
+        type = 'jsonb',
+        not_null = true
+    },
+    {
+        column = 'nodes',
+        sql_type = 'int8[] NOT NULL'
+    },
+    {
+        column = 'landuse',
+        type = 'text'
+    },
+    {
+        column = 'tunnel',
+        type = 'text'
+    }
+})
 
 local all_area = osm2pgsql.define_table({
     name = 'all_area',
@@ -142,14 +154,15 @@ function osm2pgsql.process_way(object)
         })
     end
 
-    if object.tags.highway ~= 'motorway' and object.tags.bicycle ~= 'no' and object.tags.highway then
+    if object.tags.highway then
         all_way:insert({
             name = object.tags.name,
             geom = object:as_linestring(),
             source = object.nodes[1],
             target = object.nodes[#object.nodes],
             tags = object.tags,
-            nodes = "{" .. table.concat(object.nodes, ",") .. "}"
+            nodes = "{" .. table.concat(object.nodes, ",") .. "}",
+            tunnel = object.tags.tunnel
         })
     end
 
