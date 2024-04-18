@@ -1,4 +1,4 @@
-local cycleway = osm2pgsql.define_way_table("cycleway_way", { {
+local cycleway = osm2pgsql.define_way_table("cycleway_way", {{
     column = 'name',
     type = 'text'
 }, {
@@ -24,46 +24,37 @@ local cycleway = osm2pgsql.define_way_table("cycleway_way", { {
 }, {
     column = 'nodes',
     sql_type = 'int8[] NOT NULL'
-} })
+}})
 
-local all_way = osm2pgsql.define_way_table("all_way", {
-    {
-        column = 'name',
-        type = 'text'
-    },
-    {
-        column = 'geom',
-        type = 'LineString',
-        not_null = true
-    },
-    {
-        column = 'source',
-        type = 'int8',
-        not_null = true
-    },
-    {
-        column = 'target',
-        type = 'int8',
-        not_null = true
-    },
-    {
-        column = 'tags',
-        type = 'jsonb',
-        not_null = true
-    },
-    {
-        column = 'nodes',
-        sql_type = 'int8[] NOT NULL'
-    },
-    {
-        column = 'landuse',
-        type = 'text'
-    },
-    {
-        column = 'tunnel',
-        type = 'text'
-    }
-})
+local all_way = osm2pgsql.define_way_table("all_way", {{
+    column = 'name',
+    type = 'text'
+}, {
+    column = 'geom',
+    type = 'LineString',
+    not_null = true
+}, {
+    column = 'source',
+    type = 'int8',
+    not_null = true
+}, {
+    column = 'target',
+    type = 'int8',
+    not_null = true
+}, {
+    column = 'tags',
+    type = 'jsonb',
+    not_null = true
+}, {
+    column = 'nodes',
+    sql_type = 'int8[] NOT NULL'
+}, {
+    column = 'landuse',
+    type = 'text'
+}, {
+    column = 'tunnel',
+    type = 'text'
+}})
 
 local all_area = osm2pgsql.define_table({
     name = 'all_area',
@@ -71,7 +62,7 @@ local all_area = osm2pgsql.define_table({
         type = 'area',
         id_column = 'way_id'
     },
-    columns = { {
+    columns = {{
         column = 'name',
         type = 'text'
     }, {
@@ -94,17 +85,15 @@ local all_area = osm2pgsql.define_table({
     }, {
         column = 'aeroway',
         type = 'text'
-    }
-
-    },
-    indexes = { {
+    }},
+    indexes = {{
         column = 'geom',
         method = 'gist'
-    } }
+    }}
 
 })
 
-local cycleway_point = osm2pgsql.define_node_table('cycleway_point', { {
+local all_node = osm2pgsql.define_node_table('all_node', {{
     column = 'name',
     type = 'text'
 }, {
@@ -113,7 +102,10 @@ local cycleway_point = osm2pgsql.define_node_table('cycleway_point', { {
 }, {
     column = 'tags',
     type = 'jsonb'
-} })
+}, {
+    column = 'place',
+    type = 'text'
+}})
 
 function osm2pgsql.process_way(object)
     if object.tags.highway == 'cycleway' or object.tags.cycleway == "track" or object.tags["cycleway:left"] == "track" or
@@ -189,15 +181,17 @@ function osm2pgsql.process_relation(object)
             natural = object.tags.natural,
             leisure = object.tags.leisure,
             aeroway = object.tags.aeroway
-
         })
     end
 end
 
 function osm2pgsql.process_node(object)
-    cycleway_point:insert({
-        name = object.tags.name,
-        geom = object:as_point(),
-        tags = object.tags
-    })
+    if (object.tags.place) then
+        all_node:insert({
+            name = object.tags.name,
+            geom = object:as_point(),
+            tags = object.tags,
+            place = object.tags.place
+        })
+    end
 end

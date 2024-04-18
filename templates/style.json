@@ -22,6 +22,10 @@
         "veloinfo_all_way": {
             "type": "vector",
             "url": "{{martin_url}}/all_way"
+        },
+        "veloinfo_all_node": {
+            "type": "vector",
+            "url": "{{martin_url}}/all_node"
         }
     },
     "layers": [
@@ -2877,8 +2881,8 @@
         {
             "id": "City labels",
             "type": "symbol",
-            "source": "maptiler_planet",
-            "source-layer": "place",
+            "source": "veloinfo_all_node",
+            "source-layer": "all_node",
             "minzoom": 5,
             "maxzoom": 14,
             "layout": {
@@ -2886,72 +2890,7 @@
                     "Metropolis Semi Bold",
                     "Noto Sans Bold"
                 ],
-                "text-size": [
-                    "interpolate",
-                    [
-                        "linear",
-                        1
-                    ],
-                    [
-                        "zoom"
-                    ],
-                    5,
-                    [
-                        "case",
-                        [
-                            ">=",
-                            [
-                                "get",
-                                "rank"
-                            ],
-                            6
-                        ],
-                        11,
-                        12
-                    ],
-                    9,
-                    [
-                        "case",
-                        [
-                            ">=",
-                            [
-                                "get",
-                                "rank"
-                            ],
-                            6
-                        ],
-                        12,
-                        14
-                    ],
-                    13,
-                    [
-                        "case",
-                        [
-                            ">=",
-                            [
-                                "get",
-                                "rank"
-                            ],
-                            6
-                        ],
-                        16,
-                        18
-                    ],
-                    14,
-                    [
-                        "case",
-                        [
-                            ">=",
-                            [
-                                "get",
-                                "rank"
-                            ],
-                            6
-                        ],
-                        20,
-                        22
-                    ]
-                ],
+                "text-size": 15,
                 "text-field": "{name:en}",
                 "visibility": "visible",
                 "text-anchor": "center",
@@ -2973,12 +2912,8 @@
                 "all",
                 [
                     "==",
-                    "class",
+                    "place",
                     "city"
-                ],
-                [
-                    "has",
-                    "rank"
                 ]
             ]
         }
