@@ -2326,7 +2326,7 @@
                     "coalesce",
                     [
                         "get",
-                        "name:en"
+                        "name:fr"
                     ],
                     [
                         "get",
@@ -2439,8 +2439,8 @@
         {
             "id": "Place labels",
             "type": "symbol",
-            "source": "maptiler_planet",
-            "source-layer": "place",
+            "source": "veloinfo_all_node",
+            "source-layer": "all_node",
             "minzoom": 13,
             "maxzoom": 22,
             "layout": {
@@ -2464,7 +2464,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "place"
                         ],
                         [
                             "suburb",
@@ -2479,7 +2479,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "place"
                         ],
                         [
                             "suburb",
@@ -2494,7 +2494,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "place"
                         ],
                         [
                             "suburb",
@@ -2509,7 +2509,7 @@
                     "coalesce",
                     [
                         "get",
-                        "name:en"
+                        "name:fr"
                     ],
                     [
                         "get",
@@ -2539,7 +2539,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "place"
                         ],
                         [
                             "suburb",
@@ -2558,7 +2558,7 @@
             },
             "filter": [
                 "!in",
-                "class",
+                "place",
                 "city",
                 "continent",
                 "country",
@@ -2571,8 +2571,8 @@
         {
             "id": "Village labels",
             "type": "symbol",
-            "source": "maptiler_planet",
-            "source-layer": "place",
+            "source": "veloinfo_all_node",
+            "source-layer": "all_node",
             "minzoom": 12,
             "maxzoom": 22,
             "layout": {
@@ -2618,15 +2618,15 @@
             },
             "filter": [
                 "==",
-                "class",
+                "place",
                 "village"
             ]
         },
         {
             "id": "Town labels",
             "type": "symbol",
-            "source": "maptiler_planet",
-            "source-layer": "place",
+            "source": "veloinfo_all_node",
+            "source-layer": "all_node",
             "minzoom": 11,
             "maxzoom": 16,
             "layout": {
@@ -2653,7 +2653,7 @@
                     "coalesce",
                     [
                         "get",
-                        "name:en"
+                        "name:fr"
                     ],
                     [
                         "get",
@@ -2678,15 +2678,15 @@
             },
             "filter": [
                 "==",
-                "class",
+                "place",
                 "town"
             ]
         },
         {
             "id": "State labels",
             "type": "symbol",
-            "source": "maptiler_planet",
-            "source-layer": "place",
+            "source": "veloinfo_all_node",
+            "source-layer": "all_node",
             "minzoom": 5,
             "maxzoom": 8,
             "layout": {
@@ -2694,43 +2694,12 @@
                     "Metropolis Semi Bold",
                     "Noto Sans Bold"
                 ],
-                "text-size": [
-                    "interpolate",
-                    [
-                        "linear",
-                        1
-                    ],
-                    [
-                        "zoom"
-                    ],
-                    5,
-                    [
-                        "match",
-                        [
-                            "get",
-                            "rank"
-                        ],
-                        1,
-                        10,
-                        10
-                    ],
-                    11,
-                    [
-                        "match",
-                        [
-                            "get",
-                            "rank"
-                        ],
-                        1,
-                        16,
-                        16
-                    ]
-                ],
+                "text-size": 15,
                 "text-field": [
                     "coalesce",
                     [
                         "get",
-                        "name:en"
+                        "name"
                     ],
                     [
                         "get",
@@ -2744,65 +2713,6 @@
             },
             "paint": {
                 "text-color": "hsl(204, 11%, 47%)",
-                "text-opacity": [
-                    "step",
-                    [
-                        "zoom"
-                    ],
-                    0,
-                    3,
-                    [
-                        "match",
-                        [
-                            "get",
-                            "rank"
-                        ],
-                        1,
-                        0.85,
-                        0
-                    ],
-                    4,
-                    [
-                        "case",
-                        [
-                            "<=",
-                            [
-                                "get",
-                                "rank"
-                            ],
-                            1
-                        ],
-                        0.75,
-                        0
-                    ],
-                    5,
-                    [
-                        "case",
-                        [
-                            "<=",
-                            [
-                                "get",
-                                "rank"
-                            ],
-                            3
-                        ],
-                        0.75,
-                        0
-                    ],
-                    8,
-                    [
-                        "match",
-                        [
-                            "get",
-                            "rank"
-                        ],
-                        4,
-                        0.75,
-                        0
-                    ],
-                    11,
-                    0
-                ],
                 "text-halo-blur": 0,
                 "text-halo-color": "hsl(30,25%,98%)",
                 "text-halo-width": 1.5
@@ -2811,13 +2721,8 @@
                 "all",
                 [
                     "==",
-                    "class",
+                    "place",
                     "state"
-                ],
-                [
-                    "==",
-                    "rank",
-                    1
                 ]
             ]
         },
