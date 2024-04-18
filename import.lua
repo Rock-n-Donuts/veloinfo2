@@ -1,3 +1,5 @@
+-- Imports OSM tags into PGSQL database
+
 local cycleway = osm2pgsql.define_way_table("cycleway_way", { {
     column = 'name',
     type = 'text'
@@ -62,6 +64,10 @@ local all_way = osm2pgsql.define_way_table("all_way", {
     {
         column = 'tunnel',
         type = 'text'
+    },
+    {
+        column = 'bridge',
+        type = 'text'
     }
 })
 
@@ -93,6 +99,9 @@ local all_area = osm2pgsql.define_table({
         type = 'text'
     }, {
         column = 'aeroway',
+        type = 'text'
+    }, {
+        column = 'man_made',
         type = 'text'
     }
 
@@ -154,7 +163,7 @@ function osm2pgsql.process_way(object)
         })
     end
 
-    if object.tags.highway then
+    if object.tags.highway or object.tags.bridge then
         all_way:insert({
             name = object.tags.name,
             geom = object:as_linestring(),
@@ -162,11 +171,12 @@ function osm2pgsql.process_way(object)
             target = object.nodes[#object.nodes],
             tags = object.tags,
             nodes = "{" .. table.concat(object.nodes, ",") .. "}",
-            tunnel = object.tags.tunnel
+            tunnel = object.tags.tunnel,
+            bridge = object.tags.bridge
         })
     end
 
-    if object.is_closed and (object.tags.natural or object.tags.landuse or object.tags.leisure or object.tags.aeroway) then
+    if object.is_closed and (object.tags.natural or object.tags.landuse or object.tags.leisure or object.tags.aeroway or object.tags.man_made) then
         all_area:insert({
             name = object.tags.name,
             geom = object:as_polygon(),
@@ -174,13 +184,14 @@ function osm2pgsql.process_way(object)
             landuse = object.tags.landuse,
             natural = object.tags.natural,
             leisure = object.tags.leisure,
-            aeroway = object.tags.aeroway
+            aeroway = object.tags.aeroway,
+            man_made = object.tags.man_made
         })
     end
 end
 
 function osm2pgsql.process_relation(object)
-    if object.tags.natural or object.tags.landuse or object.tags.leisure or object.tags.aeroway then
+    if object.tags.natural or object.tags.landuse or object.tags.leisure or object.tags.aeroway or object.tags.man_made then
         all_area:insert({
             name = object.tags.name,
             geom = object:as_multipolygon(),
@@ -188,8 +199,8 @@ function osm2pgsql.process_relation(object)
             landuse = object.tags.landuse,
             natural = object.tags.natural,
             leisure = object.tags.leisure,
-            aeroway = object.tags.aeroway
-
+            aeroway = object.tags.aeroway,
+            man_made = object.tags.man_made
         })
     end
 end
