@@ -2834,7 +2834,7 @@
                     "Noto Sans Bold"
                 ],
                 "text-size": 15,
-                "text-field": "{name:en}",
+                "text-field": "{name}",
                 "visibility": "visible",
                 "text-anchor": "center",
                 "text-offset": [
