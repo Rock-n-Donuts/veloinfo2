@@ -375,8 +375,8 @@
         {
             "id": "Pier",
             "type": "fill",
-            "source": "maptiler_planet",
-            "source-layer": "transportation",
+            "source": "veloinfo_all_area",
+            "source-layer": "all_area",
             "layout": {
                 "visibility": "visible"
             },
@@ -386,58 +386,9 @@
             },
             "metadata": {},
             "filter": [
-                "all",
-                [
-                    "==",
-                    "$type",
-                    "Polygon"
-                ],
-                [
-                    "==",
-                    "class",
-                    "pier"
-                ]
-            ]
-        },
-        {
-            "id": "Pier road",
-            "type": "line",
-            "source": "maptiler_planet",
-            "source-layer": "transportation",
-            "layout": {
-                "line-cap": "round",
-                "line-join": "round",
-                "visibility": "visible"
-            },
-            "paint": {
-                "line-color": "hsl(30,25%,98%)",
-                "line-width": {
-                    "base": 1.2,
-                    "stops": [
-                        [
-                            15,
-                            1
-                        ],
-                        [
-                            17,
-                            4
-                        ]
-                    ]
-                }
-            },
-            "metadata": {},
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "$type",
-                    "LineString"
-                ],
-                [
-                    "in",
-                    "class",
-                    "pier"
-                ]
+                "==",
+                "man_made",
+                "pier"
             ]
         },
         {
