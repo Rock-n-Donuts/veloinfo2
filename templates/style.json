@@ -394,8 +394,8 @@
         {
             "id": "Bridge",
             "type": "fill",
-            "source": "maptiler_planet",
-            "source-layer": "transportation",
+            "source": "veloinfo_all_way",
+            "source-layer": "all_way",
             "layout": {
                 "visibility": "visible"
             },
@@ -406,17 +406,9 @@
             },
             "metadata": {},
             "filter": [
-                "all",
-                [
-                    "==",
-                    "$type",
-                    "Polygon"
-                ],
-                [
-                    "in",
-                    "brunnel",
-                    "bridge"
-                ]
+                "==",
+                "bridge",
+                "yes"
             ]
         },
         {

@@ -163,7 +163,7 @@ function osm2pgsql.process_way(object)
         })
     end
 
-    if object.tags.highway or object.tags.bridge then
+    if object.tags.tunnel or object.tags.highway or object.tags.bridge then
         all_way:insert({
             name = object.tags.name,
             geom = object:as_linestring(),
@@ -172,6 +172,7 @@ function osm2pgsql.process_way(object)
             tags = object.tags,
             nodes = "{" .. table.concat(object.nodes, ",") .. "}",
             tunnel = object.tags.tunnel,
+            highway = object.tags.highway,
             bridge = object.tags.bridge
         })
     end
