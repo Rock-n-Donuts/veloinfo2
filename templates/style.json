@@ -76,7 +76,7 @@
             "id": "Landcover",
             "type": "fill",
             "source": "veloinfo_all_area",
-            "source-layer": "all_area_minzoom",
+            "source-layer": "all_area",
             "layout": {
                 "visibility": "visible"
             },
@@ -161,7 +161,7 @@
             "id": "River",
             "type": "line",
             "source": "veloinfo_all_area",
-            "source-layer": "all_area_minzoom",
+            "source-layer": "all_area",
             "layout": {
                 "visibility": "visible"
             },
@@ -195,7 +195,7 @@
             "id": "Water",
             "type": "fill",
             "source": "veloinfo_all_area",
-            "source-layer": "all_area_minzoom",
+            "source-layer": "all_area",
             "minzoom": 0,
             "layout": {
                 "visibility": "visible"

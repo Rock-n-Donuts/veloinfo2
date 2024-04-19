@@ -207,7 +207,7 @@ function osm2pgsql.process_way(object)
     end
 
     if object.is_closed and (object.tags.natural or object.tags.landuse or object.tags.leisure) then
-        all_area_minzoom:insert({
+        all_area:insert({
             name = object.tags.name,
             geom = object:as_polygon(),
             tags = object.tags,
@@ -219,7 +219,7 @@ function osm2pgsql.process_way(object)
         })
     end
     if object.is_closed and (object.tags.aeroway or object.tags.man_made) then
-        all_area:insert({
+        all_area_minzoom:insert({
             name = object.tags.name,
             geom = object:as_polygon(),
             tags = object.tags,
@@ -234,7 +234,7 @@ end
 
 function osm2pgsql.process_relation(object)
     if object.tags.landuse or object.tags.leisure or object.tags.natural then
-        all_area_minzoom:insert({
+        all_area:insert({
             name = object.tags.name,
             geom = object:as_multipolygon(),
             tags = object.tags,
@@ -246,7 +246,7 @@ function osm2pgsql.process_relation(object)
     end
 
     if object.tags.aeroway or object.tags.man_made then
-        all_area:insert({
+        all_area_minzoom:insert({
             name = object.tags.name,
             geom = object:as_multipolygon(),
             tags = object.tags,
