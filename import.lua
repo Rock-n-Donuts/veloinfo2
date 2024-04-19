@@ -99,6 +99,46 @@ local all_area = osm2pgsql.define_table({
 
 })
 
+local all_area_minzoom = osm2pgsql.define_table({
+    name = 'all_area_minzoom',
+    ids = {
+        type = 'area',
+        id_column = 'way_id'
+    },
+    columns = {{
+        column = 'name',
+        type = 'text'
+    }, {
+        column = 'geom',
+        type = 'multipolygon',
+        not_null = true
+    }, {
+        column = 'tags',
+        type = 'jsonb',
+        not_null = true
+    }, {
+        column = 'landuse',
+        type = 'text'
+    }, {
+        column = 'natural',
+        type = 'text'
+    }, {
+        column = 'leisure',
+        type = 'text'
+    }, {
+        column = 'aeroway',
+        type = 'text'
+    }, {
+        column = 'man_made',
+        type = 'text'
+    }},
+    indexes = {{
+        column = 'geom',
+        method = 'gist'
+    }}
+
+})
+
 local all_node = osm2pgsql.define_node_table('all_node', {{
     column = 'name',
     type = 'text'
@@ -166,9 +206,19 @@ function osm2pgsql.process_way(object)
         })
     end
 
-    if object.is_closed and
-        (object.tags.natural or object.tags.landuse or object.tags.leisure or object.tags.aeroway or
-            object.tags.man_made) then
+    if object.is_closed and (object.tags.natural or object.tags.landuse or object.tags.leisure) then
+        all_area_minzoom:insert({
+            name = object.tags.name,
+            geom = object:as_polygon(),
+            tags = object.tags,
+            landuse = object.tags.landuse,
+            natural = object.tags.natural,
+            leisure = object.tags.leisure,
+            aeroway = object.tags.aeroway,
+            man_made = object.tags.man_made
+        })
+    end
+    if object.is_closed and (object.tags.aeroway or object.tags.man_made) then
         all_area:insert({
             name = object.tags.name,
             geom = object:as_polygon(),
@@ -183,7 +233,19 @@ function osm2pgsql.process_way(object)
 end
 
 function osm2pgsql.process_relation(object)
-    if object.tags.natural or object.tags.landuse or object.tags.leisure or object.tags.aeroway or object.tags.man_made then
+    if object.tags.landuse or object.tags.leisure or object.tags.natural then
+        all_area_minzoom:insert({
+            name = object.tags.name,
+            geom = object:as_multipolygon(),
+            tags = object.tags,
+            landuse = object.tags.landuse,
+            natural = object.tags.natural,
+            leisure = object.tags.leisure,
+            aeroway = object.tags.aeroway
+        })
+    end
+
+    if object.tags.aeroway or object.tags.man_made then
         all_area:insert({
             name = object.tags.name,
             geom = object:as_multipolygon(),

@@ -17,7 +17,7 @@
         },
         "veloinfo_all_area": {
             "type": "vector",
-            "url": "{{martin_url}}/all_area"
+            "url": "{{martin_url}}/all_area,all_area_minzoom"
         },
         "veloinfo_all_way": {
             "type": "vector",
@@ -76,7 +76,7 @@
             "id": "Landcover",
             "type": "fill",
             "source": "veloinfo_all_area",
-            "source-layer": "all_area",
+            "source-layer": "all_area_minzoom",
             "layout": {
                 "visibility": "visible"
             },
@@ -161,7 +161,7 @@
             "id": "River",
             "type": "line",
             "source": "veloinfo_all_area",
-            "source-layer": "all_area",
+            "source-layer": "all_area_minzoom",
             "layout": {
                 "visibility": "visible"
             },
@@ -195,7 +195,7 @@
             "id": "Water",
             "type": "fill",
             "source": "veloinfo_all_area",
-            "source-layer": "all_area",
+            "source-layer": "all_area_minzoom",
             "minzoom": 0,
             "layout": {
                 "visibility": "visible"
@@ -400,6 +400,7 @@
             "type": "fill",
             "source": "veloinfo_all_way",
             "source-layer": "all_way",
+            "minzoom": 11,
             "layout": {
                 "visibility": "visible"
             },
