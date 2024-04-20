@@ -10,6 +10,8 @@ pub struct Cycleway {
     pub geom: Vec<[f64; 2]>,
     pub source: i64,
     pub target: i64,
+    pub score_id: Option<i32>,
+    pub score: Option<f64>,
 }
 
 #[derive(Debug, sqlx::FromRow)]
@@ -19,6 +21,8 @@ struct CyclewayDb {
     geom: String,
     source: i64,
     target: i64,
+    score_id: Option<i32>,
+    score: Option<f64>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, sqlx::FromRow)]
@@ -54,19 +58,39 @@ pub struct RouteDB {
 
 impl Cycleway {
     pub async fn get(way_id: &i64, conn: &sqlx::Pool<Postgres>) -> Result<Cycleway> {
-        let response: CyclewayDb = sqlx::query_as(
+        println!("way_id: {}", way_id);
+        let response: Result<CyclewayDb, sqlx::Error> = sqlx::query_as(
             r#"select
                 name,  
                 way_id,
                 source,
                 target,
-                ST_AsText(ST_Transform(geom, 4326)) as geom  
-               from cycleway_way where way_id = $1"#,
+                ST_AsText(ST_Transform(geom, 4326)) as geom,  
+                score,
+                cs.id as score_id
+               from cycleway_way 
+               left join (
+                    select *
+                    from cyclability_score 
+                    where $1 = any(way_ids)
+                    order by created_at desc
+                    limit 1
+               ) cs on way_id = any(cs.way_ids)
+               where 
+                cs.id is not null and
+                way_id = $1"#,
         )
         .bind(way_id)
         .fetch_one(conn)
-        .await?;
-        Ok(response.into())
+        .await;
+
+        match response {
+            Ok(response) => Ok(response.into()),
+            Err(e) => {
+                eprintln!("Error getting cycleway {:?} {:?}", way_id, e);
+                Err(e.into())
+            }
+        }
     }
 
     pub async fn get_by_score_id(
@@ -79,7 +103,9 @@ impl Cycleway {
                 c.way_id,
                 c.source,
                 c.target,
-                ST_AsText(ST_Transform(c.geom, 4326)) as geom  
+                ST_AsText(ST_Transform(c.geom, 4326)) as geom,  
+                score,
+                cs.id as score_id
                from cycleway_way c
                join cyclability_score cs on c.way_id = any(cs.way_ids)
                where cs.id = $1
@@ -151,6 +177,8 @@ impl From<&CyclewayDb> for Cycleway {
             geom: points,
             source: response.source,
             target: response.target,
+            score: response.score,
+            score_id: response.score_id,
         }
     }
 }

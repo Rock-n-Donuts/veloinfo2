@@ -6,7 +6,6 @@ use super::{
 use crate::db::cycleway::{Cycleway, Node};
 use crate::db::edge::Edge;
 use crate::{db::cyclability_score::CyclabilityScore, VeloinfoState};
-use anyhow::Result;
 use askama::Template;
 use axum::extract::multipart::Multipart;
 use axum::extract::{Path, State};
@@ -28,32 +27,6 @@ pub struct SegmentPanel {
     history: Vec<InfopanelContribution>,
     photo_ids: Vec<i32>,
     geom_json: String,
-}
-
-#[derive(Debug, sqlx::FromRow, Clone)]
-struct WayInfo {
-    way_id: i64,
-    name: Option<String>,
-    score: Option<f64>,
-}
-
-impl WayInfo {
-    pub async fn get(way_id: i64, conn: &sqlx::Pool<Postgres>) -> Result<WayInfo, sqlx::Error> {
-        sqlx::query_as(
-            r#"select  
-                c.way_id,
-                c.name,
-                cs.score,
-                cs.comment
-               from all_way c
-               left join cyclability_score cs on c.way_id = any(cs.way_ids)
-               where c.way_id = $1
-               order by created_at desc"#,
-        )
-        .bind(way_id)
-        .fetch_one(conn)
-        .await
-    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -149,25 +122,24 @@ pub async fn segment_panel_edit(
         .find_iter(way_ids.as_str())
         .map(|m| m.as_str().parse::<i64>().unwrap())
         .collect::<Vec<i64>>();
-    let cyclability_score = CyclabilityScore::get_by_way_ids(&way_ids_i64, &state.conn).await;
-    if let Some(score) = cyclability_score {
-        println!("score: {:?}", score);
-        return segment_panel_score_id(state.conn.clone(), score.id, true).await;
-    }
 
-    let conn = state.conn.clone();
     let ways = join_all(
         way_ids_i64
             .iter()
-            .map(|way_id| async { WayInfo::get(*way_id, &conn).await.unwrap() }),
+            .map(|way_id| async { Cycleway::get(way_id, &state.conn).await }),
     )
     .await;
-    let all_same_score = ways.iter().all(|way| way.score == ways[0].score);
-    let mut way = ways[0].clone();
+    let cycleways: Vec<&Cycleway> = ways
+        .iter()
+        .filter(|r| r.is_ok())
+        .map(|r| r.as_ref().unwrap())
+        .collect();
+    let all_same_score = cycleways.iter().all(|way| way.score == cycleways[0].score);
+    let mut way = cycleways[0].clone();
     if !all_same_score {
         way.score = Some(-1.);
     }
-    let segment_name = ways
+    let segment_name = cycleways
         .iter()
         .fold("".to_string(), |acc, way| match way.name.as_ref() {
             Some(name) => {
@@ -179,8 +151,12 @@ pub async fn segment_panel_edit(
             None => acc,
         });
 
-    let photo_ids = CyclabilityScore::get_photo_by_way_ids(&way_ids_i64, &conn).await;
-    let history = InfopanelContribution::get_history(&way_ids_i64, conn).await;
+    let geom_json = cycleways.iter().fold(vec![], |acc, way| {
+        acc.iter().chain(way.geom.iter()).cloned().collect()
+    });
+    let geom_json = serde_json::to_string(&geom_json).unwrap_or("".to_string());
+    let photo_ids = CyclabilityScore::get_photo_by_way_ids(&way_ids_i64, &state.conn).await;
+    let history = InfopanelContribution::get_history(&way_ids_i64, &state.conn).await;
     let segment_panel = SegmentPanel {
         way_ids: way_ids.clone(),
         score_circle: ScoreCircle {
@@ -192,7 +168,7 @@ pub async fn segment_panel_edit(
         edit: true,
         history,
         photo_ids,
-        geom_json: "".to_string(),
+        geom_json,
     };
 
     segment_panel
@@ -211,31 +187,27 @@ pub async fn segment_panel(state: VeloinfoState, way_ids: String) -> SegmentPane
         .find_iter(way_ids.as_str())
         .map(|cap| cap.as_str().parse::<i64>().unwrap())
         .collect::<Vec<i64>>();
-    if let Some(score) = CyclabilityScore::get_by_way_ids(&way_ids_i64, &state.conn).await {
-        return segment_panel_score_id(state.conn.clone(), score.id, false).await;
-    }
 
-    let ways: Vec<WayInfo> = join_all(way_ids_i64.iter().map(|way_id| async {
-        let conn = state.conn.clone();
-        match WayInfo::get(*way_id, &conn).await {
+    let cycleways: Vec<Cycleway> = join_all(way_ids_i64.iter().map(|way_id| async {
+        match Cycleway::get(way_id, &state.conn).await {
             Ok(way) => way,
             Err(e) => {
                 eprintln!("Error while fetching way: {}", e);
-                WayInfo {
+                Cycleway {
                     way_id: 0,
                     name: Some("".to_string()),
-                    score: Some(-1.),
+                    score: None,
+                    score_id: None,
+                    geom: vec![],
+                    source: 0,
+                    target: 0,
                 }
             }
         }
     }))
     .await;
-    let all_same_score = ways.iter().all(|way| way.score == ways[0].score);
-    let mut way = ways[0].clone();
-    if !all_same_score {
-        way.score = Some(-1.);
-    }
-    let segment_name = ways
+    let all_same_score = cycleways.iter().all(|way| way.score == cycleways[0].score);
+    let segment_name = cycleways
         .iter()
         .fold("".to_string(), |acc, way| match way.name.as_ref() {
             Some(name) => {
@@ -246,24 +218,29 @@ pub async fn segment_panel(state: VeloinfoState, way_ids: String) -> SegmentPane
             }
             None => acc,
         });
+    let geom = cycleways.iter().fold(vec![], |acc, way| {
+        acc.iter().chain(way.geom.iter()).cloned().collect()
+    });
 
-    let history = InfopanelContribution::get_history(&way_ids_i64, state.conn.clone()).await;
+    let history = InfopanelContribution::get_history(&way_ids_i64, &state.conn).await;
     let photo_ids = CyclabilityScore::get_photo_by_way_ids(&way_ids_i64, &state.conn).await;
-    let info_panel = SegmentPanel {
+    SegmentPanel {
         way_ids: way_ids.clone(),
         score_circle: ScoreCircle {
-            score: way.score.unwrap_or(-1.),
+            score: cycleways.first().unwrap().score.unwrap_or(-1.),
         },
         segment_name,
-        score_selector: ScoreSelector::get_score_selector(way.score.unwrap_or(-1.)),
+        score_selector: ScoreSelector::get_score_selector(if all_same_score {
+            cycleways.first().unwrap().score.unwrap_or(-1.)
+        } else {
+            -1.
+        }),
         comment: "".to_string(),
         edit: false,
         history,
         photo_ids,
-        geom_json: "".to_string(),
-    };
-
-    info_panel
+        geom_json: serde_json::to_string(&geom).unwrap_or("".to_string()),
+    }
 }
 
 pub async fn segment_panel_bigger() -> SegmentPanelBigger {
@@ -276,7 +253,7 @@ pub async fn segment_panel_bigger() -> SegmentPanelBigger {
 pub async fn segment_panel_bigger_route(
     State(state): State<VeloinfoState>,
     Path((lng1, lat1, lng2, lat2)): Path<(f64, f64, f64, f64)>,
-) -> SegmentPanelBigger {
+) -> SegmentPanel {
     let node1 = match Cycleway::find(&lng1, &lat1, &state.conn).await {
         Ok(node) => node,
         Err(e) => {
@@ -309,41 +286,14 @@ pub async fn segment_panel_bigger_route(
     if edges.len() > edges2.len() {
         edges = edges2;
     }
-    let (geom, ways): (Vec<[f64; 2]>, Vec<Cycleway>) = join_all(
-        edges
-            .iter()
-            .fold(&mut vec![], |ways, edge| {
-                let way_id = edge.way_id;
-                if !ways.contains(&way_id) {
-                    ways.push(way_id);
-                }
-                ways
-            })
-            .iter()
-            .map(|way_id| Cycleway::get(way_id, &state.conn)),
-    )
-    .await
-    .iter()
-    .filter_map(|way| match way {
-        Ok(way) => Some(way),
-        _ => None,
-    })
-    .fold((vec![], vec![]), |mut acc, way| {
-        acc.0.extend(&way.geom);
-        acc.1.push(way.clone());
-        acc
-    });
 
-    SegmentPanelBigger {
-        ways,
-        geom_json: match serde_json::to_string(&geom) {
-            Ok(geom) => geom,
-            Err(e) => {
-                eprintln!("Error while serializing geom: {}", e);
-                "".to_string()
-            }
-        },
-    }
+    let ways = edges.iter().fold("".to_string(), |acc, edge| {
+        match acc.contains(&edge.way_id.to_string()) {
+            true => return acc,
+            false => format!("{} {}", acc, edge.way_id),
+        }
+    });
+    segment_panel(state, ways).await
 }
 
 #[derive(Template)]
@@ -353,13 +303,27 @@ pub struct SegmentPanelBigger {
     geom_json: String,
 }
 
-async fn segment_panel_score_id(conn: sqlx::Pool<Postgres>, id: i32, edit: bool) -> SegmentPanel {
-    println!("segment_panel_score_id");
-    let score = CyclabilityScore::get_by_id(id, &conn).await.unwrap();
-    println!("score: {:?}", score);
+async fn segment_panel_score_id(conn: &sqlx::Pool<Postgres>, id: i32, edit: bool) -> SegmentPanel {
+    let score = match CyclabilityScore::get_by_id(id, &conn).await {
+        Ok(score) => score,
+        Err(e) => {
+            eprintln!("Error while fetching score: {}", e);
+            CyclabilityScore {
+                id: 0,
+                score: -1.,
+                comment: None,
+                way_ids: vec![],
+                created_at: chrono::DateTime::from_timestamp(0, 0).unwrap().into(),
+                photo_path: None,
+                photo_path_thumbnail: None,
+                name: None,
+                geom: vec![],
+            }
+        }
+    };
     let (segment_name, way_ids) = join_all(score.way_ids.iter().map(|way_id| async {
         let conn = conn.clone();
-        WayInfo::get(*way_id, &conn).await
+        Cycleway::get(way_id, &conn).await
     }))
     .await
     .iter()
@@ -381,10 +345,8 @@ async fn segment_panel_score_id(conn: sqlx::Pool<Postgres>, id: i32, edit: bool)
             None => (names, format!("{} {}", ways, way.way_id)),
         }
     });
-    println!("segment_name: {}", segment_name);
-    println!("way_ids: {}", way_ids);
 
-    let history = InfopanelContribution::get_history(&score.way_ids, conn.clone()).await;
+    let history = InfopanelContribution::get_history(&score.way_ids, conn).await;
     let photo_ids = CyclabilityScore::get_photo_by_way_ids(&score.way_ids, &conn).await;
 
     SegmentPanel {
@@ -397,7 +359,6 @@ async fn segment_panel_score_id(conn: sqlx::Pool<Postgres>, id: i32, edit: bool)
         history,
         photo_ids,
         geom_json: "".to_string(),
-        // geom_json: serde_json::to_string(&cycleway.geom).unwrap_or("".to_string()),
     }
 }
 
@@ -421,21 +382,19 @@ pub async fn segment_panel_lng_lat(
             }
         }
     };
-    if let Some(score) = CyclabilityScore::get_by_way_ids(&vec![node.way_id], &state.conn).await {
-        let mut panel: SegmentPanel =
-            segment_panel_score_id(state.conn.clone(), score.id, false).await;
-        panel.geom_json = serde_json::to_string(&node.geom).unwrap_or("".to_string());
-        return panel;
-    }
 
-    let way: WayInfo = match WayInfo::get(node.way_id, &state.conn).await {
+    let way: Cycleway = match Cycleway::get(&node.way_id, &state.conn).await {
         Ok(way) => way,
         Err(e) => {
-            eprintln!("Error while fetching way: {}", e);
-            WayInfo {
+            eprintln!("Error while fetching way segment_panel_lng_lat: {}", e);
+            Cycleway {
                 way_id: 0,
-                name: Some("".to_string()),
-                score: Some(-1.),
+                name: None,
+                score: None,
+                score_id: None,
+                geom: vec![],
+                source: 0,
+                target: 0,
             }
         }
     };
@@ -467,7 +426,7 @@ pub async fn select_score_id(
     State(state): State<VeloinfoState>,
     Path(id): Path<i32>,
 ) -> SegmentPanel {
-    segment_panel_score_id(state.conn.clone(), id, false).await
+    segment_panel_score_id(&state.conn, id, false).await
 }
 
 #[derive(Template)]
