@@ -53,7 +53,7 @@ pub struct RouteDB {
 }
 
 impl Cycleway {
-    pub async fn get(way_id: &i64, conn: sqlx::Pool<Postgres>) -> Result<Cycleway> {
+    pub async fn get(way_id: &i64, conn: &sqlx::Pool<Postgres>) -> Result<Cycleway> {
         let response: CyclewayDb = sqlx::query_as(
             r#"select
                 name,  
@@ -64,14 +64,14 @@ impl Cycleway {
                from cycleway_way where way_id = $1"#,
         )
         .bind(way_id)
-        .fetch_one(&conn)
+        .fetch_one(conn)
         .await?;
         Ok(response.into())
     }
 
     pub async fn get_by_score_id(
         score_id: &i32,
-        conn: sqlx::Pool<Postgres>,
+        conn: &sqlx::Pool<Postgres>,
     ) -> Result<Vec<Cycleway>> {
         let responses: Vec<CyclewayDb> = sqlx::query_as(
             r#"select
@@ -86,7 +86,7 @@ impl Cycleway {
                "#,
         )
         .bind(score_id)
-        .fetch_all(&conn)
+        .fetch_all(conn)
         .await?;
         Ok(responses.iter().map(|response| response.into()).collect())
     }
@@ -94,7 +94,7 @@ impl Cycleway {
     pub async fn find(
         lng: &f64,
         lat: &f64,
-        conn: sqlx::Pool<Postgres>,
+        conn: &sqlx::Pool<Postgres>,
     ) -> Result<Node, sqlx::Error> {
         let response: NodeDb = match sqlx::query_as(
             r#"        
@@ -117,7 +117,7 @@ impl Cycleway {
         )
         .bind(lng)
         .bind(lat)
-        .fetch_one(&conn)
+        .fetch_one(conn)
         .await
         {
             Ok(response) => response,

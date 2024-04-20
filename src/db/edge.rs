@@ -27,7 +27,7 @@ impl Edge {
     pub async fn route(
         start_node: &Node,
         end_node: &Node,
-        conn: sqlx::Pool<Postgres>,
+        conn: &sqlx::Pool<Postgres>,
     ) -> Vec<Point> {
         let biggest_lng = start_node.lng.max(end_node.lng) + 0.02;
         let biggest_lat = start_node.lat.max(end_node.lat) + 0.02;
@@ -127,7 +127,7 @@ impl Edge {
             .bind(biggest_lat)
             .bind(smallest_lng)
             .bind(smallest_lat)
-            .fetch_all(&conn)
+            .fetch_all(conn)
             .await
         {
             Ok(response) => response,
@@ -142,7 +142,7 @@ impl Edge {
     pub async fn find_closest_node(
         lng: &f64,
         lat: &f64,
-        conn: sqlx::Pool<Postgres>,
+        conn: &sqlx::Pool<Postgres>,
     ) -> Result<Node, sqlx::Error> {
         let response: NodeDb = match sqlx::query_as(
             r#"        
@@ -165,7 +165,7 @@ impl Edge {
         )
         .bind(lng)
         .bind(lat)
-        .fetch_one(&conn)
+        .fetch_one(conn)
         .await
         {
             Ok(response) => response,

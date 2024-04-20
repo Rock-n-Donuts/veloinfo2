@@ -18,7 +18,7 @@ impl CyclabilityScore {
         lat1: f64,
         lng2: f64,
         lat2: f64,
-        conn: sqlx::Pool<Postgres>,
+        conn: &sqlx::Pool<Postgres>,
     ) -> Result<Vec<CyclabilityScore>, sqlx::Error> {
         sqlx::query_as(
             r#"select DISTINCT ON (cs.created_at) cs.id, cs.score, cs.comment, cs.way_ids, cs.created_at, cs.photo_path, cs.photo_path_thumbnail
@@ -33,13 +33,13 @@ impl CyclabilityScore {
         .bind(lat1)
         .bind(lng2)
         .bind(lat2)
-        .fetch_all(&conn)
+        .fetch_all(conn)
         .await
     }
 
     pub async fn get_history(
         way_ids: &Vec<i64>,
-        conn: sqlx::Pool<Postgres>,
+        conn: &sqlx::Pool<Postgres>,
     ) -> Vec<CyclabilityScore> {
         match sqlx::query_as(
             r#"select id, score, comment, way_ids, created_at, photo_path, photo_path_thumbnail
@@ -49,7 +49,7 @@ impl CyclabilityScore {
                limit 100"#,
         )
         .bind(way_ids)
-        .fetch_all(&conn)
+        .fetch_all(conn)
         .await
         {
             Ok(scores) => scores,
@@ -59,7 +59,7 @@ impl CyclabilityScore {
 
     pub async fn get_by_id(
         id: i32,
-        conn: sqlx::Pool<Postgres>,
+        conn: &sqlx::Pool<Postgres>,
     ) -> Result<CyclabilityScore, sqlx::Error> {
         sqlx::query_as(
             r#"select id, score, comment, way_ids, created_at, photo_path, photo_path_thumbnail
@@ -67,13 +67,13 @@ impl CyclabilityScore {
                where id = $1"#,
         )
         .bind(id)
-        .fetch_one(&conn)
+        .fetch_one(conn)
         .await
     }
 
     pub async fn get_by_way_ids(
         way_ids: &Vec<i64>,
-        conn: sqlx::Pool<Postgres>,
+        conn: &sqlx::Pool<Postgres>,
     ) -> Option<CyclabilityScore> {
         sqlx::query_as(
             r#"select id, score, comment, way_ids, created_at, photo_path, photo_path_thumbnail
@@ -82,12 +82,12 @@ impl CyclabilityScore {
                order by created_at desc"#,
         )
         .bind(way_ids)
-        .fetch_one(&conn)
+        .fetch_one(conn)
         .await
         .ok()
     }
 
-    pub async fn get_photo_by_way_ids(way_ids: &Vec<i64>, conn: sqlx::Pool<Postgres>) -> Vec<i32> {
+    pub async fn get_photo_by_way_ids(way_ids: &Vec<i64>, conn: &sqlx::Pool<Postgres>) -> Vec<i32> {
         let result = sqlx::query(
             r#"select id
                from cyclability_score
@@ -96,7 +96,7 @@ impl CyclabilityScore {
                order by created_at desc"#,
         )
         .bind(way_ids)
-        .fetch_all(&conn)
+        .fetch_all(conn)
         .await
         .unwrap();
 
@@ -109,7 +109,7 @@ impl CyclabilityScore {
         way_ids: &Vec<i64>,
         photo_path: &Option<String>,
         photo_path_thumbnail: &Option<String>,
-        conn: sqlx::Pool<Postgres>,
+        conn: &sqlx::Pool<Postgres>,
     ) -> Result<i32, sqlx::Error> {
         let id: i32 = sqlx::query(
             r#"INSERT INTO cyclability_score 
@@ -122,7 +122,7 @@ impl CyclabilityScore {
         .bind(comment)
         .bind(&photo_path)
         .bind(&photo_path_thumbnail)
-        .fetch_one(&conn)
+        .fetch_one(conn)
         .await?
         .get(0);
 
@@ -139,12 +139,12 @@ impl CyclabilityScore {
                 None => None,
             })
             .bind(id)
-            .execute(&conn)
+            .execute(conn)
             .await?;
         };
 
         sqlx::query(r#"REFRESH MATERIALIZED VIEW bike_path"#)
-            .execute(&conn)
+            .execute(conn)
             .await?;
 
         Ok(id)

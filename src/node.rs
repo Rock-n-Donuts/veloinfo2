@@ -8,7 +8,7 @@ pub async fn route(
     State(state): State<VeloinfoState>,
     Path((start_lng, start_lat, end_lng, end_lat)): Path<(f64, f64, f64, f64)>,
 ) -> RoutePanel {
-    let start = match Edge::find_closest_node(&start_lng, &start_lat, state.conn.clone()).await {
+    let start = match Edge::find_closest_node(&start_lng, &start_lat, &state.conn).await {
         Ok(start) => start,
         Err(e) => {
             eprintln!("Error while fetching start node: {}", e);
@@ -22,7 +22,7 @@ pub async fn route(
         }
     };
     println!("start: {:?}", start);
-    let end = match Edge::find_closest_node(&end_lng, &end_lat, state.conn.clone()).await {
+    let end = match Edge::find_closest_node(&end_lng, &end_lat, &state.conn).await {
         Ok(end) => end,
         Err(e) => {
             eprintln!("Error while fetching end node: {}", e);
@@ -36,7 +36,7 @@ pub async fn route(
         }
     };
     println!("end: {:?}", end);
-    let mut edges = Edge::route(&start, &end, state.conn.clone()).await;
+    let mut edges = Edge::route(&start, &end, &state.conn).await;
     edges.insert(
         0,
         Point {

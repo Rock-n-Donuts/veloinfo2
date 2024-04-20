@@ -39,10 +39,9 @@ impl InfopanelContribution {
         lat1: f64,
         lng2: f64,
         lat2: f64,
-        conn: sqlx::Pool<Postgres>,
+        conn: &sqlx::Pool<Postgres>,
     ) -> Vec<InfopanelContribution> {
-        let scores = match CyclabilityScore::get_recents(lng1, lat1, lng2, lat2, conn.clone()).await
-        {
+        let scores = match CyclabilityScore::get_recents(lng1, lat1, lng2, lat2, conn).await {
             Result::Ok(cs) => cs,
             Err(e) => {
                 eprintln!("Error getting contributions {:?}", e);
@@ -60,7 +59,7 @@ impl InfopanelContribution {
                 timeago: timeago::Formatter::with_language(French)
                     .convert_chrono(score.created_at, Local::now()),
                 score_circle: ScoreCircle { score: score.score },
-                name: get_name(score.way_ids.as_ref(), conn.clone()).await,
+                name: get_name(score.way_ids.as_ref(), &conn).await,
                 comment: score.comment.clone().unwrap_or("".to_string()),
                 score_id: score.id,
                 photo_path_thumbnail: score.photo_path_thumbnail.clone(),
@@ -77,7 +76,7 @@ impl InfopanelContribution {
         way_ids: &Vec<i64>,
         conn: sqlx::Pool<Postgres>,
     ) -> Vec<InfopanelContribution> {
-        let scores = CyclabilityScore::get_history(way_ids, conn.clone()).await;
+        let scores = CyclabilityScore::get_history(way_ids, &conn).await;
 
         join_all(scores.iter().map(|score| async {
             InfopanelContribution {
@@ -89,7 +88,7 @@ impl InfopanelContribution {
                 timeago: timeago::Formatter::with_language(French)
                     .convert_chrono(score.created_at, Local::now()),
                 score_circle: ScoreCircle { score: score.score },
-                name: get_name(score.way_ids.as_ref(), conn.clone()).await,
+                name: get_name(score.way_ids.as_ref(), &conn).await,
                 comment: score.comment.clone().unwrap_or("".to_string()),
                 score_id: score.id,
                 photo_path_thumbnail: score.photo_path_thumbnail.clone(),
@@ -100,9 +99,9 @@ impl InfopanelContribution {
 
     pub async fn get_history_by_way_id(
         way_id: i64,
-        conn: sqlx::Pool<Postgres>,
+        conn: &sqlx::Pool<Postgres>,
     ) -> Vec<InfopanelContribution> {
-        let scores = CyclabilityScore::get_by_way_ids(&vec![way_id], conn.clone()).await;
+        let scores = CyclabilityScore::get_by_way_ids(&vec![way_id], &conn).await;
 
         join_all(scores.iter().map(|score| async {
             InfopanelContribution {
@@ -114,7 +113,7 @@ impl InfopanelContribution {
                 timeago: timeago::Formatter::with_language(French)
                     .convert_chrono(score.created_at, Local::now()),
                 score_circle: ScoreCircle { score: score.score },
-                name: get_name(score.way_ids.as_ref(), conn.clone()).await,
+                name: get_name(score.way_ids.as_ref(), &conn).await,
                 comment: score.comment.clone().unwrap_or("".to_string()),
                 score_id: score.id,
                 photo_path_thumbnail: score.photo_path_thumbnail.clone(),
@@ -124,9 +123,9 @@ impl InfopanelContribution {
     }
 }
 
-async fn get_name(way_ids: &Vec<i64>, conn: sqlx::Pool<Postgres>) -> String {
+async fn get_name(way_ids: &Vec<i64>, conn: &sqlx::Pool<Postgres>) -> String {
     join_all(way_ids.iter().map(|way_id| async {
-        Ok(Cycleway::get(way_id, conn.clone())
+        Ok(Cycleway::get(way_id, &conn)
             .await?
             .name
             .unwrap_or("Nom inconnu".to_string()))
@@ -163,7 +162,7 @@ pub async fn info_panel_up(
     State(state): State<VeloinfoState>,
     Path((lng1, lat1, lng2, lat2)): Path<(f64, f64, f64, f64)>,
 ) -> InfoPanelTemplate {
-    let contributions = InfopanelContribution::get(lng1, lat1, lng2, lat2, state.conn).await;
+    let contributions = InfopanelContribution::get(lng1, lat1, lng2, lat2, &state.conn).await;
     InfoPanelTemplate {
         arrow: "▼".to_string(),
         contributions: contributions,
