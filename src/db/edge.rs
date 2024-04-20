@@ -8,6 +8,7 @@ pub struct Point {
     pub x: f64,
     pub y: f64,
     pub way_id: i64,
+    pub node_id: i64,
 }
 
 #[derive(Debug, sqlx::FromRow, Serialize, Deserialize, Clone)]
@@ -67,7 +68,8 @@ impl Edge {
             r#"SELECT distinct on (pa.path_seq)
                                     x1 as x,
                                     y1 as y,
-                                    way_id
+                                    way_id,
+                                    node as node_id
                                         FROM pgr_bdastar(
                                             FORMAT(
                                                 $FORMAT$
@@ -117,8 +119,6 @@ impl Edge {
                                     left join edge on node = source and source is not null 
                                     ORDER BY pa.path_seq ASC"#
         );
-
-        println!("request: {}", request);
 
         let response: Vec<Point> = match sqlx::query_as(request.as_str())
             .bind(start_node.node_id)
