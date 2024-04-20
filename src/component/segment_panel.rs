@@ -304,7 +304,11 @@ pub async fn segment_panel_bigger_route(
         }
     };
 
-    let edges = Edge::route(&node1, &node2, &state.conn).await;
+    let mut edges = Edge::route(&node1, &node2, &state.conn).await;
+    let edges2 = Edge::route(&node2, &node1, &state.conn).await;
+    if edges.len() > edges2.len() {
+        edges = edges2;
+    }
     let (geom, ways): (Vec<[f64; 2]>, Vec<Cycleway>) = join_all(
         edges
             .iter()
