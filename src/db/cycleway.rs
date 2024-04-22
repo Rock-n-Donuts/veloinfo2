@@ -58,7 +58,6 @@ pub struct RouteDB {
 
 impl Cycleway {
     pub async fn get(way_id: &i64, conn: &sqlx::Pool<Postgres>) -> Result<Cycleway> {
-        println!("way_id: {}", way_id);
         let response: Result<CyclewayDb, sqlx::Error> = sqlx::query_as(
             r#"select
                 name,  
@@ -77,7 +76,6 @@ impl Cycleway {
                     limit 1
                ) cs on way_id = any(cs.way_ids)
                where 
-                cs.id is not null and
                 way_id = $1"#,
         )
         .bind(way_id)

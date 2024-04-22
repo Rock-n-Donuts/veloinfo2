@@ -55,7 +55,7 @@ impl AllWay {
         match response {
             Ok(response) => Ok(response.into()),
             Err(e) => {
-                eprintln!("Error getting cycleway {:?} {:?}", way_id, e);
+                eprintln!("Error getting all_way {:?} {:?}", way_id, e);
                 Err(e.into())
             }
         }

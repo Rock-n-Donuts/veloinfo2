@@ -66,8 +66,8 @@ impl Edge {
 
         let request = format!(
             r#"SELECT distinct on (pa.path_seq)
-                                    x1 as x,
-                                    y1 as y,
+                                    e.x1 as x,
+                                    e.y1 as y,
                                     way_id,
                                     node as node_id
                                         FROM pgr_bdastar(
@@ -116,7 +116,8 @@ impl Edge {
                                         $1, 
                                         $2
                                         ) as pa
-                                    left join edge on node = source and source is not null 
+                                    left join edge e on pa.edge = e.id 
+                                    where pa.edge != -1
                                     ORDER BY pa.path_seq ASC"#
         );
 

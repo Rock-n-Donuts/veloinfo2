@@ -227,11 +227,17 @@ pub async fn segment_panel(state: VeloinfoState, way_ids: String) -> SegmentPane
     SegmentPanel {
         way_ids: way_ids.clone(),
         score_circle: ScoreCircle {
-            score: cycleways.first().unwrap().score.unwrap_or(-1.),
+            score: match cycleways.first() {
+                Some(way) => way.score.unwrap_or(-1.),
+                None => -1.,
+            },
         },
         segment_name,
         score_selector: ScoreSelector::get_score_selector(if all_same_score {
-            cycleways.first().unwrap().score.unwrap_or(-1.)
+            match cycleways.first() {
+                Some(way) => way.score.unwrap_or(-1.),
+                None => -1.,
+            }
         } else {
             -1.
         }),
