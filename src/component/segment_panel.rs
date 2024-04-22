@@ -287,8 +287,8 @@ pub async fn segment_panel_bigger_route(
         }
     };
 
-    let mut edges = Edge::route(&node1, &node2, &state.conn).await;
-    let edges2 = Edge::route(&node2, &node1, &state.conn).await;
+    let mut edges = Edge::route_without_score(&node1, &node2, &state.conn).await;
+    let edges2 = Edge::route_without_score(&node2, &node1, &state.conn).await;
     if edges.len() > edges2.len() {
         edges = edges2;
     }

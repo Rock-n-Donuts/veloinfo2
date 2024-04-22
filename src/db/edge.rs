@@ -140,6 +140,70 @@ impl Edge {
         response
     }
 
+    pub async fn route_without_score(
+        start_node: &Node,
+        end_node: &Node,
+        conn: &sqlx::Pool<Postgres>,
+    ) -> Vec<Point> {
+        let biggest_lng = start_node.lng.max(end_node.lng) + 0.02;
+        let biggest_lat = start_node.lat.max(end_node.lat) + 0.02;
+        let smallest_lng = start_node.lng.min(end_node.lng) - 0.02;
+        let smallest_lat = start_node.lat.min(end_node.lat) - 0.02;
+
+        let request = r#"SELECT distinct on (pa.path_seq)
+                                    e.x1 as x,
+                                    e.y1 as y,
+                                    way_id,
+                                    node as node_id
+                                        FROM pgr_bdastar(
+                                            FORMAT(
+                                                $FORMAT$
+                                                SELECT *,
+                                                cost,
+                                                reverse_cost
+                                                from (
+                                                    select e.*, 
+                                                    st_length(ST_MakeLine(ST_Point(x1, y2), ST_Point(x2, y2))) * 
+                                                    1 / 0.25 * 2 as cost,
+                                                    st_length(ST_MakeLine(ST_Point(x1, y2), ST_Point(x2, y2))) * 
+                                                    1 / 0.25 * 2 as reverse_cost
+                                                    from edge e
+                                                    where e.target is not null and
+                                                            x1 <= %s and
+                                                            y1 <= %s and
+                                                            x1 >= %s and
+                                                            y1 >= %s 
+                                                    )as sub                    
+                                                $FORMAT$,
+                                                $3, $4, $5, $6
+                                            )
+                                        , 
+                                        $1, 
+                                        $2
+                                        ) as pa
+                                    left join edge e on pa.edge = e.id 
+                                    where pa.edge != -1
+                                    ORDER BY pa.path_seq ASC"#;
+
+        let response: Vec<Point> = match sqlx::query_as(request)
+            .bind(start_node.node_id)
+            .bind(end_node.node_id)
+            .bind(biggest_lng)
+            .bind(biggest_lat)
+            .bind(smallest_lng)
+            .bind(smallest_lat)
+            .fetch_all(conn)
+            .await
+        {
+            Ok(response) => response,
+            Err(e) => {
+                eprintln!("Error while fetching route: {}", e);
+                vec![]
+            }
+        };
+        response
+    }
+
     pub async fn find_closest_node(
         lng: &f64,
         lat: &f64,
