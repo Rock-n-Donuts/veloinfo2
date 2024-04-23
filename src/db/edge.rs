@@ -30,10 +30,10 @@ impl Edge {
         end_node: &Node,
         conn: &sqlx::Pool<Postgres>,
     ) -> Vec<Point> {
-        let biggest_lng = start_node.lng.max(end_node.lng) + 0.02;
-        let biggest_lat = start_node.lat.max(end_node.lat) + 0.02;
-        let smallest_lng = start_node.lng.min(end_node.lng) - 0.02;
-        let smallest_lat = start_node.lat.min(end_node.lat) - 0.02;
+        let biggest_lng = start_node.lng.max(end_node.lng) + 0.16;
+        let biggest_lat = start_node.lat.max(end_node.lat) + 0.16;
+        let smallest_lng = start_node.lng.min(end_node.lng) - 0.16;
+        let smallest_lat = start_node.lat.min(end_node.lat) - 0.16;
 
         let case_score_null = r#"case
                                                                 when aw.tags->>'bicycle' = 'no' then 1 / 0.0001
