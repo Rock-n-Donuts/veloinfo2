@@ -47,14 +47,14 @@ impl Edge {
                                                                 when aw.tags->>'cycleway:both' = 'lane' then 1 / 0.75
                                                                 when aw.tags->>'cycleway:left' = 'lane' then 1 / 0.75
                                                                 when aw.tags->>'cycleway:right' = 'lane' then 1 / 0.75
-                                                                when aw.tags->>'cycleway:both' = 'shared_lane' then 1 / 0.75
-                                                                when aw.tags->>'cycleway:left' = 'shared_lane' then 1 / 0.75
-                                                                when aw.tags->>'cycleway:right' = 'shared_lane' then 1 / 0.75
-                                                                when aw.tags->>'cycleway' = 'shared_lane' then 1 / 0.75
-                                                                when aw.tags->>'highway' = 'residential' then 1 / 0.66
-                                                                when aw.tags->>'highway' = 'tertiary' then 1 / 0.5
-                                                                when aw.tags->>'highway' = 'secondary' then 1 / 0.33
-                                                                when aw.tags->>'highway' = 'service' then 1 / 0.33
+                                                                when aw.tags->>'cycleway:both' = 'shared_lane' then 1 / 0.50
+                                                                when aw.tags->>'cycleway:left' = 'shared_lane' then 1 / 0.50
+                                                                when aw.tags->>'cycleway:right' = 'shared_lane' then 1 / 0.50
+                                                                when aw.tags->>'cycleway' = 'shared_lane' then 1 / 0.50
+                                                                when aw.tags->>'highway' = 'residential' then 1 / 0.50
+                                                                when aw.tags->>'highway' = 'tertiary' then 1 / 0.33
+                                                                when aw.tags->>'highway' = 'secondary' then 1 / 0.2
+                                                                when aw.tags->>'highway' = 'service' then 1 / 0.2
                                                                 when aw.tags->>'bicycle' = 'yes' then 1 / 1
                                                                 when aw.tags->>'highway' = 'primary' then 1 / 0.1
                                                                 when aw.tags->>'highway' = 'footway' then 1 / 0.1
@@ -70,12 +70,12 @@ impl Edge {
                                     e.y1 as y,
                                     way_id,
                                     node as node_id
-                                        FROM pgr_bdastar(
+                                        FROM pgr_astar(
                                             FORMAT(
                                                 $FORMAT$
                                                 SELECT *,
-                                                cost * 1,
-                                                reverse_cost * 1
+                                                cost,
+                                                reverse_cost
                                                 from (
                                                     select e.*, 
                                                     st_length(ST_MakeLine(ST_Point(x1, y2), ST_Point(x2, y2))) * 
@@ -83,7 +83,7 @@ impl Edge {
                                                         WHEN cs.score IS NULL THEN 
                                                             {case_score_null}
                                                         WHEN cs.score = 0 THEN 1 / 0.001
-                                                        ELSE 1 / cs.score
+                                                        ELSE {case_score_null} / cs.score
                                                     END as cost,
                                                     st_length(ST_MakeLine(ST_Point(x1, y2), ST_Point(x2, y2))) * 
                                                     CASE
@@ -94,7 +94,7 @@ impl Edge {
                                                         WHEN cs.score IS NULL THEN
                                                             {case_score_null}
                                                         WHEN cs.score = 0 THEN 1 / 0.001
-                                                        ELSE 1 / cs.score
+                                                        ELSE {case_score_null} / cs.score
                                                     END as reverse_cost
                                                     from edge e
                                                     left join (
