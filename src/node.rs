@@ -21,7 +21,6 @@ pub async fn route(
             }
         }
     };
-    println!("start: {:?}", start);
     let end = match Edge::find_closest_node(&end_lng, &end_lat, &state.conn).await {
         Ok(end) => end,
         Err(e) => {
@@ -35,8 +34,13 @@ pub async fn route(
             }
         }
     };
-    println!("end: {:?}", end);
     let mut edges = Edge::route(&start, &end, &state.conn).await;
+    if let 0 = edges.len() {
+        return RoutePanel {
+            route_json: "[]".to_string(),
+            error: "No route found".to_string(),
+        };
+    };
     edges.insert(
         0,
         Point {
@@ -52,7 +56,6 @@ pub async fn route(
         way_id: 0,
         node_id: 0,
     });
-    println!("edges: {:?}", edges);
     let edges_coordinate: Vec<(f64, f64)> = edges.iter().map(|edge| (edge.x, edge.y)).collect();
     let route_json = match serde_json::to_string(&edges_coordinate) {
         Ok(edges_coordinate) => edges_coordinate,
@@ -61,5 +64,8 @@ pub async fn route(
             "[]".to_string()
         }
     };
-    RoutePanel { route_json }
+    RoutePanel {
+        route_json,
+        error: "".to_string(),
+    }
 }
