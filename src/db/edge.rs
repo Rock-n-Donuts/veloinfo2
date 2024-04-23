@@ -35,7 +35,7 @@ impl Edge {
         let smallest_lng = start_node.lng.min(end_node.lng) - 0.16;
         let smallest_lat = start_node.lat.min(end_node.lat) - 0.16;
 
-        let request =    r#"SELECT distinct on (pa.path_seq)
+        let request = r#"SELECT distinct on (pa.path_seq)
                                     e.x1 as x,
                                     e.y1 as y,
                                     way_id,
@@ -121,9 +121,9 @@ impl Edge {
                                         $2
                                         ) as pa
                                     join edge e on pa.edge = e.id 
-                                    ORDER BY pa.path_seq ASC"#.to_string();
+                                    ORDER BY pa.path_seq ASC"#;
 
-        let response: Vec<Point> = match sqlx::query_as(request.as_str())
+        let response: Vec<Point> = match sqlx::query_as(request)
             .bind(start_node.node_id)
             .bind(end_node.node_id)
             .bind(biggest_lng)
