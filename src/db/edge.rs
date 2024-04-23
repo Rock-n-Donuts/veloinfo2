@@ -53,18 +53,18 @@ impl Edge {
                                                         WHEN cs.score IS NULL THEN 
                                                             score_road
                                                         WHEN cs.score = 0 THEN 1 / 0.001
-                                                        ELSE score_road / cs.score
+                                                        ELSE score_road * cs.score
                                                     END as cost,
                                                     st_length(ST_MakeLine(ST_Point(x1, y2), ST_Point(x2, y2))) * 
                                                     CASE
-                                                        when aw.tags->>'oneway:bicycle' = 'no' and cs.score is not null and cs.score != 0 then 1 / cs.score
-                                                        when aw.tags->>'oneway' = 'no' and cs.score is not null and cs.score != 0 then 1 / cs.score
+                                                        when aw.tags->>'oneway:bicycle' = 'no' and cs.score is not null and cs.score != 0 then score_road * cs.score
+                                                        when aw.tags->>'oneway' = 'no' and cs.score is not null and cs.score != 0 then score_road * cs.score
                                                         when aw.tags->>'oneway:bicycle' = 'yes' then 1 / 0.001
                                                         when aw.tags->>'oneway' = 'yes' then 1 / 0.001
                                                         WHEN cs.score IS NULL THEN
                                                             score_road
                                                         WHEN cs.score = 0 THEN 1 / 0.001
-                                                        ELSE score_road / cs.score
+                                                        ELSE score_road * cs.score
                                                     END as reverse_cost
                                                     from edge e
                                                     left join (
