@@ -287,7 +287,7 @@ pub async fn segment_panel_bigger_route(
         }
     };
 
-    let mut edges = Edge::route_without_score(&node1, &node2, &state.conn).await;
+    let edges = Edge::route_without_score(&node1, &node2, &state.conn).await;
 
     let ways = edges.iter().fold("".to_string(), |acc, edge| {
         match acc.contains(&edge.way_id.to_string()) {
