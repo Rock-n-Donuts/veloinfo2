@@ -51,7 +51,7 @@ impl Edge {
                                                                 when aw.tags->>'cycleway:left' = 'shared_lane' then 1 / 0.50
                                                                 when aw.tags->>'cycleway:right' = 'shared_lane' then 1 / 0.50
                                                                 when aw.tags->>'cycleway' = 'shared_lane' then 1 / 0.50
-                                                                when aw.tags->>'highway' = 'residential' then 1 / 0.50
+                                                                when aw.tags->>'highway' = 'residential' then 1 / 0.66
                                                                 when aw.tags->>'highway' = 'tertiary' then 1 / 0.33
                                                                 when aw.tags->>'highway' = 'secondary' then 1 / 0.2
                                                                 when aw.tags->>'highway' = 'service' then 1 / 0.2
