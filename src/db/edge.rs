@@ -36,32 +36,32 @@ impl Edge {
         let smallest_lat = start_node.lat.min(end_node.lat) - 0.02;
 
         let case_score_null = r#"case
-                                                                when aw.tags->>'bicycle' = 'no' then 1 / 0.0001 * 2
-                                                                when aw.tags->>'highway' = 'cycleway' then 1 / 1 * 2
-                                                                when aw.tags->>'bicycle' = 'designated' then 1 / 1 * 2
-                                                                when aw.tags->>'cycleway' = 'track' then 1 / 1 * 2
-                                                                when aw.tags->>'cycleway:both' = 'track' then 1 / 1 * 2
-                                                                when aw.tags->>'cycleway:left' = 'track' then 1 / 1 * 2
-                                                                when aw.tags->>'cycleway:right' = 'track' then 1 / 1 * 2
-                                                                when aw.tags->>'cycleway' = 'lane' then 1 / 0.75 * 2
-                                                                when aw.tags->>'cycleway:both' = 'lane' then 1 / 0.75 * 2
-                                                                when aw.tags->>'cycleway:left' = 'lane' then 1 / 0.75 * 2
-                                                                when aw.tags->>'cycleway:right' = 'lane' then 1 / 0.75 * 2
-                                                                when aw.tags->>'cycleway:both' = 'shared_lane' then 1 / 0.75 * 2
-                                                                when aw.tags->>'cycleway:left' = 'shared_lane' then 1 / 0.75 * 2
-                                                                when aw.tags->>'cycleway:right' = 'shared_lane' then 1 / 0.75 * 2
-                                                                when aw.tags->>'cycleway' = 'shared_lane' then 1 / 0.75 * 2
-                                                                when aw.tags->>'highway' = 'residential' then 1 / 0.66 * 2
-                                                                when aw.tags->>'highway' = 'tertiary' then 1 / 0.5 * 2
-                                                                when aw.tags->>'highway' = 'secondary' then 1 / 0.33 * 2
-                                                                when aw.tags->>'highway' = 'service' then 1 / 0.33 * 2
-                                                                when aw.tags->>'bicycle' = 'yes' then 1 / 1 * 2
-                                                                when aw.tags->>'highway' = 'primary' then 1 / 0.1 * 2
-                                                                when aw.tags->>'highway' = 'footway' then 1 / 0.1 * 2
-                                                                when aw.tags->>'highway' = 'steps' then 1 / 0.05 * 2
-                                                                when aw.tags->>'highway' = 'proposed' then 1 / 0.001 * 2
-                                                                when aw.tags->>'highway' is not null then 1 / 0.25 * 2
-                                                                else 1 / 0.25 * 2
+                                                                when aw.tags->>'bicycle' = 'no' then 1 / 0.0001
+                                                                when aw.tags->>'highway' = 'cycleway' then 1 / 1
+                                                                when aw.tags->>'bicycle' = 'designated' then 1 / 1
+                                                                when aw.tags->>'cycleway' = 'track' then 1 / 1
+                                                                when aw.tags->>'cycleway:both' = 'track' then 1 / 1
+                                                                when aw.tags->>'cycleway:left' = 'track' then 1 / 1
+                                                                when aw.tags->>'cycleway:right' = 'track' then 1 / 1
+                                                                when aw.tags->>'cycleway' = 'lane' then 1 / 0.75
+                                                                when aw.tags->>'cycleway:both' = 'lane' then 1 / 0.75
+                                                                when aw.tags->>'cycleway:left' = 'lane' then 1 / 0.75
+                                                                when aw.tags->>'cycleway:right' = 'lane' then 1 / 0.75
+                                                                when aw.tags->>'cycleway:both' = 'shared_lane' then 1 / 0.75
+                                                                when aw.tags->>'cycleway:left' = 'shared_lane' then 1 / 0.75
+                                                                when aw.tags->>'cycleway:right' = 'shared_lane' then 1 / 0.75
+                                                                when aw.tags->>'cycleway' = 'shared_lane' then 1 / 0.75
+                                                                when aw.tags->>'highway' = 'residential' then 1 / 0.66
+                                                                when aw.tags->>'highway' = 'tertiary' then 1 / 0.5
+                                                                when aw.tags->>'highway' = 'secondary' then 1 / 0.33
+                                                                when aw.tags->>'highway' = 'service' then 1 / 0.33
+                                                                when aw.tags->>'bicycle' = 'yes' then 1 / 1
+                                                                when aw.tags->>'highway' = 'primary' then 1 / 0.1
+                                                                when aw.tags->>'highway' = 'footway' then 1 / 0.1
+                                                                when aw.tags->>'highway' = 'steps' then 1 / 0.05
+                                                                when aw.tags->>'highway' = 'proposed' then 1 / 0.001
+                                                                when aw.tags->>'highway' is not null then 1 / 0.25
+                                                                else 1 / 0.25
                                                             end"#;
 
         let request = format!(
@@ -74,31 +74,33 @@ impl Edge {
                                             FORMAT(
                                                 $FORMAT$
                                                 SELECT *,
-                                                cost,
-                                                reverse_cost
+                                                cost * 1,
+                                                reverse_cost * 1
                                                 from (
                                                     select e.*, 
                                                     st_length(ST_MakeLine(ST_Point(x1, y2), ST_Point(x2, y2))) * 
                                                     CASE
                                                         WHEN cs.score IS NULL THEN 
                                                             {case_score_null}
-                                                        WHEN cs.score = 0 THEN 1 / 0.01
-                                                        ELSE 1 / cs.score * 2
+                                                        WHEN cs.score = 0 THEN 1 / 0.001
+                                                        ELSE 1 / cs.score
                                                     END as cost,
                                                     st_length(ST_MakeLine(ST_Point(x1, y2), ST_Point(x2, y2))) * 
                                                     CASE
-                                                        when aw.tags->>'oneway:bicycle' = 'no' and cs.score is not null and cs.score != 0 then 1 / cs.score * 2
-                                                        when aw.tags->>'oneway' = 'no' and cs.score is not null and cs.score != 0 then 1 / cs.score * 2
-                                                        when aw.tags->>'oneway:bicycle' = 'yes' then 1 / 0.01
-                                                        when aw.tags->>'oneway' = 'yes' then 1 / 0.01
+                                                        when aw.tags->>'oneway:bicycle' = 'no' and cs.score is not null and cs.score != 0 then 1 / cs.score
+                                                        when aw.tags->>'oneway' = 'no' and cs.score is not null and cs.score != 0 then 1 / cs.score
+                                                        when aw.tags->>'oneway:bicycle' = 'yes' then 1 / 0.001
+                                                        when aw.tags->>'oneway' = 'yes' then 1 / 0.001
                                                         WHEN cs.score IS NULL THEN
                                                             {case_score_null}
-                                                        WHEN cs.score = 0 THEN 1 / 0.01
-                                                        ELSE 1 / cs.score * 2
+                                                        WHEN cs.score = 0 THEN 1 / 0.001
+                                                        ELSE 1 / cs.score
                                                     END as reverse_cost
                                                     from edge e
                                                     left join (
-                                                        select unnest(way_ids) as way_id, avg(score) as score
+                                                        select 
+                                                            unnest(way_ids) as way_id, 
+                                                            avg(score) as score
                                                         from cyclability_score
                                                         group by way_id
                                                     ) cs on e.way_id = cs.way_id
@@ -116,8 +118,7 @@ impl Edge {
                                         $1, 
                                         $2
                                         ) as pa
-                                    left join edge e on pa.edge = e.id 
-                                    where pa.edge != -1
+                                    join edge e on pa.edge = e.id 
                                     ORDER BY pa.path_seq ASC"#
         );
 
@@ -181,8 +182,7 @@ impl Edge {
                                         $1, 
                                         $2
                                         ) as pa
-                                    left join edge e on pa.edge = e.id 
-                                    where pa.edge != -1
+                                    join edge e on pa.edge = e.id 
                                     ORDER BY pa.path_seq ASC"#;
 
         let response: Vec<Point> = match sqlx::query_as(request)
