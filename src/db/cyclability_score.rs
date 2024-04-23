@@ -47,10 +47,10 @@ impl CyclabilityScore {
                         cs.photo_path_thumbnail,
                         ST_AsText(ST_Transform(c.geom, 4326)) as geom
                from cyclability_score cs
-               join cycleway_way c on c.way_id = any(cs.way_ids) 
-               where
-               c is not null and
-               c.geom && ST_Transform(st_makeenvelope($1, $2, $3, $4, 4326), 3857)
+               join (
+                    select * from cycleway_way 
+                    where geom && ST_Transform(st_makeenvelope($1, $2, $3, $4, 4326), 3857)
+               ) c on c.way_id = any(cs.way_ids) 
                order by cs.created_at desc
                limit 100"#,
         )
