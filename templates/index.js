@@ -44,11 +44,8 @@ map.on("load", () => {
 })
 
 
-const state = {
-    mode: "select"
-};
 map.on("click", async function (event) {
-    if (state.mode == "select") {
+    if (document.getElementById("info_panel_up") || document.getElementById("info_panel_down") || document.getElementById("segment_panel_bigger")) {
         select(event);
     }
 });
@@ -198,7 +195,6 @@ async function clear() {
     if (end_marker) {
         end_marker.remove();
     }
-    state.mode = "select";
     const selected = map.getSource("selected");
     if (selected) {
         selected.setData({
