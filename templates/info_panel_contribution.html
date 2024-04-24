@@ -1,5 +1,4 @@
-<div data-score-id="{{score_id}}" class="flex cursor-pointer mb-2 mt-1" hx-get="/segment_panel/id/{{score_id}}"
-     hx-target="#info" onclick="zoomToSegment(this.getAttribute('data-score-id'));event.stopPropagation();">
+<div class="flex cursor-pointer mb-2 mt-1" hx-get="/segment_panel/id/{{score_id}}" hx-target="#info">
      {{ score_circle }}
      <div class="content-start w-full">
           <div class="flex flex-row justify-between">

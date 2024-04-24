@@ -27,6 +27,7 @@ pub struct SegmentPanel {
     history: Vec<InfopanelContribution>,
     photo_ids: Vec<i32>,
     geom_json: String,
+    fit_bounds: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -97,6 +98,7 @@ pub async fn segment_panel_post(
                 history: vec![],
                 photo_ids: vec![],
                 geom_json: "".to_string(),
+                fit_bounds: false,
             };
         }
     };
@@ -169,6 +171,7 @@ pub async fn segment_panel_edit(
         history,
         photo_ids,
         geom_json,
+        fit_bounds: false,
     };
 
     segment_panel
@@ -246,6 +249,7 @@ pub async fn segment_panel(state: VeloinfoState, way_ids: String) -> SegmentPane
         history,
         photo_ids,
         geom_json: serde_json::to_string(&geom).unwrap_or("".to_string()),
+        fit_bounds: false,
     }
 }
 
@@ -348,6 +352,14 @@ async fn segment_panel_score_id(conn: &sqlx::Pool<Postgres>, id: i32, edit: bool
         }
     });
 
+    let geom_json = match serde_json::to_string(&score.geom.clone()) {
+        Ok(geom) => geom,
+        Err(e) => {
+            eprintln!("Error while serializing geom: {}", e);
+            "".to_string()
+        }
+    };
+
     let history = InfopanelContribution::get_history(&score.way_ids, conn).await;
     let photo_ids = CyclabilityScore::get_photo_by_way_ids(&score.way_ids, &conn).await;
 
@@ -360,7 +372,8 @@ async fn segment_panel_score_id(conn: &sqlx::Pool<Postgres>, id: i32, edit: bool
         edit,
         history,
         photo_ids,
-        geom_json: "".to_string(),
+        geom_json,
+        fit_bounds: true,
     }
 }
 
@@ -419,6 +432,7 @@ pub async fn segment_panel_lng_lat(
         history,
         photo_ids,
         geom_json: serde_json::to_string(&node.geom).unwrap_or("".to_string()),
+        fit_bounds: false,
     };
 
     info_panel

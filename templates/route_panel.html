@@ -11,6 +11,8 @@
 
 </div>
 <script type="text/javascript">
+    {% if route_json != "" %}
     display_segment_geom([{{ route_json }}]);
-    state.mode = "route";
+    fitBounds({{ route_json }});
+    {% endif %}
 </script>

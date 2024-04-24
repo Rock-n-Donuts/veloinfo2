@@ -39,7 +39,8 @@ map.addControl(new maplibregl.GeolocateControl({
 }));
 
 map.on("load", () => {
-    clear();
+    const bounds = map.getBounds();
+    htmx.ajax("GET", "/info_panel/up/" + bounds._sw.lng + "/" + bounds._sw.lat + "/" + bounds._ne.lng + "/" + bounds._ne.lat, "#info");
 })
 
 
@@ -111,7 +112,10 @@ async function zoomToSegment(score_id) {
         return geom;
     }, []);
     display_segment_geom(geom);
-    // find the largest bounds
+}
+
+function fitBounds(geom) {
+    console.log("fitBounds", geom);
     var bounds = geom.reduce((currentBounds, coord) => {
         return [
             [Math.min(coord[0], currentBounds[0][0]), Math.min(coord[1], currentBounds[0][1])], // min coordinates

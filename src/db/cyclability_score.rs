@@ -94,8 +94,17 @@ impl CyclabilityScore {
         conn: &sqlx::Pool<Postgres>,
     ) -> Result<CyclabilityScore, sqlx::Error> {
         let cs: CyclabilityScoreDb = sqlx::query_as(
-            r#"select id, score, comment, way_ids, created_at, photo_path, photo_path_thumbnail
+            r#"select id, 
+                      name, 
+                      ST_AsText(ST_Transform(geom, 4326)) as geom, 
+                      score, 
+                      comment, 
+                      way_ids, 
+                      created_at, 
+                      photo_path, 
+                      photo_path_thumbnail
                from cyclability_score
+               join cycleway_way on way_id = any(way_ids)
                where id = $1"#,
         )
         .bind(id)
