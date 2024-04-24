@@ -45,7 +45,10 @@ map.on("load", () => {
 
 
 map.on("click", async function (event) {
-    if (document.getElementById("info_panel_up") || document.getElementById("info_panel_down") || document.getElementById("segment_panel_bigger")) {
+    if (document.getElementById("info_panel_up") ||
+        document.getElementById("info_panel_down") ||
+        document.getElementById("segment_panel_bigger") ||
+        document.getElementById("segment_panel")) {
         select(event);
     }
 });
