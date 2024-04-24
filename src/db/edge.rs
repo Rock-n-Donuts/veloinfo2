@@ -93,7 +93,7 @@ impl Edge {
                                                                 when tags->>'cycleway:right' = 'shared_lane' then 1 / 0.50
                                                                 when tags->>'cycleway' = 'shared_lane' then 1 / 0.50
                                                                 when tags->>'highway' = 'residential' then 1 / 0.40
-                                                                when tags->>'highway' = 'tertiary' then 1 / 0.35
+                                                                when tags->>'highway' = 'tertiary' then 1 / 0.40
                                                                 when tags->>'highway' = 'secondary' then 1 / 0.30
                                                                 when tags->>'highway' = 'service' then 1 / 0.2
                                                                 when tags->>'bicycle' = 'yes' then 1 / 0.5
