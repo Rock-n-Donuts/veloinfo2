@@ -51,20 +51,20 @@ impl Edge {
                                                     st_length(ST_MakeLine(ST_Point(x1, y2), ST_Point(x2, y2))) * 
                                                     CASE
                                                         WHEN cs.score IS NULL THEN 
-                                                            score_road
+                                                            cost_road
                                                         WHEN cs.score = 0 THEN 1 / 0.001
-                                                        ELSE score_road * cs.score
+                                                        ELSE cost_road * (1 / cs.score)
                                                     END as cost,
                                                     st_length(ST_MakeLine(ST_Point(x1, y2), ST_Point(x2, y2))) * 
                                                     CASE
-                                                        when aw.tags->>'oneway:bicycle' = 'no' and cs.score is not null and cs.score != 0 then score_road * cs.score
-                                                        when aw.tags->>'oneway' = 'no' and cs.score is not null and cs.score != 0 then score_road * cs.score
+                                                        when aw.tags->>'oneway:bicycle' = 'no' and cs.score is not null and cs.score != 0 then cost_road * (1 / cs.score)
+                                                        when aw.tags->>'oneway' = 'no' and cs.score is not null and cs.score != 0 then cost_road * (1 / cs.score)
                                                         when aw.tags->>'oneway:bicycle' = 'yes' then 1 / 0.001
                                                         when aw.tags->>'oneway' = 'yes' then 1 / 0.001
                                                         WHEN cs.score IS NULL THEN
-                                                            score_road
+                                                            cost_road
                                                         WHEN cs.score = 0 THEN 1 / 0.001
-                                                        ELSE score_road * cs.score
+                                                        ELSE cost_road * (1 / cs.score)
                                                     END as reverse_cost
                                                     from edge e
                                                     left join (
@@ -104,7 +104,7 @@ impl Edge {
                                                                 when tags->>'highway' = 'proposed' then 1 / 0.001
                                                                 when tags->>'highway' is not null then 1 / 0.25
                                                                 else 1 / 0.25
-                                                            end as score_road
+                                                            end as cost_road
                                                         from all_way
                                                     ) aw on e.way_id = aw.way_id
                                                     where e.target is not null and
