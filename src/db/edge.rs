@@ -80,7 +80,6 @@ impl Edge {
                                                             case
                                                                 when tags->>'bicycle' = 'no' then 1 / 0.0001
                                                                 when tags->>'highway' = 'cycleway' then 1 / 1
-                                                                when tags->>'bicycle' = 'designated' then 1 / 1
                                                                 when tags->>'cycleway' = 'track' then 1 / 1
                                                                 when tags->>'cycleway:both' = 'track' then 1 / 1
                                                                 when tags->>'cycleway:left' = 'track' then 1 / 1
@@ -98,6 +97,7 @@ impl Edge {
                                                                 when tags->>'highway' = 'secondary' then 1 / 0.33
                                                                 when tags->>'highway' = 'service' then 1 / 0.2
                                                                 when tags->>'bicycle' = 'yes' then 1 / 1
+                                                                when tags->>'bicycle' = 'designated' then 1 / 0.50
                                                                 when tags->>'highway' = 'primary' then 1 / 0.1
                                                                 when tags->>'highway' = 'footway' then 1 / 0.1
                                                                 when tags->>'highway' = 'steps' then 1 / 0.05
