@@ -159,6 +159,9 @@ function display_segment_geom(geom) {
             }
         });
     }
+    if (!start_marker) {
+        start_marker = new maplibregl.Marker({ color: "#00f" }).setLngLat(geom[0][0]).addTo(map);
+    }
     map.getSource("veloinfo").setUrl("{{martin_url}}/bike_path");
 }
 
