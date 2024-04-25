@@ -102,7 +102,7 @@ impl Edge {
                                                                 when tags->>'highway' = 'footway' then 1 / 0.1
                                                                 when tags->>'highway' = 'steps' then 1 / 0.05
                                                                 when tags->>'highway' = 'proposed' then 1 / 0.001
-                                                                when tags->>'highway' is not null then 1 / 0.25
+                                                                when tags->>'highway' is not null then 1 / 0.01
                                                                 else 1 / 0.25
                                                             end as cost_road
                                                         from all_way
