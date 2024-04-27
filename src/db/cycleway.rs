@@ -131,6 +131,7 @@ impl Cycleway {
                 ST_Y(st_transform((dp).geom, 4326)) as lat
             FROM (  
                 SELECT (ST_DumpPoints(geom)) as dp, 
+                        name,
                         way_id,
                         ST_AsText(ST_Transform(geom, 4326)) as geom,
                         unnest(nodes) as nodes

@@ -132,7 +132,7 @@ impl CyclabilityScore {
                     created_at, 
                     photo_path, 
                     photo_path_thumbnail
-               from cyclability_score
+               from cyclability_score s
                where way_ids = $1
                order by created_at desc"#,
         )
