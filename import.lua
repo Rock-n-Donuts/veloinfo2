@@ -66,9 +66,8 @@ local cycleway_point = osm2pgsql.define_node_table('cycleway_node', {{
 
 function osm2pgsql.process_way(object)
 
-    if object.tags.highway == 'cycleway' or object.tags.highway == "footway" or object.tags.cycleway == "track" or
-        object.tags["cycleway:left"] == "track" or object.tags["cycleway:right"] == "track" or
-        object.tags["cycleway:both"] == "track" then
+    if object.tags.highway == 'cycleway' or object.tags.cycleway == "track" or object.tags["cycleway:left"] == "track" or
+        object.tags["cycleway:right"] == "track" or object.tags["cycleway:both"] == "track" then
 
         cycleway:insert({
             name = object.tags.name,
