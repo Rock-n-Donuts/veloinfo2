@@ -92,6 +92,7 @@ impl CyclabilityScore {
     ) -> Result<CyclabilityScore, sqlx::Error> {
         let cs: CyclabilityScoreDb = sqlx::query_as(
             r#"select id, 
+                      s.name,
                       ST_AsText(ST_Transform(s.geom, 4326)) as geom, 
                       score, 
                       comment, 
