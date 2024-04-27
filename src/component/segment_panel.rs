@@ -316,13 +316,13 @@ async fn segment_panel_score_id(conn: &sqlx::Pool<Postgres>, id: i32, edit: bool
             eprintln!("Error while fetching score: {}", e);
             CyclabilityScore {
                 id: 0,
+                name: vec![],
                 score: -1.,
                 comment: None,
                 way_ids: vec![],
                 created_at: chrono::DateTime::from_timestamp(0, 0).unwrap().into(),
                 photo_path: None,
                 photo_path_thumbnail: None,
-                name: None,
                 geom: vec![],
             }
         }

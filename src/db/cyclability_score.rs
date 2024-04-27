@@ -5,7 +5,7 @@ use sqlx::{Postgres, Row};
 #[derive(sqlx::FromRow, Debug)]
 pub struct CyclabilityScore {
     pub id: i32,
-    pub name: Option<String>,
+    pub name: Vec<Option<String>>,
     pub score: f64,
     pub comment: Option<String>,
     pub way_ids: Vec<i64>,
@@ -18,7 +18,7 @@ pub struct CyclabilityScore {
 #[derive(Debug, sqlx::FromRow)]
 pub struct CyclabilityScoreDb {
     pub id: i32,
-    pub name: Option<String>,
+    pub name: Vec<Option<String>>,
     pub score: f64,
     pub comment: Option<String>,
     pub way_ids: Vec<i64>,
@@ -38,19 +38,16 @@ impl CyclabilityScore {
     ) -> Result<Vec<CyclabilityScore>, sqlx::Error> {
         let cs: Vec<CyclabilityScoreDb> = sqlx::query_as(
             r#"select DISTINCT ON (cs.created_at) cs.id, 
+                        cs.name,
                         cs.score, 
-                        c.name,
                         cs.comment, 
                         cs.way_ids, 
                         cs.created_at, 
                         cs.photo_path, 
                         cs.photo_path_thumbnail,
-                        ST_AsText(ST_Transform(c.geom, 4326)) as geom
+                        ST_AsText(ST_Transform(geom, 4326)) as geom
                from cyclability_score cs
-               join (
-                    select * from cycleway_way 
-                    where geom && ST_Transform(st_makeenvelope($1, $2, $3, $4, 4326), 3857)
-               ) c on c.way_id = any(cs.way_ids) 
+               where geom && ST_Transform(st_makeenvelope($1, $2, $3, $4, 4326), 3857)
                order by cs.created_at desc
                limit 100"#,
         )
@@ -95,7 +92,6 @@ impl CyclabilityScore {
     ) -> Result<CyclabilityScore, sqlx::Error> {
         let cs: CyclabilityScoreDb = sqlx::query_as(
             r#"select id, 
-                      name, 
                       ST_AsText(ST_Transform(geom, 4326)) as geom, 
                       score, 
                       comment, 

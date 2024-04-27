@@ -1,5 +1,4 @@
 use super::score_circle::ScoreCircle;
-use crate::db::all_way::AllWay;
 use crate::db::cyclability_score::CyclabilityScore;
 use crate::VeloinfoState;
 use askama::Template;
@@ -58,7 +57,7 @@ impl InfopanelContribution {
                 timeago: timeago::Formatter::with_language(French)
                     .convert_chrono(score.created_at, Local::now()),
                 score_circle: ScoreCircle { score: score.score },
-                name: get_name(score.way_ids.as_ref(), &conn).await,
+                name: get_name(&score.name).await,
                 comment: score.comment.clone().unwrap_or("".to_string()),
                 score_id: score.id,
                 photo_path_thumbnail: score.photo_path_thumbnail.clone(),
@@ -83,7 +82,7 @@ impl InfopanelContribution {
                 timeago: timeago::Formatter::with_language(French)
                     .convert_chrono(score.created_at, Local::now()),
                 score_circle: ScoreCircle { score: score.score },
-                name: get_name(score.way_ids.as_ref(), &conn).await,
+                name: get_name(&score.name).await,
                 comment: score.comment.clone().unwrap_or("".to_string()),
                 score_id: score.id,
                 photo_path_thumbnail: score.photo_path_thumbnail.clone(),
@@ -114,7 +113,7 @@ impl InfopanelContribution {
                 timeago: timeago::Formatter::with_language(French)
                     .convert_chrono(score.created_at, Local::now()),
                 score_circle: ScoreCircle { score: score.score },
-                name: get_name(score.way_ids.as_ref(), &conn).await,
+                name: get_name(&score.name).await,
                 comment: score.comment.clone().unwrap_or("".to_string()),
                 score_id: score.id,
                 photo_path_thumbnail: score.photo_path_thumbnail.clone(),
@@ -124,20 +123,14 @@ impl InfopanelContribution {
     }
 }
 
-async fn get_name(way_ids: &Vec<i64>, conn: &sqlx::Pool<Postgres>) -> String {
-    join_all(way_ids.iter().map(|way_id| async {
-        match AllWay::get(way_id, &conn).await {
-            Ok(c) => c.name.unwrap_or("Nom inconnu".to_string()),
-            Err(e) => {
-                eprintln!("Error getting name {:?}", e);
-                "Nom inconnu".to_string()
-            }
-        }
-    }))
-    .await
-    .iter()
-    .fold("".to_string(), |acc, name| {
-        if acc.find(name.as_str()) != None {
+async fn get_name(names: &Vec<Option<String>>) -> String {
+    names.iter().fold("".to_string(), |acc, name| {
+        let blank_name = "non inconnu".to_string();
+        let name = match name {
+            Some(name) => name,
+            None => &blank_name,
+        };
+        if acc.find(name) != None {
             return acc;
         }
         format!("{} {}", acc, name)
