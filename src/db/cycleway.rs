@@ -64,7 +64,7 @@ impl Cycleway {
                 way_id,
                 source,
                 target,
-                ST_AsText(ST_Transform(geom, 4326)) as geom,  
+                ST_AsText(ST_Transform(c.geom, 4326)) as geom,  
                 score,
                 cs.id as score_id
                from cycleway_way c 
