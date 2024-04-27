@@ -20,7 +20,7 @@
                     <input type="file" id="photo" name="photo">
                 </div>
                 <button hx-post="/segment_panel" hx-encoding="multipart/form-data" hx-target="#info"
-                    class="ml-2 bg-teal-300 rounded uppercase p-2" hx-on:click="reset()">Enregistrer</button>
+                    class="ml-2 bg-teal-300 rounded uppercase p-2">Enregistrer</button>
                 <button hx-get="/segment_panel/ways/{{way_ids}}" hx-target="#info"
                     class="ml-2 bg-teal-300 rounded uppercase p-2">annuler</button>
             </form>
