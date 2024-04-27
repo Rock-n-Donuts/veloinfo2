@@ -60,14 +60,14 @@ impl Cycleway {
     pub async fn get(way_id: &i64, conn: &sqlx::Pool<Postgres>) -> Result<Cycleway> {
         let response: Result<CyclewayDb, sqlx::Error> = sqlx::query_as(
             r#"select
-                name,  
+                c.name,  
                 way_id,
                 source,
                 target,
                 ST_AsText(ST_Transform(geom, 4326)) as geom,  
                 score,
                 cs.id as score_id
-               from cycleway_way 
+               from cycleway_way c 
                left join (
                     select *
                     from cyclability_score 
