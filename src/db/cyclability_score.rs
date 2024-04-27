@@ -169,8 +169,11 @@ impl CyclabilityScore {
     ) -> Result<i32, sqlx::Error> {
         let id: i32 = sqlx::query(
             r#"INSERT INTO cyclability_score 
-                    (way_ids, score, comment, photo_path, photo_path_thumbnail) 
-                    VALUES ($1, $2, $3, $4, $5)
+                    (way_ids, score, comment, photo_path, photo_path_thumbnail, name, geom) 
+                    SELECT $1, $2, $3, $4, $5, array_agg(cw.name), ST_Union(cw.geom)
+                    from cycleway_way cw
+                    where cw.way_id = any($1)
+                    group by $1, $2, $3, $4, $5
                     RETURNING id"#,
         )
         .bind(way_ids)
