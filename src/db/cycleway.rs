@@ -125,6 +125,7 @@ impl Cycleway {
             SELECT
                 way_id,
                 geom,
+                name,
                 nodes as node_id,
                 ST_X(st_transform((dp).geom, 4326)) as lng,
                 ST_Y(st_transform((dp).geom, 4326)) as lat

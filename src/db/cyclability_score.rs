@@ -66,7 +66,15 @@ impl CyclabilityScore {
         conn: &sqlx::Pool<Postgres>,
     ) -> Vec<CyclabilityScore> {
         let cs: Vec<CyclabilityScoreDb> = match sqlx::query_as(
-            r#"select id, score, comment, way_ids, created_at, photo_path, photo_path_thumbnail
+            r#"select id, 
+                      name,
+                      ST_AsText(ST_Transform(geom, 4326)) as geom,
+                      score, 
+                      comment, 
+                      way_ids, 
+                      created_at, 
+                      photo_path, 
+                      photo_path_thumbnail
                from cyclability_score
                where way_ids = $1
                order by created_at desc
