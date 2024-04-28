@@ -122,7 +122,7 @@ function fitBounds(geom) {
             [Math.max(coord[0], currentBounds[1][0]), Math.max(coord[1], currentBounds[1][1])]  // max coordinates
         ];
     }, [[Infinity, Infinity], [-Infinity, -Infinity]]);
-    map.fitBounds(bounds, { padding: window.innerWidth * .10 });
+    return map.cameraForBounds(bounds, { padding: window.innerWidth * .10 });
 }
 
 function display_segment_geom(geom) {
@@ -232,4 +232,15 @@ async function route() {
         });
     });
     await htmx.ajax("GET", "/route/" + start.coords.longitude + "/" + start.coords.latitude + "/" + end.lng + "/" + end.lat, "#info");
+}
+function calculateBearing(lon1, lat1, lon2, lat2) {
+    lon1 = lon1 * Math.PI / 180.0;
+    lat1 = lat1 * Math.PI / 180.0;
+    lon2 = lon2 * Math.PI / 180.0;
+    lat2 = lat2 * Math.PI / 180.0;
+    const y = Math.sin(lon2 - lon1) * Math.cos(lat2);
+    const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
+    let bearing = Math.atan2(y, x) * (180 / Math.PI);
+    bearing = (bearing + 360) % 360; // Ensuring the bearing is positive
+    return bearing;
 }
