@@ -69,6 +69,10 @@ psql -h db -U postgres -d carte -c "
                                                 when tags->>'cycleway:both' = 'track' then 1 / 0.8
                                                 when tags->>'cycleway:left' = 'track' then 1 / 0.8
                                                 when tags->>'cycleway:right' = 'track' then 1 / 0.8
+                                                when tags->>'highway' = 'residential' and tags->>'cycleway' = 'shared_lane' then 1 / 0.8
+                                                when tags->>'highway' = 'residential' and tags->>'cycleway:both' = 'shared_lane' then 1 / 0.8
+                                                when tags->>'highway' = 'residential' and tags->>'cycleway:right' = 'shared_lane' then 1 / 0.8
+                                                when tags->>'highway' = 'residential' and tags->>'cycleway:left' = 'shared_lane' then 1 / 0.8                                                
                                                 when tags->>'cycleway' = 'lane' then 1 / 0.7
                                                 when tags->>'cycleway:both' = 'lane' then 1 / 0.7
                                                 when tags->>'cycleway:left' = 'lane' then 1 / 0.7
@@ -81,8 +85,8 @@ psql -h db -U postgres -d carte -c "
                                                 when tags->>'highway' = 'tertiary' then 1 / 0.5
                                                 when tags->>'highway' = 'secondary' then 1 / 0.4
                                                 when tags->>'highway' = 'service' then 1 / 0.3
-                                                when tags->>'bicycle' = 'yes' then 1 / 0.5
-                                                when tags->>'bicycle' = 'designated' then 1 / 0.50
+                                                when tags->>'bicycle' = 'yes' then 1 / 0.3
+                                                when tags->>'bicycle' = 'designated' then 1 / 0.3
                                                 when tags->>'highway' = 'primary' then 1 / 0.1
                                                 when tags->>'highway' = 'footway' then 1 / 0.1
                                                 when tags->>'highway' = 'steps' then 1 / 0.05
@@ -94,9 +98,5 @@ psql -h db -U postgres -d carte -c "
                                         left join cyclability_score cs on aw.way_id = any(cs.way_ids)
                                     ) as edges;       
 
-                                    CREATE INDEX edge_way_id_idx ON edge(way_id);
-                                    CREATE INDEX edge_source_idx ON edge(source);
-                                    CREATE INDEX edge_target_idx ON edge(target);                    
-                                    CREATE INDEX edge_x1_idx ON edge(x1);                    
-                                    CREATE INDEX edge_y1_idx ON edge(y1);                    
+                                    CREATE INDEX edge_way_id_idx ON edge(geom);
                                     "
