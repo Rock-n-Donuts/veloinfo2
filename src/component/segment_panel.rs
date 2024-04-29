@@ -185,7 +185,6 @@ pub async fn segment_panel_get(
 }
 
 pub async fn segment_panel(state: VeloinfoState, way_ids: String) -> SegmentPanel {
-    println!("segment_panel {}", way_ids);
     let re = Regex::new(r"\d+").unwrap();
     let way_ids_i64 = re
         .find_iter(way_ids.as_str())
@@ -210,7 +209,6 @@ pub async fn segment_panel(state: VeloinfoState, way_ids: String) -> SegmentPane
         }
     }))
     .await;
-    println!("cycleways: {:?}", cycleways);
     let all_same_score = cycleways.iter().all(|way| way.score == cycleways[0].score);
     let segment_name = cycleways
         .iter()
