@@ -1,8 +1,8 @@
 #!/usr/bin/bash
-# rm quebec-latest.osm.pbf
-# wget https://download.geofabrik.de/north-america/canada/quebec-latest.osm.pbf -O quebec-latest.osm.pbf
+rm quebec-latest.osm.pbf
+wget https://download.geofabrik.de/north-america/canada/quebec-latest.osm.pbf -O quebec-latest.osm.pbf
 
-# osm2pgsql -H db -U postgres -d carte -O flex -S import.lua quebec-latest.osm.pbf
+osm2pgsql -H db -U postgres -d carte -O flex -S import.lua quebec-latest.osm.pbf
 
 psql -h db -U postgres -d carte -c "
                                     drop materialized view if exists bike_path;
@@ -77,10 +77,10 @@ psql -h db -U postgres -d carte -c "
                                                 when tags->>'cycleway:left' = 'shared_lane' then 1 / 0.6
                                                 when tags->>'cycleway:right' = 'shared_lane' then 1 / 0.6
                                                 when tags->>'cycleway' = 'shared_lane' then 1 / 0.6
-                                                when tags->>'highway' = 'residential' then 1 / 0.5
-                                                when tags->>'highway' = 'tertiary' then 1 / 0.4
-                                                when tags->>'highway' = 'secondary' then 1 / 0.3
-                                                when tags->>'highway' = 'service' then 1 / 0.2
+                                                when tags->>'highway' = 'residential' then 1 / 0.6
+                                                when tags->>'highway' = 'tertiary' then 1 / 0.5
+                                                when tags->>'highway' = 'secondary' then 1 / 0.4
+                                                when tags->>'highway' = 'service' then 1 / 0.3
                                                 when tags->>'bicycle' = 'yes' then 1 / 0.5
                                                 when tags->>'bicycle' = 'designated' then 1 / 0.50
                                                 when tags->>'highway' = 'primary' then 1 / 0.1
