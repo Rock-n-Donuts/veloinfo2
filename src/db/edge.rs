@@ -43,76 +43,11 @@ impl Edge {
                                         FROM pgr_astar(
                                             FORMAT(
                                                 $FORMAT$
-                                                SELECT *,
-                                                cost,
-                                                reverse_cost
-                                                from (
-                                                    select e.*, 
-                                                    st_length(ST_MakeLine(ST_Point(x1, y2), ST_Point(x2, y2))) * 
-                                                    CASE
-                                                        WHEN cs.score IS NULL THEN 
-                                                            cost_road
-                                                        WHEN cs.score = 0 THEN 1 / 0.001
-                                                        ELSE cost_road * (1 / cs.score)
-                                                    END as cost,
-                                                    st_length(ST_MakeLine(ST_Point(x1, y2), ST_Point(x2, y2))) * 
-                                                    CASE
-                                                        when aw.tags->>'oneway:bicycle' = 'no' and cs.score is not null and cs.score != 0 then cost_road * (1 / cs.score)
-                                                        when aw.tags->>'oneway' = 'no' and cs.score is not null and cs.score != 0 then cost_road * (1 / cs.score)
-                                                        when aw.tags->>'oneway:bicycle' = 'yes' then 1 / 0.001
-                                                        when aw.tags->>'oneway' = 'yes' then 1 / 0.001
-                                                        WHEN cs.score IS NULL THEN
-                                                            cost_road
-                                                        WHEN cs.score = 0 THEN 1 / 0.001
-                                                        ELSE cost_road * (1 / cs.score)
-                                                    END as reverse_cost
-                                                    from edge e
-                                                    left join (
-                                                        select 
-                                                            unnest(way_ids) as way_id, 
-                                                            avg(score) as score
-                                                        from cyclability_score
-                                                        group by way_id
-                                                    ) cs on e.way_id = cs.way_id
-                                                    join (
-                                                        select 
-                                                            *,
-                                                            case
-                                                                when tags->>'bicycle' = 'no' then 1 / 0.0001
-                                                                when tags->>'highway' = 'cycleway' then 1 / 1
-                                                                when tags->>'cycleway' = 'track' then 1 / 0.8
-                                                                when tags->>'cycleway:both' = 'track' then 1 / 0.7
-                                                                when tags->>'cycleway:left' = 'track' then 1 / 0.7
-                                                                when tags->>'cycleway:right' = 'track' then 1 / 0.7
-                                                                when tags->>'cycleway' = 'lane' then 1 / 0.6
-                                                                when tags->>'cycleway:both' = 'lane' then 1 / 0.6
-                                                                when tags->>'cycleway:left' = 'lane' then 1 / 0.6
-                                                                when tags->>'cycleway:right' = 'lane' then 1 / 0.6
-                                                                when tags->>'cycleway:both' = 'shared_lane' then 1 / 0.5
-                                                                when tags->>'cycleway:left' = 'shared_lane' then 1 / 0.5
-                                                                when tags->>'cycleway:right' = 'shared_lane' then 1 / 0.5
-                                                                when tags->>'cycleway' = 'shared_lane' then 1 / 0.5
-                                                                when tags->>'highway' = 'residential' then 1 / 0.4
-                                                                when tags->>'highway' = 'tertiary' then 1 / 0.35
-                                                                when tags->>'highway' = 'secondary' then 1 / 0.25
-                                                                when tags->>'highway' = 'service' then 1 / 0.2
-                                                                when tags->>'bicycle' = 'yes' then 1 / 0.5
-                                                                when tags->>'bicycle' = 'designated' then 1 / 0.50
-                                                                when tags->>'highway' = 'primary' then 1 / 0.1
-                                                                when tags->>'highway' = 'footway' then 1 / 0.1
-                                                                when tags->>'highway' = 'steps' then 1 / 0.05
-                                                                when tags->>'highway' = 'proposed' then 1 / 0.001
-                                                                when tags->>'highway' is not null then 1 / 0.01
-                                                                else 1 / 0.25
-                                                            end as cost_road
-                                                        from all_way
-                                                    ) aw on e.way_id = aw.way_id
-                                                    where e.target is not null and
-                                                            x1 <= %s and
-                                                            y1 <= %s and
-                                                            x1 >= %s and
-                                                            y1 >= %s 
-                                                    )as sub                    
+                                                SELECT *
+                                                from edge
+                                                where target is not null
+                                                and cost is not null
+                                                and geom && ST_Transform(ST_MakeEnvelope(%s, %s, %s, %s, 4326), 3857)            
                                                 $FORMAT$,
                                                 $3, $4, $5, $6
                                             )

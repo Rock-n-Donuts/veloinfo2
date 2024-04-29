@@ -205,6 +205,9 @@ impl CyclabilityScore {
         sqlx::query(r#"REFRESH MATERIALIZED VIEW bike_path"#)
             .execute(conn)
             .await?;
+        sqlx::query(r#"REFRESH MATERIALIZED VIEW edge"#)
+            .execute(conn)
+            .await?;
 
         Ok(id)
     }
