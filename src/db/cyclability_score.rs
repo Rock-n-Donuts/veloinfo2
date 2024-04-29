@@ -202,13 +202,16 @@ impl CyclabilityScore {
             .await?;
         };
 
+        println!("Inserted cyclability score with id: {}", id);
+
         sqlx::query(r#"REFRESH MATERIALIZED VIEW bike_path"#)
             .execute(conn)
             .await?;
+        println!("Refreshed bike_path materialized view");
         sqlx::query(r#"REFRESH MATERIALIZED VIEW edge"#)
             .execute(conn)
             .await?;
-
+        println!("Refreshed edge materialized view");
         Ok(id)
     }
 }
