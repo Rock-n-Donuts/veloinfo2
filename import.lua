@@ -106,7 +106,9 @@ function osm2pgsql.process_way(object)
         })
     end
 
-    if object.tags.highway and object.tags.highway ~= 'motorway' and object.tags.bicycle ~= 'no' and object.tags.highway then
+    if object.tags["bicycle"] == "yes" or
+        (object.tags.highway and object.tags.highway ~= 'motorway' and object.tags.bicycle ~= 'no' and
+            object.tags.highway) then
 
         all_way:insert({
             name = object.tags.name,
