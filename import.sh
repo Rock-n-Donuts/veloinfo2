@@ -35,14 +35,14 @@ psql -h db -U postgres -d carte -c "
                                             case
                                                 when tags->>'bicycle' = 'no' then 1 / 0.0001
                                                 when tags->>'highway' = 'cycleway' then 1 / 1
-                                                when tags->>'cycleway' = 'track' then 1 / 0.8
-                                                when tags->>'cycleway:both' = 'track' then 1 / 0.8
-                                                when tags->>'cycleway:left' = 'track' then 1 / 0.8
-                                                when tags->>'cycleway:right' = 'track' then 1 / 0.8
-                                                when tags->>'cycleway' = 'separate' then 1 / 0.8
-                                                when tags->>'cycleway:both' = 'separate' then 1 / 0.8
-                                                when tags->>'cycleway:left' = 'separate' then 1 / 0.8
-                                                when tags->>'cycleway:right' = 'separate' then 1 / 0.8
+                                                when tags->>'cycleway' = 'track' then 1 / 0.9
+                                                when tags->>'cycleway:both' = 'track' then 1 / 0.9
+                                                when tags->>'cycleway:left' = 'track' then 1 / 0.9
+                                                when tags->>'cycleway:right' = 'track' then 1 / 0.9
+                                                when tags->>'cycleway' = 'separate' then 1 / 0.9
+                                                when tags->>'cycleway:both' = 'separate' then 1 / 0.9
+                                                when tags->>'cycleway:left' = 'separate' then 1 / 0.9
+                                                when tags->>'cycleway:right' = 'separate' then 1 / 0.9
                                                 when tags->>'highway' = 'residential' and tags->>'cycleway' = 'shared_lane' then 1 / 0.8
                                                 when tags->>'highway' = 'residential' and tags->>'cycleway:both' = 'shared_lane' then 1 / 0.8
                                                 when tags->>'highway' = 'residential' and tags->>'cycleway:right' = 'shared_lane' then 1 / 0.8
