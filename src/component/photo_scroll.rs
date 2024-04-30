@@ -1,9 +1,9 @@
+use crate::db::cyclability_score::CyclabilityScore;
+use crate::VeloinfoState;
 use askama::Template;
 use axum::extract::{Path, State};
 use lazy_static::lazy_static;
 use regex::Regex;
-use crate::VeloinfoState;
-use crate::db::cyclability_score::CyclabilityScore;
 
 #[derive(Template)]
 #[template(path = "photo_scroll.html")]
@@ -22,8 +22,11 @@ pub async fn photo_scroll(
     State(state): State<VeloinfoState>,
     Path((photo, way_ids)): Path<(String, String)>,
 ) -> PhotoScroll {
-    let way_ids_i64 = INT_REGEX.find_iter(&way_ids).map(|m| m.as_str().parse::<i64>().unwrap()).collect();
-    let scores = CyclabilityScore::get_photo_by_way_ids(&way_ids_i64, state.conn).await;
+    let way_ids_i64 = INT_REGEX
+        .find_iter(&way_ids)
+        .map(|m| m.as_str().parse::<i64>().unwrap())
+        .collect();
+    let scores = CyclabilityScore::get_photo_by_way_ids(&way_ids_i64, &state.conn).await;
     let mut next = None;
     let mut previous = None;
     for (i, score) in scores.iter().enumerate() {

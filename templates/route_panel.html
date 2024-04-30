@@ -1,0 +1,38 @@
+<div class="absolute w-full max-h-[50%] overflow-auto md:w-[500px] bg-white z-20 bottom-0 rounded-lg">
+    <div class="">
+        <div>
+            Route panel
+        </div>
+        <div>
+            {{ error }}
+        </div>
+        <button hx-on:click="clear()" hx-target="#info" class="ml-2 bg-teal-300 rounded uppercase p-2">annuler</button>
+    </div>
+
+</div>
+<script type="text/javascript">
+    {% if route_json != "" %}
+    var route_json = {{ route_json }};
+    display_segment_geom([route_json]);
+    var bearing = calculateBearing(
+        route_json[0][0],
+        route_json[0][1],
+        route_json[route_json.length - 1][0],
+        route_json[route_json.length - 1][1]);
+    var camera = fitBounds(route_json);
+    map.easeTo({
+        bearing: bearing,
+        center: camera.center,
+        zoom: camera.zoom
+    });
+    {% else %}
+    {% endif %}
+    (async () => {
+        try {
+            const wakeLock = await navigator.wakeLock.request("screen");
+        } catch (err) {
+            // the wake lock request fails - usually system related, such being low on battery
+            console.log(`${err.name}, ${err.message}`);
+        }
+    })();
+</script>

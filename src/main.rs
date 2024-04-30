@@ -5,28 +5,25 @@ use crate::component::info_panel::info_panel_down;
 use crate::component::info_panel::info_panel_up;
 use crate::component::menu::{menu_close, menu_open};
 use crate::component::photo_scroll::photo_scroll;
-use crate::component::segment_panel::segment_panel;
+use crate::component::segment_panel::segment_panel_bigger;
+use crate::component::segment_panel::segment_panel_bigger_route;
 use crate::component::segment_panel::segment_panel_edit;
+use crate::component::segment_panel::segment_panel_get;
+use crate::component::segment_panel::segment_panel_lng_lat;
 use crate::component::segment_panel::segment_panel_post;
 use crate::component::segment_panel::select_score_id;
 use crate::node::route;
-use crate::node::select_node;
-use crate::node::select_nodes;
 use crate::score_selector_controler::score_bounds_controler;
 use askama::Template;
-use askama_axum::IntoResponse;
 use axum::extract::DefaultBodyLimit;
 use axum::http::HeaderMap;
 use axum::http::HeaderValue;
 use axum::http::Request;
-use axum::http::StatusCode;
-use axum::response::Response;
 use axum::routing::post;
 use axum::routing::{get, Router};
 use component::style::style;
 use lazy_static::lazy_static;
 use score_selector_controler::score_selector_controler;
-use segment::select;
 use sqlx::PgPool;
 use std::env;
 use std::process::Command;
@@ -42,7 +39,6 @@ mod component;
 mod db;
 mod node;
 mod score_selector_controler;
-mod segment;
 
 lazy_static! {
     static ref IMAGE_DIR: String = env::var("IMAGE_DIR").unwrap();
@@ -92,26 +88,28 @@ async fn main() {
         .route("/", get(index))
         .route("/auth", get(auth))
         .route("/logout", get(logout))
-        .route("/select/node/:lng/:lat", get(select_node))
-        .route(
-            "/select/nodes/:start_lng/:start_lat/:end_lng/:end_lat",
-            get(select_nodes),
-        )
         .route("/segment_panel/id/:id", get(select_score_id))
-        .route("/segment_panel/ways/:way_ids", get(segment_panel))
+        .route(
+            "/segment_panel_lng_lat/:lng/:lat",
+            get(segment_panel_lng_lat),
+        )
+        .route("/segment_panel/ways/:way_ids", get(segment_panel_get))
         .route("/segment_panel/edit/ways/:way_ids", get(segment_panel_edit))
         .route("/segment_panel", post(segment_panel_post))
+        .route("/segment_panel_bigger", get(segment_panel_bigger))
+        .route(
+            "/segment_panel_bigger/:start_lng/:start_lat/:end_lng/:end_lat",
+            get(segment_panel_bigger_route),
+        )
         .route("/menu/open", get(menu_open))
         .route("/menu/closed", get(menu_close))
-        .route("/segment/select/:way_id", get(select))
         .route("/route/:start_lng/:start_lat/:end_lgt/:end_lat", get(route))
-        // .route("/segment/route/:way_id1/:way_ids", get(route))
         .route(
             "/cyclability_score/geom/:cyclability_score_id",
             get(score_bounds_controler),
         )
         .route("/info_panel/down", get(info_panel_down))
-        .route("/info_panel/up", post(info_panel_up))
+        .route("/info_panel/up/:lng1/:lat1/:lng2/:lat2", get(info_panel_up))
         .route("/score_selector/:score", get(score_selector_controler))
         .route("/photo_scroll/:photo/:way_ids", get(photo_scroll))
         .route("/style.json", get(style))
@@ -134,35 +132,6 @@ async fn main() {
 fn not_htmx_predicate<T>(req: &Request<T>) -> bool {
     !req.headers().contains_key("hx-request")
 }
-struct VIError(anyhow::Error);
-
-impl From<anyhow::Error> for VIError {
-    fn from(error: anyhow::Error) -> Self {
-        VIError(error)
-    }
-}
-
-impl From<askama::Error> for VIError {
-    fn from(error: askama::Error) -> Self {
-        VIError(anyhow::Error::from(error))
-    }
-}
-
-impl From<regex::Error> for VIError {
-    fn from(error: regex::Error) -> Self {
-        VIError(anyhow::Error::from(error))
-    }
-}
-
-impl IntoResponse for VIError {
-    fn into_response(self) -> Response {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Something went wrong: {}", self.0),
-        )
-            .into_response()
-    }
-}
 
 #[derive(Template)]
 #[template(path = "index.html", escape = "none")]
@@ -176,34 +145,4 @@ pub async fn index() -> (HeaderMap, IndexTemplate) {
         HeaderValue::from_static("text/html; charset=utf-8"),
     );
     (headers, template)
-}
-
-pub struct VeloInfoError(anyhow::Error);
-
-// Tell axum how to convert `AppError` into a response.
-impl IntoResponse for VeloInfoError {
-    fn into_response(self) -> Response {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Something went wrong: {}", self.0),
-        )
-            .into_response()
-    }
-}
-
-impl From<regex::Error> for VeloInfoError {
-    fn from(error: regex::Error) -> Self {
-        VeloInfoError(anyhow::Error::from(error))
-    }
-}
-
-impl From<anyhow::Error> for VeloInfoError {
-    fn from(error: anyhow::Error) -> Self {
-        VeloInfoError(error)
-    }
-}
-impl From<sqlx::Error> for VeloInfoError {
-    fn from(error: sqlx::Error) -> Self {
-        VeloInfoError(anyhow::Error::from(error))
-    }
 }

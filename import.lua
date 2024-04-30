@@ -192,7 +192,7 @@ function osm2pgsql.process_way(object)
         })
     end
 
-    if object.tags.tunnel or object.tags.highway or object.tags.bridge then
+    if object.tags["bicycle"] == "yes" or object.tags.tunnel or object.tags.highway or object.tags.bridge then
         all_way:insert({
             name = object.tags.name,
             geom = object:as_linestring(),

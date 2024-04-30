@@ -33,18 +33,24 @@ var map = new maplibregl.Map({
 map.addControl(new maplibregl.NavigationControl());
 map.addControl(new maplibregl.GeolocateControl({
     positionOptions: {
-        enableHighAccuracy: true
+        enableHighAccuracy: false
     },
     trackUserLocation: true
 }));
 
 map.on("load", () => {
-    clear();
+    const bounds = map.getBounds();
+    htmx.ajax("GET", "/info_panel/up/" + bounds._sw.lng + "/" + bounds._sw.lat + "/" + bounds._ne.lng + "/" + bounds._ne.lat, "#info");
 })
 
 
 map.on("click", async function (event) {
-    select(event);
+    if (document.getElementById("info_panel_up") ||
+        document.getElementById("info_panel_down") ||
+        document.getElementById("segment_panel_bigger") ||
+        document.getElementById("segment_panel")) {
+        select(event);
+    }
 });
 
 map.on("move", function (e) {
@@ -55,69 +61,42 @@ map.on("move", function (e) {
     update_url();
 });
 
-var start_marker = null;
-var end_marker = null;
+let start_marker = null;
+let end_marker = null;
 async function select(event) {
-    let width = 40;
+    const segment_panel_bigger = document.getElementById("segment_panel_bigger");
+    if (segment_panel_bigger) {
+        selectBigger(event);
+        return;
+    }
+
+    if (start_marker) {
+        start_marker.remove();
+    }
+    start_marker = new maplibregl.Marker({ color: "#00f" }).setLngLat([event.lngLat.lng, event.lngLat.lat]).addTo(map);
+
+    let width = 20;
     var features = map.queryRenderedFeatures(
         [
             [event.point.x - width / 2, event.point.y - width / 2],
             [event.point.x + width / 2, event.point.y + width / 2]
         ], { layers: ['cycleway', "designated", "shared_lane"] });
-    if (!features.length) {
-        clear();
-        remove_markers();
-        return;
-    }
-    var feature = features[0];
 
-    if (!start_marker) {
-        var point = await fetch('/select/node/' + event.lngLat.lng + "/" + event.lngLat.lat);
-        var point = await point.json();
-        start_marker = new maplibregl.Marker({ color: "#00f" }).setLngLat([point.lng, point.lat]).addTo(map);
-        way_ids = point.way_id;
-        display_segment_geom([point.geom]);
+    if (features.length) {
+        var feature = features[0];
+        htmx.ajax('GET', '/segment_panel_lng_lat/' + event.lngLat.lng + "/" + event.lngLat.lat, "#info");
     } else {
-        var point = await fetch('/select/node/' + event.lngLat.lng + "/" + event.lngLat.lat);
-        var point = await point.json();
-        if (end_marker) {
-            end_marker.remove();
-        }
-        end_marker = new maplibregl.Marker({ color: "#f00" }).setLngLat([point.lng, point.lat]).addTo(map);
-
-        var nodes = await fetch('/route/' + start_marker.getLngLat().lng + "/" + start_marker.getLngLat().lat + "/" + event.lngLat.lng + "/" + event.lngLat.lat);
-        var nodes = await nodes.json();
-        console.log("nodes: ", nodes);
-        var route = nodes.map((coords) => {
-            return [coords.x, coords.y];
-        });
-        way_ids = nodes.map((node) => node.way_id);
-        way_ids = [...new Set(way_ids)].join(" ");
-
-        display_segment_geom([route]);
-    }
-
-    if (way_ids) {
-        // Display info panel
-        var info_panel = document.getElementById("info");
-        const response = await fetch("/segment_panel/ways/" + way_ids);
-        const html = await response.text();
-        info_panel.innerHTML = html;
-        // reprocess htmx for the new info panel
-        info_panel = document.getElementById("info");
-        htmx.process(info_panel);
+        clear();
     }
 }
 
-function remove_markers() {
-    if (start_marker) {
-        start_marker.remove();
-        start_marker = null;
-    }
+async function selectBigger(event) {
     if (end_marker) {
         end_marker.remove();
-        end_marker = null;
     }
+    end_marker = new maplibregl.Marker({ color: "#f00" }).setLngLat([event.lngLat.lng, event.lngLat.lat]).addTo(map);
+
+    var nodes = await htmx.ajax('GET', '/segment_panel_bigger/' + start_marker.getLngLat().lng + "/" + start_marker.getLngLat().lat + "/" + event.lngLat.lng + "/" + event.lngLat.lat, "#info");
 }
 
 async function zoomToSegment(score_id) {
@@ -133,18 +112,20 @@ async function zoomToSegment(score_id) {
         return geom;
     }, []);
     display_segment_geom(geom);
-    // find the largest bounds
+}
+
+function fitBounds(geom) {
+    console.log("fitBounds", geom);
     var bounds = geom.reduce((currentBounds, coord) => {
         return [
             [Math.min(coord[0], currentBounds[0][0]), Math.min(coord[1], currentBounds[0][1])], // min coordinates
             [Math.max(coord[0], currentBounds[1][0]), Math.max(coord[1], currentBounds[1][1])]  // max coordinates
         ];
     }, [[Infinity, Infinity], [-Infinity, -Infinity]]);
-    map.fitBounds(bounds, { padding: window.innerWidth * .10 });
+    return map.cameraForBounds(bounds, { padding: window.innerWidth * .10 });
 }
 
 function display_segment_geom(geom) {
-    console.log("geom: ", geom);
     if (map.getLayer("selected")) {
         console.log("updating selected layer");
         map.getSource("selected").setData({
@@ -178,7 +159,10 @@ function display_segment_geom(geom) {
             }
         });
     }
-
+    if (!start_marker) {
+        start_marker = new maplibregl.Marker({ color: "#00f" }).setLngLat(geom[0][0]).addTo(map);
+    }
+    map.getSource("veloinfo").setUrl("{{martin_url}}/bike_path");
 }
 
 let timeout_info = null;
@@ -208,6 +192,12 @@ function update_url() {
 
 
 async function clear() {
+    if (start_marker) {
+        start_marker.remove();
+    }
+    if (end_marker) {
+        end_marker.remove();
+    }
     const selected = map.getSource("selected");
     if (selected) {
         selected.setData({
@@ -220,33 +210,9 @@ async function clear() {
         });
     }
     // Display info panel
-    var segment_panel = document.getElementById("info");
-    var hx_indicator = document.getElementsByClassName("htmx-indicator")[0];
-    if (hx_indicator) {
-        hx_indicator.classList.add("htmx-request");
-    }
-    const response = await fetch("/info_panel/up", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(map.getBounds())
-    });
-    var hx_indicator = document.getElementsByClassName("htmx-indicator")[0];
-    if (hx_indicator) {
-        hx_indicator.classList.remove("htmx-request");
-    }
-    const html = await response.text();
-    segment_panel.innerHTML = html;
-    // reprocess htmx for the new info panel
-    segment_panel = document.getElementById("info");
-    htmx.process(segment_panel);
+    const bounds = map.getBounds();
+    htmx.ajax("GET", "/info_panel/up/" + bounds._sw.lng + "/" + bounds._sw.lat + "/" + bounds._ne.lng + "/" + bounds._ne.lat, "#info");
 }
-
-async function reset() {
-    map.getSource("veloinfo").setUrl("{{martin_url}}/bike_path");
-}
-
 
 function getCookie(name) {
     let matches = document.cookie.match(new RegExp(
@@ -256,6 +222,8 @@ function getCookie(name) {
 }
 
 async function route() {
+    const button = document.getElementById("route_button");
+    button.classList.add("htmx-request");
     var end = start_marker.getLngLat();
     // get the position of the device
     var start = await new Promise((resolve, reject) => {
@@ -263,12 +231,16 @@ async function route() {
             resolve(position);
         });
     });
-    console.log(start.coords, end);
-    var route = await fetch('/route/' + start.coords.longitude + "/" + start.coords.latitude + "/" + end.lng + "/" + end.lat);
-    var route = await route.json();
-    console.log(route);
-    var route = route.map((coords) => {
-        return [coords.x, coords.y];
-    });
-    display_segment_geom([route]);
+    await htmx.ajax("GET", "/route/" + start.coords.longitude + "/" + start.coords.latitude + "/" + end.lng + "/" + end.lat, "#info");
+}
+function calculateBearing(lon1, lat1, lon2, lat2) {
+    lon1 = lon1 * Math.PI / 180.0;
+    lat1 = lat1 * Math.PI / 180.0;
+    lon2 = lon2 * Math.PI / 180.0;
+    lat2 = lat2 * Math.PI / 180.0;
+    const y = Math.sin(lon2 - lon1) * Math.cos(lat2);
+    const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
+    let bearing = Math.atan2(y, x) * (180 / Math.PI);
+    bearing = (bearing + 360) % 360; // Ensuring the bearing is positive
+    return bearing;
 }

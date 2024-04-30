@@ -8,11 +8,16 @@
         transition: opacity 0.5s ease-in;
     }
 
-    .html-indicator .htmx-request{
+    .html-indicator .htmx-request {
         opacity: 1;
     }
 
-    .html-indicator.htmx-request{
+    .html-indicator.htmx-request {
         opacity: 1;
     }
+}
+
+.htmx-request {
+    cursor: not-allowed;
+    opacity: 50%;
 }
