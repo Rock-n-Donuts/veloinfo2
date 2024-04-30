@@ -36,6 +36,7 @@ pub async fn route(
     };
     let mut edges = Edge::route(&start, &end, &state.conn).await;
     if let 0 = edges.len() {
+        println!("No route found");
         return RoutePanel {
             route_json: "[]".to_string(),
             error: "No route found".to_string(),

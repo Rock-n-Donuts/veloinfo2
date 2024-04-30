@@ -1,11 +1,14 @@
 #!/usr/bin/bash
-rm quebec-latest.osm.pbf
-wget https://download.geofabrik.de/north-america/canada/quebec-latest.osm.pbf -O quebec-latest.osm.pbf
+# rm quebec-latest.osm.pbf
+# wget https://download.geofabrik.de/north-america/canada/quebec-latest.osm.pbf -O quebec-latest.osm.pbf
 
-osm2pgsql -H db -U postgres -d carte -O flex -S import.lua quebec-latest.osm.pbf
+# osm2pgsql -H db -U postgres -d carte -O flex -S import.lua quebec-latest.osm.pbf
 
 psql -h db -U postgres -d carte -c "
                                     drop materialized view if exists bike_path;
+                                    drop materialized view if exists edge;
+                                    drop materialized view if exists last_cycleway_score;
+                                    drop materialized view if exists all_way_edge;
                                     CREATE MATERIALIZED VIEW bike_path AS
                                         SELECT *
                                             FROM (
@@ -15,51 +18,18 @@ psql -h db -U postgres -d carte -c "
                                                 JOIN cycleway_way c ON c.way_id = ANY(cs.way_ids)
                                             ) t
                                         WHERE t.rn = 1;
-
-                                    CREATE INDEX bike_path_way_id_idx ON bike_path(way_id);
+                                    CREATE UNIQUE INDEX bike_path_way_id_idx ON bike_path(way_id);
                                     CREATE INDEX edge_geom_gist ON bike_path USING gist(geom);
                                     
-                                    drop materialized view if exists edge;
                                     drop sequence if exists edge_id;
                                     CREATE SEQUENCE edge_id;
-                                    CREATE MATERIALIZED VIEW edge 
-                                    AS SELECT  
-                                        nextval('edge_id')  as id, 
-                                        node as source,
-                                        lead(node) over (partition by way_id order by seq) as target,
-                                        st_x(st_transform(ST_PointN(geom, seq), 4326)) as x1,
-                                        st_y(st_transform(ST_PointN(geom, seq), 4326)) as y1,
-                                        st_x(st_transform(ST_PointN(geom, seq+1), 4326)) as x2,
-                                        st_y(st_transform(ST_PointN(geom, seq+1), 4326)) as y2,
-                                        way_id,
-                                        score,
-                                        cost_road,
-                                        ST_MakeLine(ST_PointN(geom, seq), ST_PointN(geom, seq+1)) as geom,
-                                        st_length(ST_MakeLine(ST_PointN(geom, seq), ST_PointN(geom, seq+1))) *
-                                        CASE
-                                            WHEN score IS NULL THEN 
-                                                cost_road
-                                            WHEN score = 0 THEN 1 / 0.001
-                                            ELSE cost_road * (1 / score)
-                                        END as cost,
-                                        st_length(ST_MakeLine(ST_PointN(geom, seq), ST_PointN(geom, seq+1))) *
-                                        CASE
-                                            when tags->>'oneway:bicycle' = 'no' and score is not null and score != 0 then cost_road * (1 / score)
-                                            when tags->>'oneway' = 'no' and score is not null and score != 0 then cost_road * (1 / score)
-                                            when tags->>'oneway:bicycle' = 'yes' then 1 / 0.001
-                                            when tags->>'oneway' = 'yes' then 1 / 0.001
-                                            WHEN score IS NULL THEN
-                                                cost_road
-                                            WHEN score = 0 THEN 1 / 0.001
-                                            ELSE cost_road * (1 / score)
-                                        END as reverse_cost
-                                    from (
+                                    create materialized view all_way_edge as
                                         select 
-                                            way_id, 
-                                            unnest(nodes) as node, 
-                                            generate_series(1, array_length(nodes, 1)) as seq, 
-                                            aw.geom,
-                                            score,
+                                            nextval('edge_id')  as id,
+                                            aw.way_id, 
+                                            unnest(nodes) as node,
+                                            nodes, 
+                                            ST_DumpSegments(geom) as segment,
                                             aw.name,
                                             aw.tags,
                                             case
@@ -94,9 +64,59 @@ psql -h db -U postgres -d carte -c "
                                                 when tags->>'highway' is not null then 1 / 0.01
                                                 else 1 / 0.25
                                             end as cost_road
-                                        from all_way aw
-                                        left join cyclability_score cs on aw.way_id = any(cs.way_ids)
-                                    ) as edges;       
+                                        from all_way aw;       
+                                    create unique index all_way_edge_id_idx on all_way_edge (id);
+                                    create index all_way_edge_way_id_idx on all_way_edge (way_id);
 
-                                    CREATE INDEX edge_way_id_idx ON edge(geom);
+                                    CREATE MATERIALIZED VIEW last_cycleway_score
+                                    AS
+                                        SELECT *
+                                            FROM (
+                                                SELECT c.*, cs.score,
+                                                ROW_NUMBER() OVER (PARTITION BY c.way_id ORDER BY cs.created_at DESC) as rn
+                                                FROM cyclability_score cs 
+                                                JOIN cycleway_way c ON c.way_id = ANY(cs.way_ids)
+                                            ) t
+                                        WHERE t.rn = 1;
+                                    CREATE UNIQUE INDEX last_cycleway_score_way_id_idx ON last_cycleway_score(way_id);
+
+
+                                    CREATE MATERIALIZED VIEW edge 
+                                    AS SELECT  
+                                        id,
+                                        node as source,
+                                        awe.nodes[(segment).path[1]+1] as target,
+                                        st_x(st_transform(ST_PointN((segment).geom, 1), 4326)) as x1,
+                                        st_y(st_transform(ST_PointN((segment).geom, 1), 4326)) as y1,
+                                        st_x(st_transform(ST_PointN((segment).geom, 2), 4326)) as x2,
+                                        st_y(st_transform(ST_PointN((segment).geom, 2), 4326)) as y2,
+                                        awe.way_id,
+                                        score,
+                                        (segment).geom,
+                                        cost_road,
+                                        st_length((segment).geom) *
+                                        CASE
+                                            WHEN score IS NULL THEN 
+                                                cost_road
+                                            WHEN score = 0 THEN 1 / 0.001
+                                            ELSE cost_road * (1 / score)
+                                        END as cost,
+                                        st_length((segment).geom) *
+                                        CASE
+                                            when awe.tags->>'oneway:bicycle' = 'no' and score is not null and score != 0 then cost_road * (1 / score)
+                                            when awe.tags->>'oneway' = 'no' and score is not null and score != 0 then cost_road * (1 / score)
+                                            when awe.tags->>'oneway:bicycle' = 'yes' then 1 / 0.001
+                                            when awe.tags->>'oneway' = 'yes' then 1 / 0.001
+                                            WHEN score IS NULL THEN
+                                                cost_road
+                                            WHEN score = 0 THEN 1 / 0.001
+                                            ELSE cost_road * (1 / score)
+                                        END as reverse_cost
+                                    from all_way_edge awe
+                                    left join  last_cycleway_score cs on cs.way_id = awe.way_id
+                                    where awe.nodes[(segment).path[1]+1] is not null;       
+
+                                    CREATE INDEX edge_way_id_idx ON edge(way_id);
+                                    CREATE INDEX edge_geom_idx ON edge(geom);
+                                    CREATE UNIQUE INDEX edge_id_idx ON edge(id);
                                     "

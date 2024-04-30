@@ -202,12 +202,22 @@ impl CyclabilityScore {
             .await?;
         };
 
-        sqlx::query(r#"REFRESH MATERIALIZED VIEW CONCURRENTLY bike_path"#)
+        sqlx::query(r#"REFRESH MATERIALIZED VIEW bike_path"#)
             .execute(conn)
             .await?;
-        sqlx::query(r#"REFRESH MATERIALIZED VIEW CONCURRENTLY edge"#)
-            .execute(conn)
-            .await?;
+
+        let conn = conn.clone();
+        tokio::spawn(async move {
+            sqlx::query(r#"REFRESH MATERIALIZED VIEW CONCURRENTLY last_cycleway_score"#)
+                .execute(&conn)
+                .await
+                .unwrap();
+            sqlx::query(r#"REFRESH MATERIALIZED VIEW CONCURRENTLY edge"#)
+                .execute(&conn)
+                .await
+                .unwrap();
+        });
+
         Ok(id)
     }
 }
