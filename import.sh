@@ -104,6 +104,7 @@ psql -h db -U postgres -d carte -c "
                                         st_length((segment).geom) *
                                         CASE
                                             when awe.tags->>'oneway:bicycle' = 'no' and score is not null and score != 0 then cost_road * (1 / score)
+                                            when awe.tags->>'oneway:bicycle' = 'no' then cost_road
                                             when awe.tags->>'oneway' = 'no' and score is not null and score != 0 then cost_road * (1 / score)
                                             when awe.tags->>'oneway:bicycle' = 'yes' then 1 / 0.001
                                             when awe.tags->>'oneway' = 'yes' then 1 / 0.001
