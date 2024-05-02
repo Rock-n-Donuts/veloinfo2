@@ -23,6 +23,10 @@
             "type": "vector",
             "url": "{{martin_url}}/aeroway"
         },
+        "transportation": {
+            "type": "vector",
+            "url": "{{martin_url}}/transportation"
+        },
         "veloinfo_all_area": {
             "type": "vector",
             "url": "{{martin_url}}/all_area,all_area_minzoom"
@@ -351,7 +355,7 @@
         {
             "id": "Tunnel outline",
             "type": "line",
-            "source": "maptiler_planet",
+            "source": "transportation",
             "source-layer": "transportation",
             "minzoom": 11,
             "maxzoom": 22,
@@ -380,7 +384,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -389,7 +393,7 @@
                             "match",
                             [
                                 "get",
-                                "ramp"
+                                "motorway_link"
                             ],
                             1,
                             0,
@@ -407,7 +411,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -416,7 +420,7 @@
                             "match",
                             [
                                 "get",
-                                "ramp"
+                                "motorway_link"
                             ],
                             1,
                             2,
@@ -445,7 +449,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -454,7 +458,7 @@
                             "match",
                             [
                                 "get",
-                                "ramp"
+                                "motorway_link"
                             ],
                             1,
                             5,
@@ -489,7 +493,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -518,7 +522,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -554,7 +558,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -568,7 +572,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -582,7 +586,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -596,7 +600,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -611,7 +615,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -628,7 +632,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -649,26 +653,27 @@
                 "all",
                 [
                     "in",
-                    "class",
+                    "highway",
                     "motorway",
                     "trunk",
                     "primary",
                     "secondary",
                     "tertiary",
                     "minor",
-                    "service"
+                    "service",
+                    "motorway_link"
                 ],
                 [
                     "==",
-                    "brunnel",
-                    "tunnel"
+                    "tunnel",
+                    "yes"
                 ]
             ]
         },
         {
             "id": "Tunnel path",
             "type": "line",
-            "source": "maptiler_planet",
+            "source": "transportation",
             "source-layer": "transportation",
             "minzoom": 15,
             "maxzoom": 22,
@@ -706,20 +711,15 @@
                 "all",
                 [
                     "==",
-                    "class",
-                    "path"
-                ],
-                [
-                    "==",
-                    "brunnel",
-                    "tunnel"
+                    "tunnel",
+                    "yes"
                 ]
             ]
         },
         {
             "id": "Tunnel",
             "type": "line",
-            "source": "maptiler_planet",
+            "source": "transportation",
             "source-layer": "transportation",
             "minzoom": 11,
             "maxzoom": 22,
@@ -746,7 +746,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -755,10 +755,10 @@
                             "match",
                             [
                                 "get",
-                                "brunnel"
+                                "tunnel"
                             ],
                             [
-                                "bridge"
+                                "yes"
                             ],
                             0,
                             1
@@ -775,7 +775,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -802,7 +802,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -843,7 +843,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -887,7 +887,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -916,7 +916,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -952,7 +952,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         "motorway",
                         1,
@@ -963,7 +963,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -978,7 +978,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -998,7 +998,7 @@
                 "all",
                 [
                     "in",
-                    "class",
+                    "highway",
                     "motorway",
                     "trunk",
                     "primary",
@@ -1009,8 +1009,8 @@
                 ],
                 [
                     "==",
-                    "brunnel",
-                    "tunnel"
+                    "tunnel",
+                    "yes"
                 ]
             ]
         },

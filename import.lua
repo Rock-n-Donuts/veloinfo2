@@ -149,6 +149,37 @@ local aeroway = osm2pgsql.define_table({
     }}
 })
 
+local transportation = osm2pgsql.define_table({
+    name = 'transportation',
+    ids = {
+        type = 'area',
+        id_column = 'way_id'
+    },
+    columns = {{
+        column = 'name',
+        type = 'text'
+    }, {
+        column = 'geom',
+        type = 'LineString',
+        not_null = true
+    }, {
+        column = 'tags',
+        type = 'jsonb',
+        not_null = true
+    }, {
+        column = 'tunnel',
+        type = 'text'
+    }, {
+        column = 'highway',
+        type = 'text'
+    }},
+    indexes = {{
+        column = 'geom',
+        method = 'gist'
+    }}
+
+})
+
 local all_node = osm2pgsql.define_node_table('all_node', {{
     column = 'name',
     type = 'text'
@@ -199,6 +230,16 @@ function osm2pgsql.process_way(object)
             kind = 'shared_lane',
             tags = object.tags,
             nodes = "{" .. table.concat(object.nodes, ",") .. "}"
+        })
+    end
+
+    if object.tags.highway then
+        transportation:insert({
+            name = object.tags.name,
+            geom = object:as_linestring(),
+            tags = object.tags,
+            tunnel = object.tags.tunnel,
+            highway = object.tags.highway
         })
     end
 
