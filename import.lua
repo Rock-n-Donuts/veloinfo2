@@ -209,6 +209,36 @@ local building = osm2pgsql.define_table({
     }}
 })
 
+local boundary = osm2pgsql.define_table({
+    name = 'boundary',
+    ids = {
+        type = 'area',
+        id_column = 'way_id'
+    },
+    columns = {{
+        column = 'name',
+        type = 'text'
+    }, {
+        column = 'geom',
+        type = 'LineString',
+        not_null = true
+    }, {
+        column = 'tags',
+        type = 'jsonb',
+        not_null = true
+    }, {
+        column = 'boundary',
+        type = 'text'
+    }, {
+        column = 'admin_level',
+        type = 'integer'
+    }},
+    indexes = {{
+        column = 'geom',
+        method = 'gist'
+    }}
+})
+
 local all_node = osm2pgsql.define_node_table('all_node', {{
     column = 'name',
     type = 'text'
