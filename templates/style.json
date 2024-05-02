@@ -1017,7 +1017,7 @@
         {
             "id": "Railway tunnel",
             "type": "line",
-            "source": "maptiler_planet",
+            "source": "transportation",
             "source-layer": "transportation",
             "minzoom": 13,
             "layout": {
@@ -1057,20 +1057,20 @@
                 "all",
                 [
                     "==",
-                    "class",
+                    "railway",
                     "rail"
                 ],
                 [
                     "==",
-                    "brunnel",
-                    "tunnel"
+                    "tunnel",
+                    "yes"
                 ]
             ]
         },
         {
             "id": "Railway tunnel dash",
             "type": "line",
-            "source": "maptiler_planet",
+            "source": "transportation",
             "source-layer": "transportation",
             "minzoom": 15,
             "layout": {
@@ -1105,75 +1105,20 @@
                 "all",
                 [
                     "==",
-                    "class",
+                    "railway",
                     "rail"
                 ],
                 [
                     "==",
-                    "brunnel",
-                    "tunnel"
-                ]
-            ]
-        },
-        {
-            "id": "Pier",
-            "type": "fill",
-            "source": "maptiler_planet",
-            "source-layer": "transportation",
-            "layout": {
-                "visibility": "visible"
-            },
-            "paint": {
-                "fill-color": "hsl(38, 50%, 97%)",
-                "fill-antialias": true
-            },
-            "metadata": {},
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "$type",
-                    "Polygon"
-                ],
-                [
-                    "==",
-                    "class",
-                    "pier"
-                ]
-            ]
-        },
-        {
-            "id": "Bridge",
-            "type": "fill",
-            "source": "maptiler_planet",
-            "source-layer": "transportation",
-            "layout": {
-                "visibility": "visible"
-            },
-            "paint": {
-                "fill-color": "hsl(30,25%,98%)",
-                "fill-opacity": 0.5,
-                "fill-antialias": true
-            },
-            "metadata": {},
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "$type",
-                    "Polygon"
-                ],
-                [
-                    "in",
-                    "brunnel",
-                    "bridge"
+                    "tunnel",
+                    "yes"
                 ]
             ]
         },
         {
             "id": "Road network outline",
             "type": "line",
-            "source": "maptiler_planet",
+            "source": "transportation",
             "source-layer": "transportation",
             "minzoom": 6,
             "layout": {
@@ -1201,7 +1146,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -1228,7 +1173,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -1266,7 +1211,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -1310,7 +1255,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -1339,7 +1284,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -1371,12 +1316,12 @@
                 "all",
                 [
                     "!=",
-                    "brunnel",
-                    "tunnel"
+                    "tunnel",
+                    "yes"
                 ],
                 [
                     "!in",
-                    "class",
+                    "highway",
                     "ferry",
                     "rail",
                     "transit",
@@ -1398,7 +1343,7 @@
         {
             "id": "Road network",
             "type": "line",
-            "source": "maptiler_planet",
+            "source": "transportation",
             "source-layer": "transportation",
             "minzoom": 6,
             "layout": {
@@ -1424,7 +1369,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -1433,10 +1378,10 @@
                             "match",
                             [
                                 "get",
-                                "brunnel"
+                                "tunnel"
                             ],
                             [
-                                "bridge"
+                                "yes"
                             ],
                             0,
                             1
@@ -1453,7 +1398,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -1480,7 +1425,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -1521,7 +1466,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -1565,7 +1510,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -1594,7 +1539,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -1625,12 +1570,12 @@
                 "all",
                 [
                     "!=",
-                    "brunnel",
-                    "tunnel"
+                    "tunnel",
+                    "yes"
                 ],
                 [
                     "!in",
-                    "class",
+                    "highway",
                     "ferry",
                     "rail",
                     "transit",
