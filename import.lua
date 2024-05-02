@@ -59,8 +59,8 @@ local all_way = osm2pgsql.define_way_table("all_way", {{
     type = 'text'
 }})
 
-local all_area = osm2pgsql.define_table({
-    name = 'all_area',
+local landuse = osm2pgsql.define_table({
+    name = 'landuse',
     ids = {
         type = 'area',
         id_column = 'way_id'
@@ -79,28 +79,15 @@ local all_area = osm2pgsql.define_table({
     }, {
         column = 'landuse',
         type = 'text'
-    }, {
-        column = 'natural',
-        type = 'text'
-    }, {
-        column = 'leisure',
-        type = 'text'
-    }, {
-        column = 'aeroway',
-        type = 'text'
-    }, {
-        column = 'man_made',
-        type = 'text'
     }},
     indexes = {{
         column = 'geom',
         method = 'gist'
     }}
-
 })
 
-local all_area_minzoom = osm2pgsql.define_table({
-    name = 'all_area_minzoom',
+local landcover = osm2pgsql.define_table({
+    name = 'landcover',
     ids = {
         type = 'area',
         id_column = 'way_id'
@@ -125,18 +112,11 @@ local all_area_minzoom = osm2pgsql.define_table({
     }, {
         column = 'leisure',
         type = 'text'
-    }, {
-        column = 'aeroway',
-        type = 'text'
-    }, {
-        column = 'man_made',
-        type = 'text'
     }},
     indexes = {{
         column = 'geom',
         method = 'gist'
     }}
-
 })
 
 local all_node = osm2pgsql.define_node_table('all_node', {{
@@ -206,55 +186,47 @@ function osm2pgsql.process_way(object)
         })
     end
 
-    if object.is_closed and (object.tags.natural or object.tags.landuse or object.tags.leisure) then
-        all_area:insert({
+    if object.is_closed and (object.tags.landuse) then
+        landuse:insert({
             name = object.tags.name,
             geom = object:as_polygon(),
             tags = object.tags,
-            landuse = object.tags.landuse,
-            natural = object.tags.natural,
-            leisure = object.tags.leisure,
-            aeroway = object.tags.aeroway,
-            man_made = object.tags.man_made
+            landuse = object.tags.landuse
         })
     end
-    if object.is_closed and (object.tags.aeroway or object.tags.man_made) then
-        all_area_minzoom:insert({
+
+    if object.is_closed and
+        (object.tags.landuse == "forest" or object.tags.landuse == "cemetery" or object.tags.natural == "wood" or
+            object.tags.leisure == "park") then
+        landcover:insert({
             name = object.tags.name,
             geom = object:as_polygon(),
             tags = object.tags,
             landuse = object.tags.landuse,
             natural = object.tags.natural,
-            leisure = object.tags.leisure,
-            aeroway = object.tags.aeroway,
-            man_made = object.tags.man_made
+            leisure = object.tags.leisure
         })
     end
 end
 
 function osm2pgsql.process_relation(object)
-    if object.tags.landuse or object.tags.leisure or object.tags.natural then
-        all_area:insert({
+    if object.tags.landuse then
+        landuse:insert({
             name = object.tags.name,
             geom = object:as_multipolygon(),
             tags = object.tags,
-            landuse = object.tags.landuse,
-            natural = object.tags.natural,
-            leisure = object.tags.leisure,
-            aeroway = object.tags.aeroway
+            landuse = object.tags.landuse
         })
     end
-
-    if object.tags.aeroway or object.tags.man_made then
-        all_area_minzoom:insert({
+    if object.tags.landuse == "forest" or object.tags.landuse == "cemetery" or object.tags.natural == "wood" or
+        object.tags.leisure == "park" then
+        landcover:insert({
             name = object.tags.name,
             geom = object:as_multipolygon(),
             tags = object.tags,
             landuse = object.tags.landuse,
             natural = object.tags.natural,
-            leisure = object.tags.leisure,
-            aeroway = object.tags.aeroway,
-            man_made = object.tags.man_made
+            leisure = object.tags.leisure
         })
     end
 end

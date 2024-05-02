@@ -11,9 +11,13 @@
             "type": "vector",
             "url": "{{martin_url}}/bike_path"
         },
-        "veloinfo_cycleway": {
+        "landuse": {
             "type": "vector",
-            "url": "{{martin_url}}/cycleway_way"
+            "url": "{{martin_url}}/landuse"
+        },
+        "landcover": {
+            "type": "vector",
+            "url": "{{martin_url}}/landcover"
         },
         "veloinfo_all_area": {
             "type": "vector",
@@ -43,8 +47,8 @@
         {
             "id": "Residential",
             "type": "fill",
-            "source": "veloinfo_all_area",
-            "source-layer": "all_area",
+            "source": "landuse",
+            "source-layer": "landuse",
             "minzoom": 6,
             "maxzoom": 13,
             "layout": {
@@ -75,8 +79,8 @@
         {
             "id": "Landcover",
             "type": "fill",
-            "source": "veloinfo_all_area",
-            "source-layer": "all_area",
+            "source": "landcover",
+            "source-layer": "landcover",
             "layout": {
                 "visibility": "visible"
             },
@@ -2308,459 +2312,98 @@
         },
         {
             "id": "cycleway",
-            "source": "veloinfo_cycleway",
-            "source-layer": "cycleway_way",
+            "source": "veloinfo",
+            "source-layer": "bike_path",
             "type": "line",
+            "maxzoom": 12,
             "paint": {
-                "line-color": "#050",
-                "line-width": 5
+                "line-color": [
+                    "interpolate-lab",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "get",
+                        "score"
+                    ],
+                    -1,
+                    "hsl(141, 100%, 17%)",
+                    0,
+                    "hsl(0, 100%, 27%)",
+                    0.5,
+                    "hsl(55, 100%, 50%)",
+                    1,
+                    "hsl(141, 100%, 17%)"
+                ],
+                "line-width": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    1,
+                    0.75,
+                    3,
+                    1.5,
+                    7,
+                    2.2,
+                    12,
+                    3.5,
+                    22,
+                    8
+                ]
             },
             "filter": [
                 "all",
                 [
-                    "==",
+                    "in",
                     "kind",
                     "cycleway"
                 ]
             ]
         },
         {
-            "id": "cycleway1",
+            "id": "cycleway-zoom",
             "source": "veloinfo",
             "source-layer": "bike_path",
             "type": "line",
+            "minzoom": 12,
             "paint": {
-                "line-color": "#dc2626",
-                "line-width": 5
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "cycleway"
+                "line-color": [
+                    "interpolate-lab",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "get",
+                        "score"
+                    ],
+                    -1,
+                    "hsl(141, 100%, 17%)",
+                    0,
+                    "hsl(0, 100%, 27%)",
+                    0.5,
+                    "hsl(55, 100%, 50%)",
+                    1,
+                    "hsl(141, 100%, 17%)"
                 ],
-                [
-                    "==",
-                    "score",
-                    0
-                ]
-            ]
-        },
-        {
-            "id": "cycleway2",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#ea580c",
-                "line-width": 5
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "cycleway"
-                ],
-                [
-                    "<=",
-                    "score",
-                    0.25
-                ],
-                [
-                    ">",
-                    "score",
-                    0
-                ]
-            ]
-        },
-        {
-            "id": "cycleway3",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#facc15",
-                "line-width": 5
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "cycleway"
-                ],
-                [
-                    "<=",
-                    "score",
-                    0.5
-                ],
-                [
-                    ">",
-                    "score",
-                    0.25
-                ]
-            ]
-        },
-        {
-            "id": "cycleway4",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#4ade80",
-                "line-width": 5
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "cycleway"
-                ],
-                [
-                    "<=",
-                    "score",
-                    0.75
-                ],
-                [
-                    ">",
-                    "score",
-                    0.5
-                ]
-            ]
-        },
-        {
-            "id": "cycleway5",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#15803d",
-                "line-width": 5
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "cycleway"
-                ],
-                [
-                    "<=",
-                    "score",
+                "line-width": [
+                    "match",
+                    [
+                        "get",
+                        "kind"
+                    ],
+                    "cycleway",
+                    5,
+                    "designated",
+                    3,
+                    "shared_line",
+                    2,
                     1
-                ],
-                [
-                    ">",
-                    "score",
-                    0.75
                 ]
-            ]
-        },
-        {
-            "id": "designated",
-            "source": "veloinfo_cycleway",
-            "source-layer": "cycleway_way",
-            "type": "line",
-            "paint": {
-                "line-color": "#050",
-                "line-width": 3
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "designated"
-                ]
-            ]
-        },
-        {
-            "id": "designated1",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#dc2626",
-                "line-width": 3
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "designated"
-                ],
-                [
-                    "<=",
-                    "score",
-                    0.2
-                ]
-            ]
-        },
-        {
-            "id": "designated2",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#ea580c",
-                "line-width": 3
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "designated"
-                ],
-                [
-                    "<=",
-                    "score",
-                    0.4
-                ],
-                [
-                    ">",
-                    "score",
-                    0.2
-                ]
-            ]
-        },
-        {
-            "id": "designated3",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#facc15",
-                "line-width": 3
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "designated"
-                ],
-                [
-                    "<=",
-                    "score",
-                    0.6
-                ],
-                [
-                    ">",
-                    "score",
-                    0.4
-                ]
-            ]
-        },
-        {
-            "id": "designated4",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#4ade80",
-                "line-width": 3
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "designated"
-                ],
-                [
-                    "<=",
-                    "score",
-                    0.8
-                ],
-                [
-                    ">",
-                    "score",
-                    0.6
-                ]
-            ]
-        },
-        {
-            "id": "designated5",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#15803d",
-                "line-width": 3
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "designated"
-                ],
-                [
-                    "<=",
-                    "score",
-                    1
-                ],
-                [
-                    ">",
-                    "score",
-                    0.8
-                ]
-            ]
-        },
-        {
-            "id": "shared_lane",
-            "source": "veloinfo_cycleway",
-            "source-layer": "cycleway_way",
-            "type": "line",
-            "paint": {
-                "line-color": "#050",
-                "line-width": 1
-            },
-            "filter": [
-                "==",
-                "kind",
-                "shared_lane"
-            ]
-        },
-        {
-            "id": "shared_lane1",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#dc2626",
-                "line-width": 1
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "shared_lane"
-                ],
-                [
-                    "<=",
-                    "score",
-                    0.2
-                ]
-            ]
-        },
-        {
-            "id": "shared_lane2",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#ea580c",
-                "line-width": 1
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "shared_lane"
-                ],
-                [
-                    "<=",
-                    "score",
-                    0.4
-                ],
-                [
-                    ">",
-                    "score",
-                    0.2
-                ]
-            ]
-        },
-        {
-            "id": "shared_lane3",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#facc15",
-                "line-width": 1
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "shared_lane"
-                ],
-                [
-                    "<=",
-                    "score",
-                    0.6
-                ],
-                [
-                    ">",
-                    "score",
-                    0.4
-                ]
-            ]
-        },
-        {
-            "id": "shared_lane4",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#4ade80",
-                "line-width": 1
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "shared_lane"
-                ],
-                [
-                    "<=",
-                    "score",
-                    0.8
-                ],
-                [
-                    ">",
-                    "score",
-                    0.6
-                ]
-            ]
-        },
-        {
-            "id": "shared_lane5",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#15803d",
-                "line-width": 1
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "shared_lane"
-                ],
-                [
-                    "<=",
-                    "score",
-                    1
-                ],
-                [
-                    ">",
-                    "score",
-                    0.8
-                ]
-            ]
+            }
         },
         {
             "id": "Ocean labels",
