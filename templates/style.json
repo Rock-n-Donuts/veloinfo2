@@ -36,6 +36,10 @@
             "type": "vector",
             "url": "{{martin_url}}/building"
         },
+        "water_name": {
+            "type": "vector",
+            "url": "{{martin_url}}/water_name"
+        },
         "veloinfo_all_area": {
             "type": "vector",
             "url": "{{martin_url}}/all_area,all_area_minzoom"
@@ -2350,7 +2354,7 @@
         {
             "id": "Ocean labels",
             "type": "symbol",
-            "source": "maptiler_planet",
+            "source": "water_name",
             "source-layer": "water_name",
             "minzoom": 0,
             "maxzoom": 4,
@@ -2373,7 +2377,7 @@
                     4,
                     14
                 ],
-                "text-field": "{name:en}",
+                "text-field": "{name}",
                 "visibility": "visible",
                 "text-padding": 2,
                 "text-max-width": 6,
@@ -2399,7 +2403,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "place"
                         ],
                         [
                             "ocean"
@@ -2417,7 +2421,7 @@
                 "all",
                 [
                     "==",
-                    "class",
+                    "place",
                     "ocean"
                 ],
                 [
@@ -2429,7 +2433,7 @@
         {
             "id": "Sea labels",
             "type": "symbol",
-            "source": "maptiler_planet",
+            "source": "water_name",
             "source-layer": "water_name",
             "minzoom": 3,
             "maxzoom": 22,
@@ -2487,7 +2491,7 @@
                 "all",
                 [
                     "==",
-                    "class",
+                    "place",
                     "sea"
                 ],
                 [
@@ -2499,7 +2503,7 @@
         {
             "id": "Lakeline labels",
             "type": "symbol",
-            "source": "maptiler_planet",
+            "source": "water_name",
             "source-layer": "water_name",
             "layout": {
                 "text-font": [
@@ -2525,7 +2529,7 @@
                     "coalesce",
                     [
                         "get",
-                        "name:en"
+                        "name:fr"
                     ],
                     [
                         "get",
@@ -2550,8 +2554,8 @@
         {
             "id": "Road labels",
             "type": "symbol",
-            "source": "maptiler_planet",
-            "source-layer": "transportation_name",
+            "source": "transportation",
+            "source-layer": "transportation",
             "minzoom": 14,
             "layout": {
                 "text-font": [
@@ -2571,7 +2575,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "primary"
@@ -2584,7 +2588,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "primary"
@@ -2602,7 +2606,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "primary",
@@ -2617,7 +2621,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "primary",

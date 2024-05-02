@@ -122,6 +122,33 @@ local landcover = osm2pgsql.define_table({
     }}
 })
 
+local water_name = osm2pgsql.define_table({
+    name = 'water_name',
+    ids = {
+        type = 'area',
+        id_column = 'way_id'
+    },
+    columns = {{
+        column = 'name',
+        type = 'text'
+    }, {
+        column = 'geom',
+        type = 'point',
+        not_null = true
+    }, {
+        column = 'tags',
+        type = 'jsonb',
+        not_null = true
+    }, {
+        column = 'place',
+        type = 'text'
+    }},
+    indexes = {{
+        column = 'geom',
+        method = 'gist'
+    }}
+})
+
 local aeroway = osm2pgsql.define_table({
     name = 'aeroway',
     ids = {
@@ -385,6 +412,15 @@ end
 function osm2pgsql.process_node(object)
     if (object.tags.place) then
         all_node:insert({
+            name = object.tags.name,
+            geom = object:as_point(),
+            tags = object.tags,
+            place = object.tags.place
+        })
+    end
+
+    if object.tags.place == "ocean" or object.tags.place == "sea" then
+        water_name:insert({
             name = object.tags.name,
             geom = object:as_point(),
             tags = object.tags,
