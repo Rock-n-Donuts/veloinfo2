@@ -1597,7 +1597,7 @@
         {
             "id": "Path outline",
             "type": "line",
-            "source": "maptiler_planet",
+            "source": "transportation",
             "source-layer": "transportation",
             "minzoom": 16,
             "maxzoom": 22,
@@ -1654,20 +1654,20 @@
                 "all",
                 [
                     "in",
-                    "class",
+                    "highway",
                     "path",
                     "track"
                 ],
                 [
                     "!has",
-                    "brunnel"
+                    "tunnel"
                 ]
             ]
         },
         {
             "id": "Path",
             "type": "line",
-            "source": "maptiler_planet",
+            "source": "transportation",
             "source-layer": "transportation",
             "minzoom": 14,
             "maxzoom": 22,
@@ -1705,20 +1705,20 @@
                 "all",
                 [
                     "in",
-                    "class",
+                    "highway",
                     "path",
                     "track"
                 ],
                 [
                     "!has",
-                    "brunnel"
+                    "tunnel"
                 ]
             ]
         },
         {
             "id": "Railway",
             "type": "line",
-            "source": "maptiler_planet",
+            "source": "transportation",
             "source-layer": "transportation",
             "minzoom": 10,
             "layout": {
@@ -1757,20 +1757,20 @@
                 "all",
                 [
                     "==",
-                    "class",
+                    "railway",
                     "rail"
                 ],
                 [
                     "!=",
-                    "brunnel",
-                    "tunnel"
+                    "tunnel",
+                    "yes"
                 ]
             ]
         },
         {
             "id": "Railway dash",
             "type": "line",
-            "source": "maptiler_planet",
+            "source": "transportation",
             "source-layer": "transportation",
             "minzoom": 15,
             "layout": {
@@ -1805,13 +1805,13 @@
                 "all",
                 [
                     "==",
-                    "class",
+                    "railway",
                     "rail"
                 ],
                 [
                     "!=",
-                    "brunnel",
-                    "tunnel"
+                    "tunnel",
+                    "yes"
                 ]
             ]
         },
