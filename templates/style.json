@@ -27,6 +27,10 @@
             "type": "vector",
             "url": "{{martin_url}}/transportation"
         },
+        "building": {
+            "type": "vector",
+            "url": "{{martin_url}}/building"
+        },
         "veloinfo_all_area": {
             "type": "vector",
             "url": "{{martin_url}}/all_area,all_area_minzoom"
@@ -1818,8 +1822,10 @@
         {
             "id": "Building",
             "type": "fill",
-            "source": "maptiler_planet",
+            "source": "building",
             "source-layer": "building",
+            "minzoom": 13,
+            "maxzoom": 22,
             "layout": {
                 "visibility": "visible"
             },
@@ -1842,8 +1848,10 @@
         {
             "id": "Building top",
             "type": "fill",
-            "source": "maptiler_planet",
+            "source": "building",
             "source-layer": "building",
+            "minzoom": 13,
+            "maxzoom": 22,
             "layout": {
                 "visibility": "visible"
             },

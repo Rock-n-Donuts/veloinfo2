@@ -180,7 +180,33 @@ local transportation = osm2pgsql.define_table({
         column = 'geom',
         method = 'gist'
     }}
+})
 
+local building = osm2pgsql.define_table({
+    name = 'building',
+    ids = {
+        type = 'area',
+        id_column = 'way_id'
+    },
+    columns = {{
+        column = 'name',
+        type = 'text'
+    }, {
+        column = 'geom',
+        type = 'LineString',
+        not_null = true
+    }, {
+        column = 'tags',
+        type = 'jsonb',
+        not_null = true
+    }, {
+        column = 'building',
+        type = 'text'
+    }},
+    indexes = {{
+        column = 'geom',
+        method = 'gist'
+    }}
 })
 
 local all_node = osm2pgsql.define_node_table('all_node', {{
@@ -233,6 +259,15 @@ function osm2pgsql.process_way(object)
             kind = 'shared_lane',
             tags = object.tags,
             nodes = "{" .. table.concat(object.nodes, ",") .. "}"
+        })
+    end
+
+    if object.tags.building then
+        building:insert({
+            name = object.tags.name,
+            geom = object:as_linestring(),
+            tags = object.tags,
+            building = object.tags.building
         })
     end
 
