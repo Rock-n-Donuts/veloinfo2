@@ -112,6 +112,36 @@ local landcover = osm2pgsql.define_table({
     }, {
         column = 'leisure',
         type = 'text'
+    }, {
+        column = 'landcover',
+        type = 'text'
+    }},
+    indexes = {{
+        column = 'geom',
+        method = 'gist'
+    }}
+})
+
+local aeroway = osm2pgsql.define_table({
+    name = 'aeroway',
+    ids = {
+        type = 'area',
+        id_column = 'way_id'
+    },
+    columns = {{
+        column = 'name',
+        type = 'text'
+    }, {
+        column = 'geom',
+        type = 'LineString',
+        not_null = true
+    }, {
+        column = 'tags',
+        type = 'jsonb',
+        not_null = true
+    }, {
+        column = 'aeroway',
+        type = 'text'
     }},
     indexes = {{
         column = 'geom',
@@ -172,6 +202,15 @@ function osm2pgsql.process_way(object)
         })
     end
 
+    if object.tags.aeroway then
+        aeroway:insert({
+            name = object.tags.name,
+            geom = object:as_linestring(),
+            tags = object.tags,
+            aeroway = object.tags.aeroway
+        })
+    end
+
     if object.tags["bicycle"] == "yes" or object.tags.tunnel or object.tags.highway or object.tags.bridge then
         all_way:insert({
             name = object.tags.name,
@@ -197,14 +236,15 @@ function osm2pgsql.process_way(object)
 
     if object.is_closed and
         (object.tags.landuse == "forest" or object.tags.landuse == "cemetery" or object.tags.natural == "wood" or
-            object.tags.leisure == "park") then
+            object.tags.natural == "water" or object.tags.leisure == "park") then
         landcover:insert({
             name = object.tags.name,
             geom = object:as_polygon(),
             tags = object.tags,
             landuse = object.tags.landuse,
             natural = object.tags.natural,
-            leisure = object.tags.leisure
+            leisure = object.tags.leisure,
+            landcover = object.tags.landcover
         })
     end
 end
@@ -219,14 +259,15 @@ function osm2pgsql.process_relation(object)
         })
     end
     if object.tags.landuse == "forest" or object.tags.landuse == "cemetery" or object.tags.natural == "wood" or
-        object.tags.leisure == "park" then
+        object.tags.natural == "water" or object.tags.leisure == "park" then
         landcover:insert({
             name = object.tags.name,
             geom = object:as_multipolygon(),
             tags = object.tags,
             landuse = object.tags.landuse,
             natural = object.tags.natural,
-            leisure = object.tags.leisure
+            leisure = object.tags.leisure,
+            landcover = object.tags.landcover
         })
     end
 end

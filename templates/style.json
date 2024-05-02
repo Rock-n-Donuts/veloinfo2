@@ -19,6 +19,10 @@
             "type": "vector",
             "url": "{{martin_url}}/landcover"
         },
+        "aeroway": {
+            "type": "vector",
+            "url": "{{martin_url}}/aeroway"
+        },
         "veloinfo_all_area": {
             "type": "vector",
             "url": "{{martin_url}}/all_area,all_area_minzoom"
@@ -108,11 +112,6 @@
                 "any",
                 [
                     "==",
-                    "natural",
-                    "wood"
-                ],
-                [
-                    "==",
                     "leisure",
                     "park"
                 ],
@@ -125,14 +124,45 @@
                     "==",
                     "landuse",
                     "grass"
+                ],
+                [
+                    "==",
+                    "natural",
+                    "wood"
+                ]
+            ]
+        },
+        {
+            "id": "Forest",
+            "type": "fill",
+            "source": "landcover",
+            "source-layer": "landcover",
+            "maxzoom": 7,
+            "layout": {
+                "visibility": "visible"
+            },
+            "paint": {
+                "fill-color": "hsla(96, 44%, 79%, 0.15)"
+            },
+            "filter": [
+                "any",
+                [
+                    "==",
+                    "natural",
+                    "wood"
+                ],
+                [
+                    "==",
+                    "landcover",
+                    "tree"
                 ]
             ]
         },
         {
             "id": "Stadium",
             "type": "fill",
-            "source": "veloinfo_all_area",
-            "source-layer": "all_area",
+            "source": "landcover",
+            "source-layer": "landcover",
             "minzoom": 10,
             "maxzoom": 22,
             "layout": {
@@ -164,8 +194,8 @@
         {
             "id": "River",
             "type": "line",
-            "source": "veloinfo_all_area",
-            "source-layer": "all_area",
+            "source": "landcover",
+            "source-layer": "landcover",
             "layout": {
                 "visibility": "visible"
             },
@@ -198,8 +228,8 @@
         {
             "id": "Water",
             "type": "fill",
-            "source": "veloinfo_all_area",
-            "source-layer": "all_area",
+            "source": "landcover",
+            "source-layer": "landcover",
             "minzoom": 0,
             "layout": {
                 "visibility": "visible"
@@ -251,8 +281,8 @@
         {
             "id": "Aeroway",
             "type": "line",
-            "source": "veloinfo_all_area",
-            "source-layer": "all_area",
+            "source": "aeroway",
+            "source-layer": "aeroway",
             "minzoom": 12,
             "layout": {
                 "line-cap": "round",
@@ -275,7 +305,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "aeroway"
                         ],
                         [
                             "runway"
@@ -288,7 +318,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "aeroway"
                         ],
                         [
                             "runway"
@@ -301,7 +331,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "aeroway"
                         ],
                         [
                             "runway"
@@ -315,7 +345,7 @@
             "filter": [
                 "==",
                 "aeroway",
-                "aerodrome"
+                "runway"
             ]
         },
         {
