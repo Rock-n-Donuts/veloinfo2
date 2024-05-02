@@ -1,6 +1,6 @@
 #!/usr/bin/bash
-rm quebec-latest.osm.pbf
-wget https://download.geofabrik.de/north-america/canada/quebec-latest.osm.pbf -O quebec-latest.osm.pbf
+# rm quebec-latest.osm.pbf
+# wget https://download.geofabrik.de/north-america/canada/quebec-latest.osm.pbf -O quebec-latest.osm.pbf
 
 osm2pgsql -H db -U postgres -d carte -O flex -S import.lua quebec-latest.osm.pbf
 
@@ -8,14 +8,25 @@ psql -h db -U postgres -d carte -c "
                                     drop materialized view if exists bike_path;
                                     drop materialized view if exists edge;
                                     drop materialized view if exists last_cycleway_score;
-                                    drop materialized view if exists all_way_edge;
+                                    drop materialized view if exists _all_way_edge;
                                     CREATE MATERIALIZED VIEW bike_path AS
-                                        SELECT *
+                                        SELECT way_id,
+                                                name,
+                                                geom,
+                                                source,
+                                                target,
+                                                kind,
+                                                tags,
+                                                nodes,
+                                                case
+                                                    when score is null then -1
+                                                    else score
+                                                end as score
                                             FROM (
                                                 SELECT c.*, cs.score,
                                                 ROW_NUMBER() OVER (PARTITION BY c.way_id ORDER BY cs.created_at DESC) as rn
-                                                FROM cyclability_score cs 
-                                                JOIN cycleway_way c ON c.way_id = ANY(cs.way_ids)
+                                                FROM cycleway_way c 
+                                                LEFT JOIN cyclability_score cs ON c.way_id = ANY(cs.way_ids)
                                             ) t
                                         WHERE t.rn = 1;
                                     CREATE UNIQUE INDEX bike_path_way_id_idx ON bike_path(way_id);
@@ -23,7 +34,7 @@ psql -h db -U postgres -d carte -c "
                                     
                                     drop sequence if exists edge_id;
                                     CREATE SEQUENCE edge_id;
-                                    create materialized view all_way_edge as
+                                    create materialized view _all_way_edge as
                                         select 
                                             nextval('edge_id')  as id,
                                             aw.way_id, 
@@ -70,8 +81,8 @@ psql -h db -U postgres -d carte -c "
                                                 else 1 / 0.25
                                             end as cost_road
                                         from all_way aw;       
-                                    create unique index all_way_edge_id_idx on all_way_edge (id);
-                                    create index all_way_edge_way_id_idx on all_way_edge (way_id);
+                                    create unique index _all_way_edge_id_idx on _all_way_edge (id);
+                                    create index _all_way_edge_way_id_idx on _all_way_edge (way_id);
 
                                     CREATE MATERIALIZED VIEW last_cycleway_score
                                     AS
@@ -118,7 +129,7 @@ psql -h db -U postgres -d carte -c "
                                             WHEN score = 0 THEN 1 / 0.001
                                             ELSE cost_road * (1 / score)
                                         END as reverse_cost
-                                    from all_way_edge awe
+                                    from _all_way_edge awe
                                     left join  last_cycleway_score cs on cs.way_id = awe.way_id
                                     where awe.nodes[(segment).path[1]+1] is not null;       
 
