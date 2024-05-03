@@ -23,14 +23,18 @@ services:
       - ENV=dev
     depends_on:
       - db
+      - martin
   martin:
     image: ghcr.io/maplibre/martin:v0.11.2
+    volumes:
+      - ./martin/fonts:/fonts/:z
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/carte
     ports:
       - 3001:3000
     depends_on:
       - db
+    entrypoint: martin --font /fonts
   db:
     build:
       context: ./db

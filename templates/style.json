@@ -3,10 +3,6 @@
     "id": "dataviz",
     "name": "Dataviz",
     "sources": {
-        "maptiler_planet": {
-            "url": "https://api.maptiler.com/tiles/v3/tiles.json?key=STFS4MYo3i7OemN8CY5b",
-            "type": "vector"
-        },
         "veloinfo": {
             "type": "vector",
             "url": "{{martin_url}}/bike_path"
@@ -3078,7 +3074,7 @@
             ]
         }
     ],
-    "glyphs": "https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=STFS4MYo3i7OemN8CY5b",
+    "glyphs": "{{martin_url}}/font/{fontstack}/{range}",
     "bearing": 0,
     "pitch": 0,
     "center": [
