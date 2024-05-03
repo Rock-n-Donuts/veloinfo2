@@ -186,6 +186,9 @@ local transportation = osm2pgsql.define_table({
         column = 'name',
         type = 'text'
     }, {
+        column = 'name_fr',
+        type = 'text'
+    }, {
         column = 'geom',
         type = 'LineString',
         not_null = true
@@ -331,11 +334,13 @@ function osm2pgsql.process_way(object)
     if object.tags.highway or object.tags.railway then
         transportation:insert({
             name = object.tags.name,
+            name_fr = object.tags["name:fr"],
             geom = object:as_linestring(),
             tags = object.tags,
             tunnel = object.tags.tunnel,
             highway = object.tags.highway,
             railway = object.tags.railway
+
         })
     end
 
