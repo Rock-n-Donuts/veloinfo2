@@ -27,7 +27,8 @@ var map = new maplibregl.Map({
     container: 'map',
     style: '/style.json',
     center: [lng, lat],
-    zoom: zoom
+    zoom: zoom,
+    minZoom: 5
 });
 
 map.addControl(new maplibregl.NavigationControl());
@@ -80,7 +81,7 @@ async function select(event) {
         [
             [event.point.x - width / 2, event.point.y - width / 2],
             [event.point.x + width / 2, event.point.y + width / 2]
-        ], { layers: ['cycleway', "designated", "shared_lane"] });
+        ], { layers: ['cycleway-zoom'] });
 
     if (features.length) {
         var feature = features[0];
@@ -122,6 +123,7 @@ function fitBounds(geom) {
             [Math.max(coord[0], currentBounds[1][0]), Math.max(coord[1], currentBounds[1][1])]  // max coordinates
         ];
     }, [[Infinity, Infinity], [-Infinity, -Infinity]]);
+    console.log("bounds", bounds);
     return map.cameraForBounds(bounds, { padding: window.innerWidth * .10 });
 }
 

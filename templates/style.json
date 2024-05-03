@@ -3,21 +3,50 @@
     "id": "dataviz",
     "name": "Dataviz",
     "sources": {
-        "maptiler_planet": {
-            "url": "https://api.maptiler.com/tiles/v3/tiles.json?key=STFS4MYo3i7OemN8CY5b",
-            "type": "vector"
-        },
-        "maptiler_attribution": {
-            "attribution": "<a href=\"https://www.maptiler.com/copyright/\" target=\"_blank\">&copy; MapTiler</a> <a href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\">&copy; OpenStreetMap contributors</a>",
-            "type": "vector"
-        },
         "veloinfo": {
             "type": "vector",
             "url": "{{martin_url}}/bike_path"
         },
-        "veloinfo_cycleway": {
+        "landuse": {
             "type": "vector",
-            "url": "{{martin_url}}/cycleway_way"
+            "url": "{{martin_url}}/landuse"
+        },
+        "landcover": {
+            "type": "vector",
+            "url": "{{martin_url}}/landcover"
+        },
+        "aeroway": {
+            "type": "vector",
+            "url": "{{martin_url}}/aeroway"
+        },
+        "boundary": {
+            "type": "vector",
+            "url": "{{martin_url}}/boundary"
+        },
+        "transportation": {
+            "type": "vector",
+            "url": "{{martin_url}}/transportation",
+            "minzoom": 12
+        },
+        "building": {
+            "type": "vector",
+            "url": "{{martin_url}}/building"
+        },
+        "water_name": {
+            "type": "vector",
+            "url": "{{martin_url}}/water_name"
+        },
+        "veloinfo_all_area": {
+            "type": "vector",
+            "url": "{{martin_url}}/all_area,all_area_minzoom"
+        },
+        "veloinfo_all_way": {
+            "type": "vector",
+            "url": "{{martin_url}}/all_way"
+        },
+        "veloinfo_all_node": {
+            "type": "vector",
+            "url": "{{martin_url}}/all_node"
         }
     },
     "layers": [
@@ -35,7 +64,7 @@
         {
             "id": "Residential",
             "type": "fill",
-            "source": "maptiler_planet",
+            "source": "landuse",
             "source-layer": "landuse",
             "minzoom": 6,
             "maxzoom": 13,
@@ -60,14 +89,14 @@
             },
             "filter": [
                 "==",
-                "class",
+                "landuse",
                 "residential"
             ]
         },
         {
             "id": "Landcover",
             "type": "fill",
-            "source": "maptiler_planet",
+            "source": "landcover",
             "source-layer": "landcover",
             "layout": {
                 "visibility": "visible"
@@ -93,17 +122,34 @@
                 "fill-antialias": false
             },
             "filter": [
-                "in",
-                "class",
-                "wood",
-                "grass"
+                "any",
+                [
+                    "==",
+                    "leisure",
+                    "park"
+                ],
+                [
+                    "==",
+                    "landuse",
+                    "cemetery"
+                ],
+                [
+                    "==",
+                    "landuse",
+                    "grass"
+                ],
+                [
+                    "==",
+                    "natural",
+                    "wood"
+                ]
             ]
         },
         {
             "id": "Forest",
             "type": "fill",
-            "source": "maptiler_planet",
-            "source-layer": "globallandcover",
+            "source": "landcover",
+            "source-layer": "landcover",
             "maxzoom": 7,
             "layout": {
                 "visibility": "visible"
@@ -112,17 +158,24 @@
                 "fill-color": "hsla(96, 44%, 79%, 0.15)"
             },
             "filter": [
-                "in",
-                "class",
-                "forest",
-                "tree"
+                "any",
+                [
+                    "==",
+                    "natural",
+                    "wood"
+                ],
+                [
+                    "==",
+                    "landcover",
+                    "tree"
+                ]
             ]
         },
         {
             "id": "Stadium",
             "type": "fill",
-            "source": "maptiler_planet",
-            "source-layer": "landuse",
+            "source": "landcover",
+            "source-layer": "landcover",
             "minzoom": 10,
             "maxzoom": 22,
             "layout": {
@@ -146,38 +199,16 @@
                 "fill-outline-color": "hsl(85,26%,77%)"
             },
             "filter": [
-                "in",
-                "class",
-                "stadium",
-                "pitch"
-            ]
-        },
-        {
-            "id": "Cemetery",
-            "type": "fill",
-            "source": "maptiler_planet",
-            "source-layer": "landuse",
-            "minzoom": 10,
-            "maxzoom": 22,
-            "layout": {
-                "visibility": "visible"
-            },
-            "paint": {
-                "fill-color": "hsl(0, 0%, 89%)",
-                "fill-opacity": 1,
-                "fill-antialias": true
-            },
-            "filter": [
                 "==",
-                "class",
-                "cemetery"
+                "leisure",
+                "stadium"
             ]
         },
         {
             "id": "River",
             "type": "line",
-            "source": "maptiler_planet",
-            "source-layer": "waterway",
+            "source": "landcover",
+            "source-layer": "landcover",
             "layout": {
                 "visibility": "visible"
             },
@@ -200,43 +231,18 @@
                     16,
                     2.5
                 ]
-            }
-        },
-        {
-            "id": "Water shadow",
-            "type": "fill",
-            "source": "maptiler_planet",
-            "source-layer": "water",
-            "minzoom": 0,
-            "maxzoom": 22,
-            "layout": {
-                "visibility": "visible"
-            },
-            "paint": {
-                "fill-color": "hsl(196,28%,74%)",
-                "fill-opacity": 1,
-                "fill-antialias": true,
-                "fill-translate-anchor": "map"
             },
             "filter": [
-                "all",
-                [
-                    "==",
-                    "$type",
-                    "Polygon"
-                ],
-                [
-                    "!=",
-                    "brunnel",
-                    "tunnel"
-                ]
+                "==",
+                "natural",
+                "water"
             ]
         },
         {
             "id": "Water",
             "type": "fill",
-            "source": "maptiler_planet",
-            "source-layer": "water",
+            "source": "landcover",
+            "source-layer": "landcover",
             "minzoom": 0,
             "layout": {
                 "visibility": "visible"
@@ -280,23 +286,15 @@
                 "fill-translate-anchor": "map"
             },
             "filter": [
-                "all",
-                [
-                    "==",
-                    "$type",
-                    "Polygon"
-                ],
-                [
-                    "!=",
-                    "brunnel",
-                    "tunnel"
-                ]
+                "==",
+                "natural",
+                "water"
             ]
         },
         {
             "id": "Aeroway",
             "type": "line",
-            "source": "maptiler_planet",
+            "source": "aeroway",
             "source-layer": "aeroway",
             "minzoom": 12,
             "layout": {
@@ -320,7 +318,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "aeroway"
                         ],
                         [
                             "runway"
@@ -333,7 +331,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "aeroway"
                         ],
                         [
                             "runway"
@@ -346,7 +344,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "aeroway"
                         ],
                         [
                             "runway"
@@ -359,17 +357,15 @@
             "metadata": {},
             "filter": [
                 "==",
-                "$type",
-                "LineString"
+                "aeroway",
+                "runway"
             ]
         },
         {
             "id": "Tunnel outline",
             "type": "line",
-            "source": "maptiler_planet",
+            "source": "transportation",
             "source-layer": "transportation",
-            "minzoom": 11,
-            "maxzoom": 22,
             "layout": {
                 "line-cap": "round",
                 "line-join": "round",
@@ -395,7 +391,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -404,7 +400,7 @@
                             "match",
                             [
                                 "get",
-                                "ramp"
+                                "motorway_link"
                             ],
                             1,
                             0,
@@ -422,7 +418,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -431,7 +427,7 @@
                             "match",
                             [
                                 "get",
-                                "ramp"
+                                "motorway_link"
                             ],
                             1,
                             2,
@@ -460,7 +456,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -469,7 +465,7 @@
                             "match",
                             [
                                 "get",
-                                "ramp"
+                                "motorway_link"
                             ],
                             1,
                             5,
@@ -504,7 +500,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -533,7 +529,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -569,7 +565,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -583,7 +579,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -597,7 +593,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -611,7 +607,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -626,7 +622,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -643,7 +639,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -664,29 +660,28 @@
                 "all",
                 [
                     "in",
-                    "class",
+                    "highway",
                     "motorway",
                     "trunk",
                     "primary",
                     "secondary",
                     "tertiary",
                     "minor",
-                    "service"
+                    "service",
+                    "motorway_link"
                 ],
                 [
                     "==",
-                    "brunnel",
-                    "tunnel"
+                    "tunnel",
+                    "yes"
                 ]
             ]
         },
         {
             "id": "Tunnel path",
             "type": "line",
-            "source": "maptiler_planet",
+            "source": "transportation",
             "source-layer": "transportation",
-            "minzoom": 15,
-            "maxzoom": 22,
             "layout": {
                 "line-cap": "round",
                 "line-join": "round",
@@ -721,23 +716,16 @@
                 "all",
                 [
                     "==",
-                    "class",
-                    "path"
-                ],
-                [
-                    "==",
-                    "brunnel",
-                    "tunnel"
+                    "tunnel",
+                    "yes"
                 ]
             ]
         },
         {
             "id": "Tunnel",
             "type": "line",
-            "source": "maptiler_planet",
+            "source": "transportation",
             "source-layer": "transportation",
-            "minzoom": 11,
-            "maxzoom": 22,
             "layout": {
                 "line-cap": "square",
                 "line-join": "miter",
@@ -761,7 +749,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -770,10 +758,10 @@
                             "match",
                             [
                                 "get",
-                                "brunnel"
+                                "tunnel"
                             ],
                             [
-                                "bridge"
+                                "yes"
                             ],
                             0,
                             1
@@ -790,7 +778,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -817,7 +805,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -858,7 +846,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -902,7 +890,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -931,7 +919,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -967,7 +955,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         "motorway",
                         1,
@@ -978,7 +966,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -993,7 +981,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -1013,7 +1001,7 @@
                 "all",
                 [
                     "in",
-                    "class",
+                    "highway",
                     "motorway",
                     "trunk",
                     "primary",
@@ -1024,17 +1012,16 @@
                 ],
                 [
                     "==",
-                    "brunnel",
-                    "tunnel"
+                    "tunnel",
+                    "yes"
                 ]
             ]
         },
         {
             "id": "Railway tunnel",
             "type": "line",
-            "source": "maptiler_planet",
+            "source": "transportation",
             "source-layer": "transportation",
-            "minzoom": 13,
             "layout": {
                 "line-join": "round",
                 "visibility": "visible"
@@ -1072,22 +1059,21 @@
                 "all",
                 [
                     "==",
-                    "class",
+                    "railway",
                     "rail"
                 ],
                 [
                     "==",
-                    "brunnel",
-                    "tunnel"
+                    "tunnel",
+                    "yes"
                 ]
             ]
         },
         {
             "id": "Railway tunnel dash",
             "type": "line",
-            "source": "maptiler_planet",
+            "source": "transportation",
             "source-layer": "transportation",
-            "minzoom": 15,
             "layout": {
                 "line-join": "round",
                 "visibility": "visible"
@@ -1120,118 +1106,21 @@
                 "all",
                 [
                     "==",
-                    "class",
+                    "railway",
                     "rail"
                 ],
                 [
                     "==",
-                    "brunnel",
-                    "tunnel"
-                ]
-            ]
-        },
-        {
-            "id": "Pier",
-            "type": "fill",
-            "source": "maptiler_planet",
-            "source-layer": "transportation",
-            "layout": {
-                "visibility": "visible"
-            },
-            "paint": {
-                "fill-color": "hsl(38, 50%, 97%)",
-                "fill-antialias": true
-            },
-            "metadata": {},
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "$type",
-                    "Polygon"
-                ],
-                [
-                    "==",
-                    "class",
-                    "pier"
-                ]
-            ]
-        },
-        {
-            "id": "Pier road",
-            "type": "line",
-            "source": "maptiler_planet",
-            "source-layer": "transportation",
-            "layout": {
-                "line-cap": "round",
-                "line-join": "round",
-                "visibility": "visible"
-            },
-            "paint": {
-                "line-color": "hsl(30,25%,98%)",
-                "line-width": {
-                    "base": 1.2,
-                    "stops": [
-                        [
-                            15,
-                            1
-                        ],
-                        [
-                            17,
-                            4
-                        ]
-                    ]
-                }
-            },
-            "metadata": {},
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "$type",
-                    "LineString"
-                ],
-                [
-                    "in",
-                    "class",
-                    "pier"
-                ]
-            ]
-        },
-        {
-            "id": "Bridge",
-            "type": "fill",
-            "source": "maptiler_planet",
-            "source-layer": "transportation",
-            "layout": {
-                "visibility": "visible"
-            },
-            "paint": {
-                "fill-color": "hsl(30,25%,98%)",
-                "fill-opacity": 0.5,
-                "fill-antialias": true
-            },
-            "metadata": {},
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "$type",
-                    "Polygon"
-                ],
-                [
-                    "in",
-                    "brunnel",
-                    "bridge"
+                    "tunnel",
+                    "yes"
                 ]
             ]
         },
         {
             "id": "Road network outline",
             "type": "line",
-            "source": "maptiler_planet",
+            "source": "transportation",
             "source-layer": "transportation",
-            "minzoom": 6,
             "layout": {
                 "line-cap": "butt",
                 "line-join": "round",
@@ -1257,7 +1146,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -1284,7 +1173,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -1322,7 +1211,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -1366,7 +1255,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -1395,7 +1284,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -1427,12 +1316,12 @@
                 "all",
                 [
                     "!=",
-                    "brunnel",
-                    "tunnel"
+                    "tunnel",
+                    "yes"
                 ],
                 [
                     "!in",
-                    "class",
+                    "highway",
                     "ferry",
                     "rail",
                     "transit",
@@ -1447,16 +1336,16 @@
                     "tertiary_construction",
                     "minor_construction",
                     "service_construction",
-                    "track_construction"
+                    "track_construction",
+                    "footway"
                 ]
             ]
         },
         {
             "id": "Road network",
             "type": "line",
-            "source": "maptiler_planet",
+            "source": "transportation",
             "source-layer": "transportation",
-            "minzoom": 6,
             "layout": {
                 "line-cap": "butt",
                 "line-join": "round",
@@ -1480,7 +1369,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -1489,10 +1378,10 @@
                             "match",
                             [
                                 "get",
-                                "brunnel"
+                                "tunnel"
                             ],
                             [
-                                "bridge"
+                                "yes"
                             ],
                             0,
                             1
@@ -1509,7 +1398,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -1536,7 +1425,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -1577,7 +1466,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway"
@@ -1621,7 +1510,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -1650,7 +1539,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "motorway",
@@ -1681,12 +1570,12 @@
                 "all",
                 [
                     "!=",
-                    "brunnel",
-                    "tunnel"
+                    "tunnel",
+                    "yes"
                 ],
                 [
                     "!in",
-                    "class",
+                    "highway",
                     "ferry",
                     "rail",
                     "transit",
@@ -1701,17 +1590,16 @@
                     "tertiary_construction",
                     "minor_construction",
                     "service_construction",
-                    "track_construction"
+                    "track_construction",
+                    "footway"
                 ]
             ]
         },
         {
             "id": "Path outline",
             "type": "line",
-            "source": "maptiler_planet",
+            "source": "transportation",
             "source-layer": "transportation",
-            "minzoom": 16,
-            "maxzoom": 22,
             "layout": {
                 "line-cap": "round",
                 "line-join": "round",
@@ -1765,23 +1653,21 @@
                 "all",
                 [
                     "in",
-                    "class",
+                    "highway",
                     "path",
                     "track"
                 ],
                 [
                     "!has",
-                    "brunnel"
+                    "tunnel"
                 ]
             ]
         },
         {
             "id": "Path",
             "type": "line",
-            "source": "maptiler_planet",
+            "source": "transportation",
             "source-layer": "transportation",
-            "minzoom": 14,
-            "maxzoom": 22,
             "layout": {
                 "line-cap": "round",
                 "line-join": "round",
@@ -1816,22 +1702,21 @@
                 "all",
                 [
                     "in",
-                    "class",
+                    "highway",
                     "path",
                     "track"
                 ],
                 [
                     "!has",
-                    "brunnel"
+                    "tunnel"
                 ]
             ]
         },
         {
             "id": "Railway",
             "type": "line",
-            "source": "maptiler_planet",
+            "source": "transportation",
             "source-layer": "transportation",
-            "minzoom": 10,
             "layout": {
                 "line-join": "round",
                 "visibility": "visible"
@@ -1868,22 +1753,21 @@
                 "all",
                 [
                     "==",
-                    "class",
+                    "railway",
                     "rail"
                 ],
                 [
                     "!=",
-                    "brunnel",
-                    "tunnel"
+                    "tunnel",
+                    "yes"
                 ]
             ]
         },
         {
             "id": "Railway dash",
             "type": "line",
-            "source": "maptiler_planet",
+            "source": "transportation",
             "source-layer": "transportation",
-            "minzoom": 15,
             "layout": {
                 "line-join": "round",
                 "visibility": "visible"
@@ -1916,21 +1800,22 @@
                 "all",
                 [
                     "==",
-                    "class",
+                    "railway",
                     "rail"
                 ],
                 [
                     "!=",
-                    "brunnel",
-                    "tunnel"
+                    "tunnel",
+                    "yes"
                 ]
             ]
         },
         {
             "id": "Building",
             "type": "fill",
-            "source": "maptiler_planet",
+            "source": "building",
             "source-layer": "building",
+            "minzoom": 13,
             "layout": {
                 "visibility": "visible"
             },
@@ -1953,8 +1838,9 @@
         {
             "id": "Building top",
             "type": "fill",
-            "source": "maptiler_planet",
+            "source": "building",
             "source-layer": "building",
+            "minzoom": 13,
             "layout": {
                 "visibility": "visible"
             },
@@ -2013,7 +1899,7 @@
         {
             "id": "Other border",
             "type": "line",
-            "source": "maptiler_planet",
+            "source": "boundary",
             "source-layer": "boundary",
             "minzoom": 5,
             "maxzoom": 8,
@@ -2117,18 +2003,13 @@
                     8,
                     9,
                     10
-                ],
-                [
-                    "==",
-                    "maritime",
-                    0
                 ]
             ]
         },
         {
             "id": "Other border dash",
             "type": "line",
-            "source": "maptiler_planet",
+            "source": "boundary",
             "source-layer": "boundary",
             "minzoom": 8,
             "maxzoom": 22,
@@ -2266,18 +2147,13 @@
                     8,
                     9,
                     10
-                ],
-                [
-                    "==",
-                    "maritime",
-                    0
                 ]
             ]
         },
         {
             "id": "Disputed border",
             "type": "line",
-            "source": "maptiler_planet",
+            "source": "boundary",
             "source-layer": "boundary",
             "minzoom": 0,
             "layout": {
@@ -2317,23 +2193,13 @@
                     "==",
                     "admin_level",
                     2
-                ],
-                [
-                    "==",
-                    "maritime",
-                    0
-                ],
-                [
-                    "==",
-                    "disputed",
-                    1
                 ]
             ]
         },
         {
             "id": "Country border",
             "type": "line",
-            "source": "maptiler_planet",
+            "source": "boundary",
             "source-layer": "boundary",
             "minzoom": 0,
             "layout": {
@@ -2383,481 +2249,108 @@
                     "==",
                     "admin_level",
                     2
-                ],
-                [
-                    "==",
-                    "maritime",
-                    0
-                ],
-                [
-                    "==",
-                    "disputed",
-                    0
                 ]
             ]
         },
         {
             "id": "cycleway",
-            "source": "veloinfo_cycleway",
-            "source-layer": "cycleway_way",
+            "source": "veloinfo",
+            "source-layer": "bike_path",
             "type": "line",
+            "maxzoom": 12,
             "paint": {
-                "line-color": "#050",
-                "line-width": 5
+                "line-color": [
+                    "interpolate-lab",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "get",
+                        "score"
+                    ],
+                    -1,
+                    "hsl(141, 100%, 17%)",
+                    0,
+                    "hsl(0, 100%, 27%)",
+                    0.5,
+                    "hsl(55, 100%, 50%)",
+                    1,
+                    "hsl(141, 100%, 17%)"
+                ],
+                "line-width": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    1,
+                    0.75,
+                    3,
+                    1.5,
+                    7,
+                    2.2,
+                    12,
+                    3.5,
+                    22,
+                    8
+                ]
             },
             "filter": [
                 "all",
                 [
-                    "==",
+                    "in",
                     "kind",
                     "cycleway"
                 ]
             ]
         },
         {
-            "id": "cycleway1",
+            "id": "cycleway-zoom",
             "source": "veloinfo",
             "source-layer": "bike_path",
             "type": "line",
+            "minzoom": 12,
             "paint": {
-                "line-color": "#dc2626",
-                "line-width": 5
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "cycleway"
+                "line-color": [
+                    "interpolate-lab",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "get",
+                        "score"
+                    ],
+                    -1,
+                    "hsl(141, 100%, 17%)",
+                    0,
+                    "hsl(0, 100%, 27%)",
+                    0.5,
+                    "hsl(55, 100%, 50%)",
+                    1,
+                    "hsl(141, 100%, 17%)"
                 ],
-                [
-                    "==",
-                    "score",
-                    0
-                ]
-            ]
-        },
-        {
-            "id": "cycleway2",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#ea580c",
-                "line-width": 5
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "cycleway"
-                ],
-                [
-                    "<=",
-                    "score",
-                    0.25
-                ],
-                [
-                    ">",
-                    "score",
-                    0
-                ]
-            ]
-        },
-        {
-            "id": "cycleway3",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#facc15",
-                "line-width": 5
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "cycleway"
-                ],
-                [
-                    "<=",
-                    "score",
-                    0.5
-                ],
-                [
-                    ">",
-                    "score",
-                    0.25
-                ]
-            ]
-        },
-        {
-            "id": "cycleway4",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#4ade80",
-                "line-width": 5
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "cycleway"
-                ],
-                [
-                    "<=",
-                    "score",
-                    0.75
-                ],
-                [
-                    ">",
-                    "score",
-                    0.5
-                ]
-            ]
-        },
-        {
-            "id": "cycleway5",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#15803d",
-                "line-width": 5
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "cycleway"
-                ],
-                [
-                    "<=",
-                    "score",
+                "line-width": [
+                    "match",
+                    [
+                        "get",
+                        "kind"
+                    ],
+                    "cycleway",
+                    5,
+                    "designated",
+                    3,
+                    "shared_line",
+                    2,
                     1
-                ],
-                [
-                    ">",
-                    "score",
-                    0.75
                 ]
-            ]
+            }
         },
-        {
-            "id": "designated",
-            "source": "veloinfo_cycleway",
-            "source-layer": "cycleway_way",
-            "type": "line",
-            "paint": {
-                "line-color": "#050",
-                "line-width": 3
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "designated"
-                ]
-            ]
-        },
-        {
-            "id": "designated1",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#dc2626",
-                "line-width": 3
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "designated"
-                ],
-                [
-                    "<=",
-                    "score",
-                    0.2
-                ]
-            ]
-        },
-        {
-            "id": "designated2",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#ea580c",
-                "line-width": 3
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "designated"
-                ],
-                [
-                    "<=",
-                    "score",
-                    0.4
-                ],
-                [
-                    ">",
-                    "score",
-                    0.2
-                ]
-            ]
-        },
-        {
-            "id": "designated3",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#facc15",
-                "line-width": 3
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "designated"
-                ],
-                [
-                    "<=",
-                    "score",
-                    0.6
-                ],
-                [
-                    ">",
-                    "score",
-                    0.4
-                ]
-            ]
-        },
-        {
-            "id": "designated4",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#4ade80",
-                "line-width": 3
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "designated"
-                ],
-                [
-                    "<=",
-                    "score",
-                    0.8
-                ],
-                [
-                    ">",
-                    "score",
-                    0.6
-                ]
-            ]
-        },
-        {
-            "id": "designated5",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#15803d",
-                "line-width": 3
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "designated"
-                ],
-                [
-                    "<=",
-                    "score",
-                    1
-                ],
-                [
-                    ">",
-                    "score",
-                    0.8
-                ]
-            ]
-        },
-
-        {
-            "id": "shared_lane",
-            "source": "veloinfo_cycleway",
-            "source-layer": "cycleway_way",
-            "type": "line",
-            "paint": {
-                "line-color": "#050",
-                "line-width": 1
-            },
-            "filter": [
-                "==",
-                "kind",
-                "shared_lane"
-            ]
-        },
-        {
-            "id": "shared_lane1",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#dc2626",
-                "line-width": 1
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "shared_lane"
-                ],
-                [
-                    "<=",
-                    "score",
-                    0.2
-                ]
-            ]
-        },
-        {
-            "id": "shared_lane2",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#ea580c",
-                "line-width": 1
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "shared_lane"
-                ],
-                [
-                    "<=",
-                    "score",
-                    0.4
-                ],
-                [
-                    ">",
-                    "score",
-                    0.2
-                ]
-            ]
-        },
-        {
-            "id": "shared_lane3",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#facc15",
-                "line-width": 1
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "shared_lane"
-                ],
-                [
-                    "<=",
-                    "score",
-                    0.6
-                ],
-                [
-                    ">",
-                    "score",
-                    0.4
-                ]
-            ]
-        },
-        {
-            "id": "shared_lane4",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#4ade80",
-                "line-width": 1
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "shared_lane"
-                ],
-                [
-                    "<=",
-                    "score",
-                    0.8
-                ],
-                [
-                    ">",
-                    "score",
-                    0.6
-                ]
-            ]
-        },
-        {
-            "id": "shared_lane5",
-            "source": "veloinfo",
-            "source-layer": "bike_path",
-            "type": "line",
-            "paint": {
-                "line-color": "#15803d",
-                "line-width": 1
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "kind",
-                    "shared_lane"
-                ],
-                [
-                    "<=",
-                    "score",
-                    1
-                ],
-                [
-                    ">",
-                    "score",
-                    0.8
-                ]
-            ]
-        },
-  
         {
             "id": "Ocean labels",
             "type": "symbol",
-            "source": "maptiler_planet",
+            "source": "water_name",
             "source-layer": "water_name",
             "minzoom": 0,
             "maxzoom": 4,
@@ -2880,7 +2373,7 @@
                     4,
                     14
                 ],
-                "text-field": "{name:en}",
+                "text-field": "{name}",
                 "visibility": "visible",
                 "text-padding": 2,
                 "text-max-width": 6,
@@ -2906,7 +2399,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "place"
                         ],
                         [
                             "ocean"
@@ -2924,7 +2417,7 @@
                 "all",
                 [
                     "==",
-                    "class",
+                    "place",
                     "ocean"
                 ],
                 [
@@ -2936,7 +2429,7 @@
         {
             "id": "Sea labels",
             "type": "symbol",
-            "source": "maptiler_planet",
+            "source": "water_name",
             "source-layer": "water_name",
             "minzoom": 3,
             "maxzoom": 22,
@@ -2994,7 +2487,7 @@
                 "all",
                 [
                     "==",
-                    "class",
+                    "place",
                     "sea"
                 ],
                 [
@@ -3006,7 +2499,7 @@
         {
             "id": "Lakeline labels",
             "type": "symbol",
-            "source": "maptiler_planet",
+            "source": "water_name",
             "source-layer": "water_name",
             "layout": {
                 "text-font": [
@@ -3032,7 +2525,7 @@
                     "coalesce",
                     [
                         "get",
-                        "name:en"
+                        "name:fr"
                     ],
                     [
                         "get",
@@ -3057,9 +2550,9 @@
         {
             "id": "Road labels",
             "type": "symbol",
-            "source": "maptiler_planet",
-            "source-layer": "transportation_name",
-            "minzoom": 14,
+            "source": "transportation",
+            "source-layer": "transportation",
+            "minzoom": 12,
             "layout": {
                 "text-font": [
                     "Metropolis Semi Bold",
@@ -3073,17 +2566,17 @@
                     [
                         "zoom"
                     ],
-                    14,
+                    12,
                     [
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
-                            "primary"
+                            "cycleway"
                         ],
-                        10,
+                        13,
                         7
                     ],
                     15,
@@ -3091,13 +2584,14 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
-                            "primary"
+                            "cycleway"
                         ],
-                        10,
+                        12,
                         [
+                            "primary",
                             "secondary",
                             "tertiary"
                         ],
@@ -3109,12 +2603,14 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
+                            "cycleway",
                             "primary",
                             "secondary",
-                            "tertiary"
+                            "tertiary",
+                            "residential"
                         ],
                         11,
                         10
@@ -3124,27 +2620,22 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
+                            "cycleway",
                             "primary",
                             "secondary",
-                            "tertiary"
+                            "tertiary",
+                            "residential"
                         ],
                         13,
                         12
                     ]
                 ],
                 "text-field": [
-                    "coalesce",
-                    [
-                        "get",
-                        "name:en"
-                    ],
-                    [
-                        "get",
-                        "name"
-                    ]
+                    "get",
+                    "name"
                 ],
                 "visibility": "visible",
                 "text-justify": "center",
@@ -3186,9 +2677,9 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
-                        "primary",
+                        "cycleway",
                         0.2,
                         0.1
                     ]
@@ -3209,10 +2700,10 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
-                            "primary"
+                            "cycleway"
                         ],
                         1,
                         0
@@ -3222,12 +2713,14 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
+                            "cycleway",
                             "primary",
                             "secondary",
-                            "tertiary"
+                            "tertiary",
+                            "residential"
                         ],
                         1,
                         0
@@ -3237,23 +2730,25 @@
                 ],
                 "text-halo-blur": 0,
                 "text-halo-color": "hsl(0,0%,100%)",
-                "text-halo-width": 1.5
+                "text-halo-width": 10
             },
             "filter": [
                 "in",
-                "class",
+                "highway",
                 "primary",
                 "secondary",
                 "tertiary",
                 "minor",
-                "service"
+                "service",
+                "residential",
+                "cycleway"
             ]
         },
         {
             "id": "Place labels",
             "type": "symbol",
-            "source": "maptiler_planet",
-            "source-layer": "place",
+            "source": "veloinfo_all_node",
+            "source-layer": "all_node",
             "minzoom": 13,
             "maxzoom": 22,
             "layout": {
@@ -3277,7 +2772,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "place"
                         ],
                         [
                             "suburb",
@@ -3292,7 +2787,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "place"
                         ],
                         [
                             "suburb",
@@ -3307,7 +2802,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "place"
                         ],
                         [
                             "suburb",
@@ -3322,7 +2817,7 @@
                     "coalesce",
                     [
                         "get",
-                        "name:en"
+                        "name:fr"
                     ],
                     [
                         "get",
@@ -3352,7 +2847,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "place"
                         ],
                         [
                             "suburb",
@@ -3371,7 +2866,7 @@
             },
             "filter": [
                 "!in",
-                "class",
+                "place",
                 "city",
                 "continent",
                 "country",
@@ -3384,8 +2879,8 @@
         {
             "id": "Village labels",
             "type": "symbol",
-            "source": "maptiler_planet",
-            "source-layer": "place",
+            "source": "veloinfo_all_node",
+            "source-layer": "all_node",
             "minzoom": 12,
             "maxzoom": 22,
             "layout": {
@@ -3431,15 +2926,15 @@
             },
             "filter": [
                 "==",
-                "class",
+                "place",
                 "village"
             ]
         },
         {
             "id": "Town labels",
             "type": "symbol",
-            "source": "maptiler_planet",
-            "source-layer": "place",
+            "source": "veloinfo_all_node",
+            "source-layer": "all_node",
             "minzoom": 11,
             "maxzoom": 16,
             "layout": {
@@ -3466,7 +2961,7 @@
                     "coalesce",
                     [
                         "get",
-                        "name:en"
+                        "name:fr"
                     ],
                     [
                         "get",
@@ -3491,15 +2986,15 @@
             },
             "filter": [
                 "==",
-                "class",
+                "place",
                 "town"
             ]
         },
         {
             "id": "State labels",
             "type": "symbol",
-            "source": "maptiler_planet",
-            "source-layer": "place",
+            "source": "veloinfo_all_node",
+            "source-layer": "all_node",
             "minzoom": 5,
             "maxzoom": 8,
             "layout": {
@@ -3507,43 +3002,12 @@
                     "Metropolis Semi Bold",
                     "Noto Sans Bold"
                 ],
-                "text-size": [
-                    "interpolate",
-                    [
-                        "linear",
-                        1
-                    ],
-                    [
-                        "zoom"
-                    ],
-                    5,
-                    [
-                        "match",
-                        [
-                            "get",
-                            "rank"
-                        ],
-                        1,
-                        10,
-                        10
-                    ],
-                    11,
-                    [
-                        "match",
-                        [
-                            "get",
-                            "rank"
-                        ],
-                        1,
-                        16,
-                        16
-                    ]
-                ],
+                "text-size": 15,
                 "text-field": [
                     "coalesce",
                     [
                         "get",
-                        "name:en"
+                        "name"
                     ],
                     [
                         "get",
@@ -3557,65 +3021,6 @@
             },
             "paint": {
                 "text-color": "hsl(204, 11%, 47%)",
-                "text-opacity": [
-                    "step",
-                    [
-                        "zoom"
-                    ],
-                    0,
-                    3,
-                    [
-                        "match",
-                        [
-                            "get",
-                            "rank"
-                        ],
-                        1,
-                        0.85,
-                        0
-                    ],
-                    4,
-                    [
-                        "case",
-                        [
-                            "<=",
-                            [
-                                "get",
-                                "rank"
-                            ],
-                            1
-                        ],
-                        0.75,
-                        0
-                    ],
-                    5,
-                    [
-                        "case",
-                        [
-                            "<=",
-                            [
-                                "get",
-                                "rank"
-                            ],
-                            3
-                        ],
-                        0.75,
-                        0
-                    ],
-                    8,
-                    [
-                        "match",
-                        [
-                            "get",
-                            "rank"
-                        ],
-                        4,
-                        0.75,
-                        0
-                    ],
-                    11,
-                    0
-                ],
                 "text-halo-blur": 0,
                 "text-halo-color": "hsl(30,25%,98%)",
                 "text-halo-width": 1.5
@@ -3624,21 +3029,16 @@
                 "all",
                 [
                     "==",
-                    "class",
+                    "place",
                     "state"
-                ],
-                [
-                    "==",
-                    "rank",
-                    1
                 ]
             ]
         },
         {
             "id": "City labels",
             "type": "symbol",
-            "source": "maptiler_planet",
-            "source-layer": "place",
+            "source": "veloinfo_all_node",
+            "source-layer": "all_node",
             "minzoom": 5,
             "maxzoom": 14,
             "layout": {
@@ -3646,73 +3046,8 @@
                     "Metropolis Semi Bold",
                     "Noto Sans Bold"
                 ],
-                "text-size": [
-                    "interpolate",
-                    [
-                        "linear",
-                        1
-                    ],
-                    [
-                        "zoom"
-                    ],
-                    5,
-                    [
-                        "case",
-                        [
-                            ">=",
-                            [
-                                "get",
-                                "rank"
-                            ],
-                            6
-                        ],
-                        11,
-                        12
-                    ],
-                    9,
-                    [
-                        "case",
-                        [
-                            ">=",
-                            [
-                                "get",
-                                "rank"
-                            ],
-                            6
-                        ],
-                        12,
-                        14
-                    ],
-                    13,
-                    [
-                        "case",
-                        [
-                            ">=",
-                            [
-                                "get",
-                                "rank"
-                            ],
-                            6
-                        ],
-                        16,
-                        18
-                    ],
-                    14,
-                    [
-                        "case",
-                        [
-                            ">=",
-                            [
-                                "get",
-                                "rank"
-                            ],
-                            6
-                        ],
-                        20,
-                        22
-                    ]
-                ],
-                "text-field": "{name:en}",
+                "text-size": 15,
+                "text-field": "{name}",
                 "visibility": "visible",
                 "text-anchor": "center",
                 "text-offset": [
@@ -3733,202 +3068,13 @@
                 "all",
                 [
                     "==",
-                    "class",
+                    "place",
                     "city"
-                ],
-                [
-                    "has",
-                    "rank"
                 ]
-            ]
-        },
-        {
-            "id": "Country labels",
-            "type": "symbol",
-            "source": "maptiler_planet",
-            "source-layer": "place",
-            "minzoom": 2,
-            "maxzoom": 10,
-            "layout": {
-                "text-font": [
-                    "Metropolis Semi Bold",
-                    "Noto Sans Bold"
-                ],
-                "text-size": [
-                    "interpolate",
-                    [
-                        "linear",
-                        1
-                    ],
-                    [
-                        "zoom"
-                    ],
-                    2,
-                    [
-                        "case",
-                        [
-                            "<=",
-                            [
-                                "get",
-                                "rank"
-                            ],
-                            2
-                        ],
-                        11,
-                        0
-                    ],
-                    3,
-                    [
-                        "case",
-                        [
-                            "<=",
-                            [
-                                "get",
-                                "rank"
-                            ],
-                            2
-                        ],
-                        11,
-                        9
-                    ],
-                    4,
-                    [
-                        "case",
-                        [
-                            "<=",
-                            [
-                                "get",
-                                "rank"
-                            ],
-                            2
-                        ],
-                        12,
-                        10
-                    ],
-                    5,
-                    [
-                        "case",
-                        [
-                            "<=",
-                            [
-                                "get",
-                                "rank"
-                            ],
-                            2
-                        ],
-                        13,
-                        11
-                    ],
-                    6,
-                    [
-                        "case",
-                        [
-                            "<=",
-                            [
-                                "get",
-                                "rank"
-                            ],
-                            2
-                        ],
-                        14,
-                        12
-                    ],
-                    7,
-                    [
-                        "case",
-                        [
-                            "<=",
-                            [
-                                "get",
-                                "rank"
-                            ],
-                            2
-                        ],
-                        14,
-                        13
-                    ]
-                ],
-                "text-field": "{name:en}",
-                "visibility": "visible",
-                "text-transform": "uppercase"
-            },
-            "paint": {
-                "text-color": "hsl(204, 11%, 47%)",
-                "text-opacity": [
-                    "step",
-                    [
-                        "zoom"
-                    ],
-                    1,
-                    2,
-                    [
-                        "case",
-                        [
-                            "<=",
-                            [
-                                "get",
-                                "rank"
-                            ],
-                            2
-                        ],
-                        1,
-                        0
-                    ],
-                    3,
-                    1
-                ],
-                "text-halo-blur": 0,
-                "text-halo-color": "hsl(0,0%,100%)",
-                "text-halo-width": 1.5
-            },
-            "filter": [
-                "all",
-                [
-                    "==",
-                    "class",
-                    "country"
-                ],
-                [
-                    "has",
-                    "iso_a2"
-                ]
-            ]
-        },
-        {
-            "id": "Continent labels",
-            "type": "symbol",
-            "source": "maptiler_planet",
-            "source-layer": "place",
-            "minzoom": 0,
-            "maxzoom": 2,
-            "layout": {
-                "text-font": [
-                    "Metropolis Semi Bold",
-                    "Noto Sans Bold"
-                ],
-                "text-size": 13,
-                "text-field": "{name:en}",
-                "visibility": "visible",
-                "text-justify": "center",
-                "text-max-width": 9,
-                "text-transform": "uppercase",
-                "text-keep-upright": false,
-                "text-letter-spacing": 0.1
-            },
-            "paint": {
-                "text-color": "hsl(204, 11%, 47%)",
-                "text-halo-blur": 0,
-                "text-halo-color": "hsl(0,0%,100%)",
-                "text-halo-width": 1.5
-            },
-            "filter": [
-                "==",
-                "class",
-                "continent"
             ]
         }
     ],
-    "glyphs": "https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=STFS4MYo3i7OemN8CY5b",
+    "glyphs": "{{martin_url}}/font/{fontstack}/{range}",
     "bearing": 0,
     "pitch": 0,
     "center": [

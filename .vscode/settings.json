@@ -1,4 +1,7 @@
 {
+    "Lua.diagnostics.globals": [
+        "osm2pgsql"
+    ],
     "Lua.diagnostics.disable": [
         "undefined-global"
     ]

@@ -101,7 +101,13 @@ impl Edge {
                                                 cost,
                                                 reverse_cost
                                                 from (
-                                                    select e.*, 
+                                                    select e.id,
+                                                    e.source,
+                                                    e.target, 
+                                                    e.x1,
+                                                    e.y1,
+                                                    e.x2,
+                                                    e.y2,
                                                     st_length(ST_MakeLine(ST_Point(x1, y2), ST_Point(x2, y2))) * 
                                                     1 / 0.25 * 2 as cost,
                                                     st_length(ST_MakeLine(ST_Point(x1, y2), ST_Point(x2, y2))) * 

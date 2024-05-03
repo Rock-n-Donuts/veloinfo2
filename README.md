@@ -6,9 +6,6 @@ with VSCode install the remote development plugin.
 
 Do 'Attach to running container'
 
-# Download the quebec map
-From 'https://download.geofabrik.de/north-america/canada/quebec.html' get the pbf file.
-
 # Import the data
 run import.sh
 
