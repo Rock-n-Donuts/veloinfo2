@@ -1820,7 +1820,6 @@
             "source": "building",
             "source-layer": "building",
             "minzoom": 13,
-            "maxzoom": 22,
             "layout": {
                 "visibility": "visible"
             },
@@ -1846,7 +1845,6 @@
             "source": "building",
             "source-layer": "building",
             "minzoom": 13,
-            "maxzoom": 22,
             "layout": {
                 "visibility": "visible"
             },
@@ -2580,7 +2578,7 @@
                             "highway"
                         ],
                         [
-                            "primary"
+                            "cycleway"
                         ],
                         10,
                         7
@@ -2593,10 +2591,11 @@
                             "highway"
                         ],
                         [
-                            "primary"
+                            "cycleway"
                         ],
                         10,
                         [
+                            "primary",
                             "secondary",
                             "tertiary"
                         ],
@@ -2611,6 +2610,7 @@
                             "highway"
                         ],
                         [
+                            "cycleway",
                             "primary",
                             "secondary",
                             "tertiary",
@@ -2627,6 +2627,7 @@
                             "highway"
                         ],
                         [
+                            "cycleway",
                             "primary",
                             "secondary",
                             "tertiary",
@@ -2682,7 +2683,7 @@
                             "get",
                             "highway"
                         ],
-                        "primary",
+                        "cycleway",
                         0.2,
                         0.1
                     ]
@@ -2706,7 +2707,7 @@
                             "highway"
                         ],
                         [
-                            "primary"
+                            "cycleway"
                         ],
                         1,
                         0
@@ -2719,6 +2720,7 @@
                             "highway"
                         ],
                         [
+                            "cycleway",
                             "primary",
                             "secondary",
                             "tertiary",
@@ -2732,7 +2734,7 @@
                 ],
                 "text-halo-blur": 0,
                 "text-halo-color": "hsl(0,0%,100%)",
-                "text-halo-width": 1.5
+                "text-halo-width": 10
             },
             "filter": [
                 "in",
@@ -2742,7 +2744,8 @@
                 "tertiary",
                 "minor",
                 "service",
-                "residential"
+                "residential",
+                "cycleway"
             ]
         },
         {
