@@ -2556,7 +2556,7 @@
             "type": "symbol",
             "source": "transportation",
             "source-layer": "transportation",
-            "minzoom": 14,
+            "minzoom": 12,
             "layout": {
                 "text-font": [
                     "Metropolis Semi Bold",
@@ -2570,7 +2570,7 @@
                     [
                         "zoom"
                     ],
-                    14,
+                    12,
                     [
                         "match",
                         [
@@ -2580,7 +2580,7 @@
                         [
                             "cycleway"
                         ],
-                        10,
+                        13,
                         7
                     ],
                     15,
@@ -2593,7 +2593,7 @@
                         [
                             "cycleway"
                         ],
-                        10,
+                        12,
                         [
                             "primary",
                             "secondary",
