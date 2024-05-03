@@ -2613,7 +2613,8 @@
                         [
                             "primary",
                             "secondary",
-                            "tertiary"
+                            "tertiary",
+                            "residential"
                         ],
                         11,
                         10
@@ -2628,22 +2629,16 @@
                         [
                             "primary",
                             "secondary",
-                            "tertiary"
+                            "tertiary",
+                            "residential"
                         ],
                         13,
                         12
                     ]
                 ],
                 "text-field": [
-                    "coalesce",
-                    [
-                        "get",
-                        "name_fr"
-                    ],
-                    [
-                        "get",
-                        "name"
-                    ]
+                    "get",
+                    "name"
                 ],
                 "visibility": "visible",
                 "text-justify": "center",
@@ -2685,7 +2680,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         "primary",
                         0.2,
@@ -2708,7 +2703,7 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "primary"
@@ -2721,12 +2716,13 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "highway"
                         ],
                         [
                             "primary",
                             "secondary",
-                            "tertiary"
+                            "tertiary",
+                            "residential"
                         ],
                         1,
                         0
@@ -2740,12 +2736,13 @@
             },
             "filter": [
                 "in",
-                "class",
+                "highway",
                 "primary",
                 "secondary",
                 "tertiary",
                 "minor",
-                "service"
+                "service",
+                "residential"
             ]
         },
         {
