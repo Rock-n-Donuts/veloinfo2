@@ -19,7 +19,8 @@
         route_json[0][1],
         route_json[route_json.length - 1][0],
         route_json[route_json.length - 1][1]);
-    fitBounds(route_json);
+    map.bearing = bearing;
+    map.flyTo({ bearing: bearing, center: route_json[0], zoom: 14 });
     {% else %}
     {% endif %}
     (async () => {

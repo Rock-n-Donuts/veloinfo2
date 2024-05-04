@@ -65,6 +65,6 @@
 <script>
     display_segment_geom([{{ geom_json }}]);
     {% if fit_bounds %}
-    fitBounds({{ geom_json }});
+    map.fitBounds(fitBounds({{ geom_json }}), { padding: window.innerWidth * .10 });
     {% endif %}
 </script>

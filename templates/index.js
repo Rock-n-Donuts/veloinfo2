@@ -115,16 +115,6 @@ async function zoomToSegment(score_id) {
     display_segment_geom(geom);
 }
 
-function fitBounds(geom) {
-    var bounds = geom.reduce((currentBounds, coord) => {
-        return [
-            [Math.min(coord[0], currentBounds[0][0]), Math.min(coord[1], currentBounds[0][1])], // min coordinates
-            [Math.max(coord[0], currentBounds[1][0]), Math.max(coord[1], currentBounds[1][1])]  // max coordinates
-        ];
-    }, [[Infinity, Infinity], [-Infinity, -Infinity]]);
-    return map.fitBounds(bounds, { padding: window.innerWidth * .10 });
-}
-
 function display_segment_geom(geom) {
     if (map.getLayer("selected")) {
         map.getSource("selected").setData({
@@ -233,6 +223,17 @@ async function route() {
     });
     await htmx.ajax("GET", "/route/" + start.coords.longitude + "/" + start.coords.latitude + "/" + end.lng + "/" + end.lat, "#info");
 }
+
+function fitBounds(geom) {
+    var bounds = geom.reduce((currentBounds, coord) => {
+        return [
+            [Math.min(coord[0], currentBounds[0][0]), Math.min(coord[1], currentBounds[0][1])], // min coordinates
+            [Math.max(coord[0], currentBounds[1][0]), Math.max(coord[1], currentBounds[1][1])]  // max coordinates
+        ];
+    }, [[Infinity, Infinity], [-Infinity, -Infinity]]);
+    return bounds;
+}
+
 function calculateBearing(lon1, lat1, lon2, lat2) {
     lon1 = lon1 * Math.PI / 180.0;
     lat1 = lat1 * Math.PI / 180.0;
