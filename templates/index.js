@@ -143,7 +143,7 @@ function display_segment_geom(geom) {
             "source": "selected",
             "paint": {
                 "line-width": 12,
-                "line-color": "#ffbdbd",
+                "line-color": "#ffa600",
                 "line-opacity": 0.5
             }
         },
