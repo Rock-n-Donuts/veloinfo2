@@ -28,7 +28,7 @@ var map = new maplibregl.Map({
     style: '/style.json',
     center: [lng, lat],
     zoom: zoom,
-    minZoom: 5
+    minZoom: 8
 });
 
 map.addControl(new maplibregl.NavigationControl());

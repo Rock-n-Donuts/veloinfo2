@@ -13,7 +13,13 @@
         },
         "landcover": {
             "type": "vector",
-            "url": "{{martin_url}}/landcover"
+            "url": "{{martin_url}}/landcover",
+            "minzoom": 10
+        },
+        "landcover_far": {
+            "type": "vector",
+            "url": "{{martin_url}}/landcover_far",
+            "maxzoom": 10
         },
         "aeroway": {
             "type": "vector",
@@ -146,10 +152,88 @@
             ]
         },
         {
+            "id": "Landcover_far",
+            "type": "fill",
+            "source": "landcover_far",
+            "source-layer": "landcover_far",
+            "layout": {
+                "visibility": "visible"
+            },
+            "paint": {
+                "fill-color": "hsl(96, 44%, 79%)",
+                "fill-opacity": {
+                    "stops": [
+                        [
+                            8,
+                            0.2
+                        ],
+                        [
+                            9,
+                            0.25
+                        ],
+                        [
+                            11,
+                            0.35
+                        ]
+                    ]
+                },
+                "fill-antialias": false
+            },
+            "filter": [
+                "any",
+                [
+                    "==",
+                    "leisure",
+                    "park"
+                ],
+                [
+                    "==",
+                    "landuse",
+                    "cemetery"
+                ],
+                [
+                    "==",
+                    "landuse",
+                    "grass"
+                ],
+                [
+                    "==",
+                    "natural",
+                    "wood"
+                ]
+            ]
+        },
+        {
             "id": "Forest",
             "type": "fill",
             "source": "landcover",
             "source-layer": "landcover",
+            "maxzoom": 7,
+            "layout": {
+                "visibility": "visible"
+            },
+            "paint": {
+                "fill-color": "hsla(96, 44%, 79%, 0.15)"
+            },
+            "filter": [
+                "any",
+                [
+                    "==",
+                    "natural",
+                    "wood"
+                ],
+                [
+                    "==",
+                    "landcover",
+                    "tree"
+                ]
+            ]
+        },
+        {
+            "id": "Forest_far",
+            "type": "fill",
+            "source": "landcover_far",
+            "source-layer": "landcover_far",
             "maxzoom": 7,
             "layout": {
                 "visibility": "visible"
@@ -239,10 +323,97 @@
             ]
         },
         {
+            "id": "River_far",
+            "type": "line",
+            "source": "landcover_far",
+            "source-layer": "landcover_far",
+            "layout": {
+                "visibility": "visible"
+            },
+            "paint": {
+                "line-color": "hsl(187,37%,87%)",
+                "line-width": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    8,
+                    0.5,
+                    9,
+                    1,
+                    15,
+                    1.5,
+                    16,
+                    2.5
+                ]
+            },
+            "filter": [
+                "==",
+                "natural",
+                "water"
+            ]
+        },
+        {
             "id": "Water",
             "type": "fill",
             "source": "landcover",
             "source-layer": "landcover",
+            "minzoom": 0,
+            "layout": {
+                "visibility": "visible"
+            },
+            "paint": {
+                "fill-color": "hsl(187, 36%, 87%)",
+                "fill-opacity": 1,
+                "fill-antialias": true,
+                "fill-translate": {
+                    "stops": [
+                        [
+                            0,
+                            [
+                                0,
+                                2
+                            ]
+                        ],
+                        [
+                            6,
+                            [
+                                0,
+                                3
+                            ]
+                        ],
+                        [
+                            12,
+                            [
+                                0,
+                                2
+                            ]
+                        ],
+                        [
+                            14,
+                            [
+                                0,
+                                0
+                            ]
+                        ]
+                    ]
+                },
+                "fill-translate-anchor": "map"
+            },
+            "filter": [
+                "==",
+                "natural",
+                "water"
+            ]
+        },
+        {
+            "id": "Water_far",
+            "type": "fill",
+            "source": "landcover_far",
+            "source-layer": "landcover_far",
             "minzoom": 0,
             "layout": {
                 "visibility": "visible"

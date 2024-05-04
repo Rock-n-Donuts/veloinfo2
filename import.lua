@@ -122,6 +122,42 @@ local landcover = osm2pgsql.define_table({
     }}
 })
 
+local landcover_far = osm2pgsql.define_table({
+    name = 'landcover_far',
+    ids = {
+        type = 'area',
+        id_column = 'way_id'
+    },
+    columns = {{
+        column = 'name',
+        type = 'text'
+    }, {
+        column = 'geom',
+        type = 'multipolygon',
+        not_null = true
+    }, {
+        column = 'tags',
+        type = 'jsonb',
+        not_null = true
+    }, {
+        column = 'landuse',
+        type = 'text'
+    }, {
+        column = 'natural',
+        type = 'text'
+    }, {
+        column = 'leisure',
+        type = 'text'
+    }, {
+        column = 'landcover',
+        type = 'text'
+    }},
+    indexes = {{
+        column = 'geom',
+        method = 'gist'
+    }}
+})
+
 local water_name = osm2pgsql.define_table({
     name = 'water_name',
     ids = {
@@ -380,12 +416,39 @@ function osm2pgsql.process_way(object)
             landcover = object.tags.landcover
         })
     end
+
+    if object.is_closed and object.as_polygon():area() > 1e-3 and
+        (object.tags.landuse == "forest" or object.tags.landuse == "cemetery" or object.tags.natural == "wood" or
+            object.tags.natural == "water" or object.tags.leisure == "park" or object.tags.landuse == "residential") then
+        landcover_far:insert({
+            name = object.tags.name,
+            geom = object:as_polygon(),
+            tags = object.tags,
+            landuse = object.tags.landuse,
+            natural = object.tags.natural,
+            leisure = object.tags.leisure,
+            landcover = object.tags.landcover
+        })
+    end
 end
 
 function osm2pgsql.process_relation(object)
     if object.tags.landuse == "forest" or object.tags.landuse == "cemetery" or object.tags.natural == "wood" or
         object.tags.natural == "water" or object.tags.leisure == "park" or object.tags.landuse == "residential" then
         landcover:insert({
+            name = object.tags.name,
+            geom = object:as_multipolygon(),
+            tags = object.tags,
+            landuse = object.tags.landuse,
+            natural = object.tags.natural,
+            leisure = object.tags.leisure,
+            landcover = object.tags.landcover
+        })
+    end
+    if object:as_multipolygon():area() > 1e-3 and
+        (object.tags.landuse == "forest" or object.tags.landuse == "cemetery" or object.tags.natural == "wood" or
+            object.tags.natural == "water" or object.tags.leisure == "park" or object.tags.landuse == "residential") then
+        landcover_far:insert({
             name = object.tags.name,
             geom = object:as_multipolygon(),
             tags = object.tags,
