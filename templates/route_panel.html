@@ -19,12 +19,7 @@
         route_json[0][1],
         route_json[route_json.length - 1][0],
         route_json[route_json.length - 1][1]);
-    var camera = fitBounds(route_json);
-    map.easeTo({
-        bearing: bearing,
-        center: camera.center,
-        zoom: camera.zoom
-    });
+    fitBounds(route_json);
     {% else %}
     {% endif %}
     (async () => {
