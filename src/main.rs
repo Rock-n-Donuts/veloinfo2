@@ -5,6 +5,7 @@ use crate::component::info_panel::info_panel_down;
 use crate::component::info_panel::info_panel_up;
 use crate::component::menu::{menu_close, menu_open};
 use crate::component::photo_scroll::photo_scroll;
+use crate::component::point_panel::point_panel_lng_lat;
 use crate::component::segment_panel::segment_panel_bigger;
 use crate::component::segment_panel::segment_panel_bigger_route;
 use crate::component::segment_panel::segment_panel_edit;
@@ -88,6 +89,8 @@ async fn main() {
         .route("/", get(index))
         .route("/auth", get(auth))
         .route("/logout", get(logout))
+        .route("/info_panel/down", get(info_panel_down))
+        .route("/info_panel/up/:lng1/:lat1/:lng2/:lat2", get(info_panel_up))
         .route("/segment_panel/id/:id", get(select_score_id))
         .route(
             "/segment_panel_lng_lat/:lng/:lat",
@@ -101,6 +104,7 @@ async fn main() {
             "/segment_panel_bigger/:start_lng/:start_lat/:end_lng/:end_lat",
             get(segment_panel_bigger_route),
         )
+        .route("/point_panel_lng_lat/:lng/:lat", get(point_panel_lng_lat))
         .route("/menu/open", get(menu_open))
         .route("/menu/closed", get(menu_close))
         .route("/route/:start_lng/:start_lat/:end_lgt/:end_lat", get(route))
@@ -108,8 +112,6 @@ async fn main() {
             "/cyclability_score/geom/:cyclability_score_id",
             get(score_bounds_controler),
         )
-        .route("/info_panel/down", get(info_panel_down))
-        .route("/info_panel/up/:lng1/:lat1/:lng2/:lat2", get(info_panel_up))
         .route("/score_selector/:score", get(score_selector_controler))
         .route("/photo_scroll/:photo/:way_ids", get(photo_scroll))
         .route("/style.json", get(style))

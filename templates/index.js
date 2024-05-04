@@ -87,7 +87,7 @@ async function select(event) {
         var feature = features[0];
         htmx.ajax('GET', '/segment_panel_lng_lat/' + event.lngLat.lng + "/" + event.lngLat.lat, "#info");
     } else {
-        clear();
+        htmx.ajax('GET', '/point_panel_lng_lat/' + event.lngLat.lng + "/" + event.lngLat.lat, "#info");
     }
 }
 
