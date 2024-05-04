@@ -124,7 +124,7 @@ function fitBounds(geom) {
         ];
     }, [[Infinity, Infinity], [-Infinity, -Infinity]]);
     console.log("bounds", bounds);
-    return map.cameraForBounds(bounds, { padding: window.innerWidth * .10 });
+    return map.fitBounds(bounds, { padding: window.innerWidth * .10 });
 }
 
 function display_segment_geom(geom) {
