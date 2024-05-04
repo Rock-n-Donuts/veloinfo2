@@ -45,6 +45,7 @@ psql -h db -U postgres -d carte -c "
                                             aw.tags,
                                             case
                                                 when tags->>'bicycle' = 'no' then 1 / 0.0001
+                                                when tags->>'bicycle' = 'discouraged' then 1 / 0.1
                                                 when tags->>'highway' = 'cycleway' then 1 / 1
                                                 when tags->>'bicycle' = 'designated' then 1 / 0.9
                                                 when tags->>'cycleway' = 'track' then 1 / 0.8
