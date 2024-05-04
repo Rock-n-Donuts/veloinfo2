@@ -2760,7 +2760,7 @@
                         [
                             "cycleway"
                         ],
-                        12,
+                        13,
                         [
                             "primary",
                             "secondary",
@@ -2778,7 +2778,10 @@
                             "highway"
                         ],
                         [
-                            "cycleway",
+                            "cycleway"
+                        ],
+                        13,
+                        [
                             "primary",
                             "secondary",
                             "tertiary",
@@ -2795,7 +2798,10 @@
                             "highway"
                         ],
                         [
-                            "cycleway",
+                            "cycleway"
+                        ],
+                        13,
+                        [
                             "primary",
                             "secondary",
                             "tertiary",
