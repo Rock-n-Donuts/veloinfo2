@@ -48,15 +48,6 @@ local all_way = osm2pgsql.define_way_table("all_way", {{
 }, {
     column = 'nodes',
     sql_type = 'int8[] NOT NULL'
-}, {
-    column = 'landuse',
-    type = 'text'
-}, {
-    column = 'tunnel',
-    type = 'text'
-}, {
-    column = 'bridge',
-    type = 'text'
 }})
 
 local landuse = osm2pgsql.define_table({
@@ -389,17 +380,14 @@ function osm2pgsql.process_way(object)
         })
     end
 
-    if object.tags["bicycle"] == "yes" or object.tags.tunnel or object.tags.highway or object.tags.bridge then
+    if object.tags.bicycle == "yes" or object.tags.tunnel or object.tags.highway or object.tags.bridge then
         all_way:insert({
             name = object.tags.name,
             geom = object:as_linestring(),
             source = object.nodes[1],
             target = object.nodes[#object.nodes],
             tags = object.tags,
-            nodes = "{" .. table.concat(object.nodes, ",") .. "}",
-            tunnel = object.tags.tunnel,
-            highway = object.tags.highway,
-            bridge = object.tags.bridge
+            nodes = "{" .. table.concat(object.nodes, ",") .. "}"
         })
     end
 
