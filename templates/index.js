@@ -155,8 +155,8 @@ function display_segment_geom(geom) {
             "type": "line",
             "source": "selected",
             "paint": {
-                "line-width": 12,
-                "line-color": "#800",
+                "line-width": 16,
+                "line-color": "#ffbdbd",
                 "line-opacity": 0.3
             }
         });
