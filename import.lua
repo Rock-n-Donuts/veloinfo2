@@ -322,10 +322,9 @@ function osm2pgsql.process_way(object)
             tags = object.tags,
             nodes = "{" .. table.concat(object.nodes, ",") .. "}"
         })
-    elseif object.tags.bicycle == "designated" or object.tags["cycleway:left"] == "share_busway" or
-        object.tags["cycleway:right"] == "share_busway" or object.tags["cycleway:both"] == "share_busway" or
-        object.tags["cycleway:right"] == "lane" or object.tags["cycleway:left"] == "lane" or
-        object.tags["cycleway:both"] == "lane" then
+    elseif object.tags["cycleway:left"] == "share_busway" or object.tags["cycleway:right"] == "share_busway" or
+        object.tags["cycleway:both"] == "share_busway" or object.tags["cycleway:right"] == "lane" or
+        object.tags["cycleway:left"] == "lane" or object.tags["cycleway:both"] == "lane" then
         cycleway:insert({
             name = object.tags.name,
             geom = object:as_linestring(),
@@ -336,8 +335,7 @@ function osm2pgsql.process_way(object)
             nodes = " {" .. table.concat(object.nodes, ",") .. "}"
         })
     elseif object.tags.cycleway == "shared_lane" or object.tags.cycleway == "lane" or object.tags["cycleway:left"] ==
-        "shared_lane" or object.tags["cycleway:right"] == "shared_lane" or object.tags["cycleway:both"] == "shared_lane" or
-        object.tags["bicycle"] == "yes" then
+        "shared_lane" or object.tags["cycleway:right"] == "shared_lane" or object.tags["cycleway:both"] == "shared_lane" then
         cycleway:insert({
             name = object.tags.name,
             geom = object:as_linestring(),
