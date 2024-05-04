@@ -116,20 +116,17 @@ async function zoomToSegment(score_id) {
 }
 
 function fitBounds(geom) {
-    console.log("fitBounds", geom);
     var bounds = geom.reduce((currentBounds, coord) => {
         return [
             [Math.min(coord[0], currentBounds[0][0]), Math.min(coord[1], currentBounds[0][1])], // min coordinates
             [Math.max(coord[0], currentBounds[1][0]), Math.max(coord[1], currentBounds[1][1])]  // max coordinates
         ];
     }, [[Infinity, Infinity], [-Infinity, -Infinity]]);
-    console.log("bounds", bounds);
     return map.fitBounds(bounds, { padding: window.innerWidth * .10 });
 }
 
 function display_segment_geom(geom) {
     if (map.getLayer("selected")) {
-        console.log("updating selected layer");
         map.getSource("selected").setData({
             "type": "Feature",
             "properties": {},
@@ -155,11 +152,12 @@ function display_segment_geom(geom) {
             "type": "line",
             "source": "selected",
             "paint": {
-                "line-width": 16,
+                "line-width": 12,
                 "line-color": "#ffbdbd",
-                "line-opacity": 0.3
+                "line-opacity": 0.5
             }
-        });
+        },
+            "Road labels");
     }
     if (!start_marker) {
         start_marker = new maplibregl.Marker({ color: "#00f" }).setLngLat(geom[0][0]).addTo(map);
