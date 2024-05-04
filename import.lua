@@ -367,18 +367,9 @@ function osm2pgsql.process_way(object)
         })
     end
 
-    if object.is_closed and (object.tags.landuse) then
-        landuse:insert({
-            name = object.tags.name,
-            geom = object:as_polygon(),
-            tags = object.tags,
-            landuse = object.tags.landuse
-        })
-    end
-
     if object.is_closed and
         (object.tags.landuse == "forest" or object.tags.landuse == "cemetery" or object.tags.natural == "wood" or
-            object.tags.natural == "water" or object.tags.leisure == "park") then
+            object.tags.natural == "water" or object.tags.leisure == "park" or object.tags.landuse == "residential") then
         landcover:insert({
             name = object.tags.name,
             geom = object:as_polygon(),
@@ -392,16 +383,8 @@ function osm2pgsql.process_way(object)
 end
 
 function osm2pgsql.process_relation(object)
-    if object.tags.landuse then
-        landuse:insert({
-            name = object.tags.name,
-            geom = object:as_multipolygon(),
-            tags = object.tags,
-            landuse = object.tags.landuse
-        })
-    end
     if object.tags.landuse == "forest" or object.tags.landuse == "cemetery" or object.tags.natural == "wood" or
-        object.tags.natural == "water" or object.tags.leisure == "park" then
+        object.tags.natural == "water" or object.tags.leisure == "park" or object.tags.landuse == "residential" then
         landcover:insert({
             name = object.tags.name,
             geom = object:as_multipolygon(),
