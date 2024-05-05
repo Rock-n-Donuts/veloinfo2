@@ -49,7 +49,9 @@ map.on("click", async function (event) {
     if (document.getElementById("info_panel_up") ||
         document.getElementById("info_panel_down") ||
         document.getElementById("segment_panel_bigger") ||
-        document.getElementById("segment_panel")) {
+        document.getElementById("segment_panel") ||
+        document.getElementById("point_panel")
+    ) {
         select(event);
     }
 });
@@ -87,6 +89,17 @@ async function select(event) {
         var feature = features[0];
         htmx.ajax('GET', '/segment_panel_lng_lat/' + event.lngLat.lng + "/" + event.lngLat.lat, "#info");
     } else {
+        const selected = map.getSource("selected");
+        if (selected) {
+            selected.setData({
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": []
+                }
+            });
+        }
         htmx.ajax('GET', '/point_panel_lng_lat/' + event.lngLat.lng + "/" + event.lngLat.lat, "#info");
     }
 }
