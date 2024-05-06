@@ -178,7 +178,6 @@ async function update_info() {
         if (!info_panel) {
             return;
         }
-        clear();
     }, 1000)
 }
 
@@ -190,6 +189,8 @@ function update_url() {
     timeout_url = setTimeout(() => {
         window.history.replaceState({}, "", "/?lat=" + map.getCenter().lat + "&lng=" + map.getCenter().lng + "&zoom=" + map.getZoom());
         update_info();
+        const bounds = map.getBounds();
+        htmx.ajax("GET", "/info_panel/up/" + bounds._sw.lng + "/" + bounds._sw.lat + "/" + bounds._ne.lng + "/" + bounds._ne.lat, "#info");
     }, 1000);
 }
 

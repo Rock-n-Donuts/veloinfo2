@@ -6,8 +6,8 @@
         <input type="hidden" name="lat" value="{{lat}}">
         <div id="search_results" class="bg-white">
             {% for search_result in search_results %}
-            <div hx-on:click="showSearchResult({{search_result.lng}}, {{search_result.lat}})">
-                {{ search_result.street }} {{ search_result.city }}
+            <div hx-on:click="showSearchResult({{search_result.lng}}, {{search_result.lat}})" class="cursor-pointer">
+                {{ search_result.street }}, {{ search_result.city }}
                 <br>
             </div>
             {% endfor %}
@@ -29,6 +29,10 @@
 
     function showSearchResult(lng, lat) {
         clearResult();
+        if (start_marker) {
+            start_marker.remove();
+        }
+        start_marker = new maplibregl.Marker({ color: "#00f" }).setLngLat([lng, lat]).addTo(map);
         map.easeTo({
             center: [lng, lat],
         });
