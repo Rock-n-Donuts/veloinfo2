@@ -10,5 +10,8 @@ pub async fn point_panel_lng_lat(
     Path((lng, lat)): Path<(f64, f64)>,
     state: State<VeloinfoState>,
 ) -> PointPanel {
+    println!("lng: {}", lng);
+    println!("lat: {}", lat);
+    println!("state: {:?}", state);
     PointPanel {}
 }

@@ -46,7 +46,7 @@ lazy_static! {
     static ref IMAGE_DIR: String = env::var("IMAGE_DIR").unwrap();
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct VeloinfoState {
     conn: PgPool,
 }
