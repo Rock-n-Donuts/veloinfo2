@@ -45,5 +45,6 @@
     function clearResult() {
         const search_results = document.getElementById("search_results");
         search_results.innerHTML = "";
+        htmx.ajax('GET', '/info_panel/down', '#info');
     }
 </script>

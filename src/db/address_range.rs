@@ -16,11 +16,13 @@ impl AddressRange {
         conn: &sqlx::Pool<Postgres>,
     ) -> Vec<AddressRange> {
         match sqlx::query_as(
-            r#"select city, street, ST_X(st_transform(ST_PointN(geom, 1), 4326)) as lng, ST_Y(st_transform(ST_PointN(geom, 1), 4326)) as lat
-                    from address_range ar 
-                    where tsvector  @@ websearch_to_tsquery('french', $1)
-                    order by ar.geom<-> ST_Transform(ST_SetSRID(ST_MakePoint($2, $3), 4326), 3857)
-                    limit 40
+            r#"SELECT city, street, lng, lat FROM (
+                SELECT city, street, ST_X(st_transform(ST_PointN(geom, 1), 4326)) as lng, ST_Y(st_transform(ST_PointN(geom, 1), 4326)) as lat,
+                ROW_NUMBER() OVER(PARTITION BY city, street ORDER BY ar.geom<-> ST_Transform(ST_SetSRID(ST_MakePoint($2, $3), 4326), 3857)) AS rn
+                FROM address_range ar 
+                WHERE tsvector  @@ websearch_to_tsquery('french', $1)
+                order by ar.geom<-> ST_Transform(ST_SetSRID(ST_MakePoint($2, $3), 4326), 3857)
+            ) t WHERE rn = 1
             "#,
         )
         .bind(request)
