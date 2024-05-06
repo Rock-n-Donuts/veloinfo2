@@ -9,6 +9,9 @@ use crate::{db::address_range::AddressRange, VeloinfoState};
 
 pub struct Search {
     pub search_results: Vec<SearchResult>,
+    pub query: String,
+    pub lat: f64,
+    pub lng: f64,
 }
 
 #[derive(Template, Debug)]
@@ -23,12 +26,13 @@ pub struct SearchResult {
 #[derive(serde::Deserialize, Debug)]
 pub struct QueryParams {
     pub query: String,
+    pub lat: f64,
+    pub lng: f64,
 }
 
 #[debug_handler]
 pub async fn post(State(state): State<VeloinfoState>, Form(query): Form<QueryParams>) -> Search {
-    println!("params {:?}", query);
-    let search_results = AddressRange::get(&query.query, &0., &0., &state.conn)
+    let search_results = AddressRange::get(&query.query, &query.lng, &query.lat, &state.conn)
         .await
         .into_iter()
         .map(|ar| SearchResult {
@@ -38,11 +42,19 @@ pub async fn post(State(state): State<VeloinfoState>, Form(query): Form<QueryPar
             lng: ar.lng,
         })
         .collect();
-    Search { search_results }
+    Search {
+        search_results,
+        query: query.query,
+        lat: query.lat,
+        lng: query.lng,
+    }
 }
 
 pub async fn open() -> Search {
     Search {
         search_results: vec![],
+        query: "".to_string(),
+        lat: 0.0,
+        lng: 0.0,
     }
 }

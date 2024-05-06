@@ -1,7 +1,9 @@
-<div class="absolute top-4 left-2 right-2 z-10 flex justify-center">
-    <form id="search" class="" hx-post="/search" hx-trigger="submit">
-        <input class="w-80 h-8 rounded-lg outline outline-gray-800 text-center" name="query" type="text" name="query"
-            placeholder="Rechercher une adresse" autofocus />
+<div class="absolute top-4 left-2 right-2 z-10 flex justify-center" hx-on:click="clearResult()">
+    <form class="" hx-post="/search" hx-target="#search" hx-trigger="input from: find #query">
+        <input class="w-52 h-8 rounded-lg outline outline-gray-800 text-center" id="query" name="query" type="text"
+            name="query" placeholder="Rechercher une adresse" value="{{query}}" autofocus />
+        <input type="hidden" name="lng" value="{{lng}}">
+        <input type="hidden" name="lat" value="{{lat}}">
         <div id="search_results" class="bg-white">
             {% for search_result in search_results %}
             <div hx-on:click="showSearchResult({{search_result.lng}}, {{search_result.lat}})">
@@ -10,14 +12,31 @@
             </div>
             {% endfor %}
         </div>
+    </form>
 </div>
 
+
 <script>
+    if (updateSearchLatLngId)
+        clearTimeout(updateSearchLatLngId);
+
+    var updateSearchLatLngId = setInterval(() => {
+        console.log("updateSearchLatLngId");
+        lng = document.querySelector("input[name=lng]");
+        lat = document.querySelector("input[name=lat]");
+        lng.value = map.getCenter().lng;
+        lat.value = map.getCenter().lat;
+    }, 2000);
+
     function showSearchResult(lng, lat) {
-        const search_results = document.getElementById("search_results");
-        search_results.innerHTML = "";
+        clearResult();
         map.easeTo({
             center: [lng, lat],
         });
+    }
+
+    function clearResult() {
+        const search_results = document.getElementById("search_results");
+        search_results.innerHTML = "";
     }
 </script>

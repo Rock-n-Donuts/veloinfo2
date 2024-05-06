@@ -106,6 +106,9 @@ local landcover = osm2pgsql.define_table({
     }, {
         column = 'landcover',
         type = 'text'
+    }, {
+        column = 'waterway',
+        type = 'text'
     }},
     indexes = {{
         column = 'geom',
@@ -433,9 +436,9 @@ function osm2pgsql.process_way(object)
         })
     end
 
-    if object.is_closed and
-        (object.tags.landuse == "forest" or object.tags.landuse == "cemetery" or object.tags.natural == "wood" or
-            object.tags.natural == "water" or object.tags.leisure == "park" or object.tags.landuse == "residential") then
+    if (object.tags.landuse == "forest" or object.tags.landuse == "cemetery" or object.tags.natural == "wood" or
+        object.tags.natural == "water" or object.tags.waterway or object.tags.leisure == "park" or object.tags.landuse ==
+        "residential") then
         landcover:insert({
             name = object.tags.name,
             geom = object:as_polygon(),
@@ -443,13 +446,15 @@ function osm2pgsql.process_way(object)
             landuse = object.tags.landuse,
             natural = object.tags.natural,
             leisure = object.tags.leisure,
-            landcover = object.tags.landcover
+            landcover = object.tags.landcover,
+            waterway = object.tags.waterway
         })
     end
 
-    if object.is_closed and object.as_polygon():area() > 1e-3 and
+    if object.as_polygon():area() > 1e-3 and
         (object.tags.landuse == "forest" or object.tags.landuse == "cemetery" or object.tags.natural == "wood" or
-            object.tags.natural == "water" or object.tags.leisure == "park" or object.tags.landuse == "residential") then
+            object.tags.natural == "water" or object.tags.waterway or object.tags.leisure == "park" or
+            object.tags.landuse == "residential") then
         landcover_far:insert({
             name = object.tags.name,
             geom = object:as_polygon(),
@@ -457,7 +462,8 @@ function osm2pgsql.process_way(object)
             landuse = object.tags.landuse,
             natural = object.tags.natural,
             leisure = object.tags.leisure,
-            landcover = object.tags.landcover
+            landcover = object.tags.landcover,
+            waterway = object.tags.waterway
         })
     end
 

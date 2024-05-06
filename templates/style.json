@@ -317,9 +317,17 @@
                 ]
             },
             "filter": [
-                "==",
-                "natural",
-                "water"
+                "any",
+                [
+                    "==",
+                    "waterway",
+                    "river"
+                ],
+                [
+                    "==",
+                    "natural",
+                    "water"
+                ]
             ]
         },
         {
