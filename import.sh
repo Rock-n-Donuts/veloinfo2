@@ -139,6 +139,7 @@ psql -h db -U postgres -d carte -c "
                                     create materialized view address_range as
                                         select 
                                         	a.geom,
+                                            a.odd_even,
                                         	an1.city,
                                         	an1.street,
                                         	an1.housenumber as start,
@@ -149,5 +150,5 @@ psql -h db -U postgres -d carte -c "
                                         join address_node an2 on a.housenumber2 = an2.node_id;
 
                                     CREATE INDEX textsearch_idx ON address_range USING GIN (tsvector);
-                                    CREATE INDEX address_range_geom_idx ON address_range(geom);
+                                    CREATE INDEX address_range_geom_idx ON address_range using gist(geom);
                                     "

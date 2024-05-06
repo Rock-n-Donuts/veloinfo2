@@ -329,10 +329,13 @@ local address = osm2pgsql.define_table({
         not_null = true
     }, {
         column = 'housenumber1',
-        type = 'integer'
+        type = 'int8'
     }, {
         column = 'housenumber2',
-        type = 'integer'
+        type = 'int8'
+    }, {
+        column = 'odd_even',
+        type = 'text'
     }},
     indexes = {{
         column = 'geom',
@@ -471,8 +474,9 @@ function osm2pgsql.process_way(object)
         address:insert({
             geom = object:as_linestring(),
             tags = object.tags,
+            odd_even = object.tags["addr:interpolation"],
             housenumber1 = object.nodes[1],
-            housenumber2 = object.nodes[2]
+            housenumber2 = object.nodes[#object.nodes]
         })
     end
 end
