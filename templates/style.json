@@ -44,7 +44,7 @@
         },
         "veloinfo_all_area": {
             "type": "vector",
-            "url": "{{martin_url}}/all_area,all_area_minzoom"
+            "url": "{{martin_url}}/all_area"
         },
         "veloinfo_all_way": {
             "type": "vector",

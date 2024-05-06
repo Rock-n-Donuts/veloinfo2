@@ -6,6 +6,7 @@ use crate::component::info_panel::info_panel_up;
 use crate::component::menu::{menu_close, menu_open};
 use crate::component::photo_scroll::photo_scroll;
 use crate::component::point_panel::point_panel_lng_lat;
+use crate::component::search;
 use crate::component::segment_panel::segment_panel_bigger;
 use crate::component::segment_panel::segment_panel_bigger_route;
 use crate::component::segment_panel::segment_panel_edit;
@@ -105,6 +106,8 @@ async fn main() {
             get(segment_panel_bigger_route),
         )
         .route("/point_panel_lng_lat/:lng/:lat", get(point_panel_lng_lat))
+        .route("/search", post(search::post))
+        .route("/search/open", get(search::open))
         .route("/menu/open", get(menu_open))
         .route("/menu/closed", get(menu_close))
         .route("/route/:start_lng/:start_lat/:end_lgt/:end_lat", get(route))

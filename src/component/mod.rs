@@ -6,5 +6,6 @@ pub mod point_panel;
 pub mod route_panel;
 pub mod score_circle;
 pub mod score_selector;
+pub mod search;
 pub mod segment_panel;
 pub mod style;

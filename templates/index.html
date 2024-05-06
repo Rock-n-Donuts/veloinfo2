@@ -28,6 +28,8 @@
     </style>
 </head>
 <div id="map">
+    <div id="search" hx-trigger="load" hx-get="search/open">
+    </div>
     <div id="info">
     </div>
     <div id="menu" hx-trigger="load" hx-get="/menu/closed" hx-swap="outerHTML">

@@ -1,0 +1,23 @@
+<div class="absolute top-4 left-2 right-2 z-10 flex justify-center">
+    <form id="search" class="" hx-post="/search" hx-trigger="submit">
+        <input class="w-80 h-8 rounded-lg outline outline-gray-800 text-center" name="query" type="text" name="query"
+            placeholder="Rechercher une adresse" autofocus />
+        <div id="search_results" class="bg-white">
+            {% for search_result in search_results %}
+            <div hx-on:click="showSearchResult({{search_result.lng}}, {{search_result.lat}})">
+                {{ search_result.street }} {{ search_result.city }}
+                <br>
+            </div>
+            {% endfor %}
+        </div>
+</div>
+
+<script>
+    function showSearchResult(lng, lat) {
+        const search_results = document.getElementById("search_results");
+        search_results.innerHTML = "";
+        map.easeTo({
+            center: [lng, lat],
+        });
+    }
+</script>

@@ -310,6 +310,50 @@ local all_node = osm2pgsql.define_node_table('all_node', {{
     type = 'text'
 }})
 
+local address = osm2pgsql.define_table({
+    name = 'address',
+    ids = {
+        type = 'area',
+        id_column = 'way_id'
+    },
+    columns = {{
+        column = 'geom',
+        type = 'LineString',
+        not_null = true
+    }, {
+        column = 'tags',
+        type = 'jsonb',
+        not_null = true
+    }, {
+        column = 'housenumber1',
+        type = 'integer'
+    }, {
+        column = 'housenumber2',
+        type = 'integer'
+    }},
+    indexes = {{
+        column = 'geom',
+        method = 'gist'
+    }}
+})
+
+local address_node = osm2pgsql.define_node_table('address_node', {{
+    column = 'geom',
+    type = 'Point'
+}, {
+    column = 'tags',
+    type = 'jsonb'
+}, {
+    column = 'city',
+    type = 'text'
+}, {
+    column = 'street',
+    type = 'text'
+}, {
+    column = 'housenumber',
+    type = 'integer'
+}})
+
 function osm2pgsql.process_way(object)
     if object.tags.highway == 'cycleway' or object.tags.cycleway == "track" or object.tags["cycleway:left"] == "track" or
         object.tags["cycleway:right"] == "track" or object.tags["cycleway:both"] == "track" then
@@ -416,6 +460,15 @@ function osm2pgsql.process_way(object)
             landcover = object.tags.landcover
         })
     end
+
+    if object.tags["addr:interpolation"] then
+        address:insert({
+            geom = object:as_linestring(),
+            tags = object.tags,
+            housenumber1 = object.nodes[1],
+            housenumber2 = object.nodes[2]
+        })
+    end
 end
 
 function osm2pgsql.process_relation(object)
@@ -462,6 +515,16 @@ function osm2pgsql.process_node(object)
             geom = object:as_point(),
             tags = object.tags,
             place = object.tags.place
+        })
+    end
+
+    if object.tags["addr:street"] then
+        address_node:insert({
+            geom = object:as_point(),
+            tags = object.tags,
+            city = object.tags["addr:city"],
+            street = object.tags["addr:street"],
+            housenumber = object.tags["addr:housenumber"]
         })
     end
 end

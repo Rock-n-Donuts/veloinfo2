@@ -135,4 +135,19 @@ psql -h db -U postgres -d carte -c "
                                     CREATE INDEX edge_way_id_idx ON edge(way_id);
                                     CREATE INDEX edge_geom_idx ON edge(geom);
                                     CREATE UNIQUE INDEX edge_id_idx ON edge(id);
+
+                                    create materialized view address_range as
+                                        select 
+                                        	a.geom,
+                                        	an1.city,
+                                        	an1.street,
+                                        	an1.housenumber as start,
+                                        	an2.housenumber as end,
+                                        	(to_tsvector('french', coalesce(an1.street, '') || ' ' || coalesce(an1.city, ''))) as tsvector
+                                        from address a
+                                        join address_node an1 on a.housenumber1 = an1.node_id
+                                        join address_node an2 on a.housenumber2 = an2.node_id;
+
+                                    CREATE INDEX textsearch_idx ON address_range USING GIN (tsvector);
+                                    CREATE INDEX address_range_geom_idx ON address_range(geom);
                                     "
