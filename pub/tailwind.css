@@ -19,5 +19,5 @@
 
 .htmx-request {
     cursor: not-allowed;
-    opacity: 50%;
+    opacity: 100%;
 }
