@@ -1,5 +1,5 @@
 <div class="absolute top-4 z-10 flex justify-center" hx-on:click="clearResult()">
-    <form class="" hx-post="/search" hx-target="#search" hx-trigger="input" onsubmit="return false">
+    <form class="" hx-post="/search" hx-target="#search" hx-trigger="input throttle">
         <input class="w-52 h-8 rounded-lg outline outline-gray-800 text-center" id="query" name="query" type="text"
             name="query" placeholder="Rechercher une adresse" value="{{query}}" autofocus />
         <input type="hidden" name="lng" value="{{lng}}">
