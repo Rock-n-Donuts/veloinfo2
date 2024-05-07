@@ -10,7 +10,7 @@ use crate::{
 };
 
 #[derive(Template)]
-#[template(path = "search.html")]
+#[template(path = "search.html", escape = "none")]
 
 pub struct Search {
     pub search_results: Vec<SearchResult>,
@@ -22,6 +22,7 @@ pub struct Search {
 #[derive(Template, Debug)]
 #[template(path = "search_result.html")]
 pub struct SearchResult {
+    pub number: String,
     pub street: String,
     pub city: String,
     pub lat: f64,
@@ -49,6 +50,7 @@ pub async fn post(State(state): State<VeloinfoState>, Form(query): Form<QueryPar
                 .await
                 .into_iter()
                 .map(|ar| SearchResult {
+                    number: number.to_string(),
                     street: ar.street,
                     city: ar.city,
                     lat: ar.lat,
@@ -67,6 +69,7 @@ pub async fn post(State(state): State<VeloinfoState>, Form(query): Form<QueryPar
                 .await
                 .into_iter()
                 .map(|ar| SearchResult {
+                    number: "".to_string(),
                     street: ar.street,
                     city: ar.city,
                     lat: ar.lat,

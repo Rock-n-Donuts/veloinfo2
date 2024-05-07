@@ -1,5 +1,5 @@
-<div>
-    <div class="search-result">
-        {{ street }} {{ city }}
-    </div>
+<div hx-on:click="showSearchResult({{lng}}, {{lat}})" class="cursor-pointer m-2 text-sm font-bold flex">
+    <div class="rounded-full bg-slate-600 h-2 w-2 m-1"></div>
+    {{ number }} {{ street }}, {{ city }}
+    <hr>
 </div>
