@@ -73,7 +73,7 @@ async fn main() {
     let sched = JobScheduler::new().await.unwrap();
     sched
         .add(
-            Job::new("0 0 8 * * *", |_uuid, _l| {
+            Job::new("0 0 7 * * *", |_uuid, _l| {
                 println!("Importing data");
                 let output = Command::new("./import.sh")
                     .output()
