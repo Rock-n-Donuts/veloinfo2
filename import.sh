@@ -54,7 +54,6 @@ psql -h db -U postgres -d carte -c "
                                             nodes, 
                                             ST_DumpSegments(geom) as segment,
                                             aw.name,
-                                            aw.tags,
                                             case
                                                 when tags->>'bicycle' = 'no' then 1 / 0.0001
                                                 when tags->>'bicycle' = 'discouraged' then 1 / 0.1
@@ -101,7 +100,9 @@ psql -h db -U postgres -d carte -c "
                                     AS SELECT  
                                         id,
                                         node as source,
+                                        st_pointn((segment).geom, 1) as source_geom,
                                         awe.nodes[(segment).path[1]+1] as target,
+                                        st_pointn((segment).geom, 2) as target_geom,
                                         st_x(st_transform(ST_PointN((segment).geom, 1), 4326)) as x1,
                                         st_y(st_transform(ST_PointN((segment).geom, 1), 4326)) as y1,
                                         st_x(st_transform(ST_PointN((segment).geom, 2), 4326)) as x2,
@@ -135,6 +136,8 @@ psql -h db -U postgres -d carte -c "
 
                                     CREATE INDEX edge_way_id_idx ON edge(way_id);
                                     CREATE INDEX edge_geom_idx ON edge using gist(geom);
+                                    CREATE INDEX edge_source_geom_idx ON edge using gist(source_geom);
+                                    CREATE INDEX edge_target_geom_idx ON edge using gist(target_geom);
                                     CREATE UNIQUE INDEX edge_id_idx ON edge(id);
 
                                     create materialized view address_range as

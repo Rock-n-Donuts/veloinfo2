@@ -157,19 +157,30 @@ impl Edge {
             r#"        
             SELECT
                 way_id,
-                geom,
-                unnest(nodes) as node_id,
-                ST_X(st_transform((dp).geom, 4326)) as lng,
-                ST_Y(st_transform((dp).geom, 4326)) as lat
+                ST_AsText(ST_Transform(geom, 4326)) as geom,
+                node_id,
+                ST_X(st_transform(geom, 4326)) as lng,
+                ST_Y(st_transform(geom, 4326)) as lat
             FROM (  
-                SELECT (ST_DumpPoints(geom)) as dp, 
+                SELECT 
                         way_id,
-                        ST_AsText(ST_Transform(geom, 4326)) as geom,
-                        nodes
-                FROM all_way
-                WHERE ST_DWithin(geom, ST_Transform(ST_SetSRID(ST_MakePoint($1, $2), 4326), 3857), 1000)
+                        source as node_id,
+                        source_geom as geom
+                FROM edge e
+	            WHERE 
+                    ST_DWithin(geom, ST_Transform(ST_SetSRID(ST_MakePoint($1, $2), 4326), 3857), 1000) and
+                    cost_road < 20
+                union
+                SELECT  
+                        way_id,
+                        target as node_id,
+                        target_geom as geom
+                FROM edge e
+	            WHERE 
+                    ST_DWithin(geom, ST_Transform(ST_SetSRID(ST_MakePoint($1, $2), 4326), 3857), 1000) and
+                    cost_road < 20
             ) as subquery
-            ORDER BY (dp).geom <-> ST_Transform(ST_SetSRID(ST_MakePoint($1, $2), 4326), 3857)
+            ORDER BY geom <-> ST_Transform(ST_SetSRID(ST_MakePoint($1, $2), 4326), 3857)
             LIMIT 1"#,
         )
         .bind(lng)
