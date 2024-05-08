@@ -113,20 +113,6 @@ async function selectBigger(event) {
     var nodes = await htmx.ajax('GET', '/segment_panel_bigger/' + start_marker.getLngLat().lng + "/" + start_marker.getLngLat().lat + "/" + event.lngLat.lng + "/" + event.lngLat.lat, "#info");
 }
 
-async function zoomToSegment(score_id) {
-    var fetch_response = await fetch('/cyclability_score/geom/' + score_id);
-    var response = await fetch_response.json();
-    way_ids = response.reduce((way_ids, score) => {
-        return way_ids + " " + score.way_id;
-    }, "");
-    var geom = response.reduce((geom, cycleway) => {
-        cycleway.geom.forEach((coords) => {
-            geom.push(coords);
-        });
-        return geom;
-    }, []);
-    display_segment_geom(geom);
-}
 
 function display_segment_geom(geom) {
     if (map.getLayer("selected")) {
