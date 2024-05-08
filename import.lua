@@ -253,7 +253,7 @@ local building = osm2pgsql.define_table({
         type = 'text'
     }, {
         column = 'geom',
-        type = 'LineString',
+        type = 'multipolygon',
         not_null = true
     }, {
         column = 'tags',
@@ -400,7 +400,7 @@ function osm2pgsql.process_way(object)
     if object.tags.building then
         building:insert({
             name = object.tags.name,
-            geom = object:as_linestring(),
+            geom = object:as_polygon(),
             tags = object.tags,
             building = object.tags.building
         })
@@ -507,6 +507,16 @@ function osm2pgsql.process_relation(object)
             landcover = object.tags.landcover
         })
     end
+
+    if object.tags.building then
+        building:insert({
+            name = object.tags.name,
+            geom = object:as_multipolygon(),
+            tags = object.tags,
+            building = object.tags.building
+        })
+    end
+
 end
 
 function osm2pgsql.process_node(object)
