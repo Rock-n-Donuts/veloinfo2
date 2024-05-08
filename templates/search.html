@@ -24,9 +24,7 @@
         lng.value = map.getCenter().lng;
         lat.value = map.getCenter().lat;
     }, 2000);
-    document.addEventListener("click", (e) => {
-        clearResult();
-    });
+    document.addEventListener("click", clearResult);
 
     function showSearchResult(lng, lat) {
         clearResult();
