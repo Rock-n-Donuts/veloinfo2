@@ -1,13 +1,10 @@
 <div class="absolute top-4 z-10 flex justify-center" hx-on:click="clearResult()">
-    <form class="" hx-post="/search" hx-target="#search" hx-trigger="input delay:.5s" onsubmit="return false">
+    <form class="" hx-post="/search" hx-target="#search_results" hx-trigger="input delay:.5s" onsubmit="return false">
         <input class="w-52 h-8 rounded-lg outline outline-gray-800 text-center" id="query" name="query" type="text"
             name="query" placeholder="Rechercher une adresse" value="{{query}}" autofocus />
         <input type="hidden" name="lng" value="{{lng}}">
         <input type="hidden" name="lat" value="{{lat}}">
         <div id="search_results" class="bg-white flex flex-col justify-center">
-            {% for search_result in search_results %}
-            {{search_result}}
-            {% endfor %}
         </div>
     </form>
 </div>
