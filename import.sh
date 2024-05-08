@@ -31,6 +31,18 @@ psql -h db -U postgres -d carte -c "
                                         WHERE t.rn = 1;
                                     CREATE UNIQUE INDEX bike_path_way_id_idx ON bike_path(way_id);
                                     CREATE INDEX edge_geom_gist ON bike_path USING gist(geom);
+
+                                    CREATE MATERIALIZED VIEW last_cycleway_score
+                                    AS
+                                        SELECT *
+                                            FROM (
+                                                SELECT c.*, cs.score,
+                                                ROW_NUMBER() OVER (PARTITION BY c.way_id ORDER BY cs.created_at DESC) as rn
+                                                FROM cyclability_score cs 
+                                                JOIN cycleway_way c ON c.way_id = ANY(cs.way_ids)
+                                            ) t
+                                        WHERE t.rn = 1;
+                                    CREATE UNIQUE INDEX last_cycleway_score_way_id_idx ON last_cycleway_score(way_id);
                                     
                                     drop sequence if exists edge_id;
                                     CREATE SEQUENCE edge_id;
@@ -83,17 +95,6 @@ psql -h db -U postgres -d carte -c "
                                     create unique index _all_way_edge_id_idx on _all_way_edge (id);
                                     create index _all_way_edge_way_id_idx on _all_way_edge (way_id);
 
-                                    CREATE MATERIALIZED VIEW last_cycleway_score
-                                    AS
-                                        SELECT *
-                                            FROM (
-                                                SELECT c.*, cs.score,
-                                                ROW_NUMBER() OVER (PARTITION BY c.way_id ORDER BY cs.created_at DESC) as rn
-                                                FROM cyclability_score cs 
-                                                JOIN cycleway_way c ON c.way_id = ANY(cs.way_ids)
-                                            ) t
-                                        WHERE t.rn = 1;
-                                    CREATE UNIQUE INDEX last_cycleway_score_way_id_idx ON last_cycleway_score(way_id);
 
 
                                     CREATE MATERIALIZED VIEW edge 
@@ -133,7 +134,7 @@ psql -h db -U postgres -d carte -c "
                                     where awe.nodes[(segment).path[1]+1] is not null;       
 
                                     CREATE INDEX edge_way_id_idx ON edge(way_id);
-                                    CREATE INDEX edge_geom_idx ON edge(geom);
+                                    CREATE INDEX edge_geom_idx ON edge using gist(geom);
                                     CREATE UNIQUE INDEX edge_id_idx ON edge(id);
 
                                     create materialized view address_range as
