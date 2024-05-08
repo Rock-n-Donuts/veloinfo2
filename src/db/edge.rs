@@ -157,24 +157,15 @@ impl Edge {
             r#"        
             SELECT
                 way_id,
-                ST_AsText(ST_Transform(geom, 4326)) as geom,
+                ST_AsText(ST_Transform(st_pointn(geom, 1), 4326)) as geom,
                 node_id,
-                ST_X(st_transform(geom, 4326)) as lng,
-                ST_Y(st_transform(geom, 4326)) as lat
+                ST_X(st_transform(st_pointn(geom, 1), 4326)) as lng,
+                ST_Y(st_transform(st_pointn(geom, 1), 4326)) as lat
             FROM (  
                 SELECT 
                         way_id,
                         source as node_id,
-                        source_geom as geom
-                FROM edge e
-	            WHERE 
-                    ST_DWithin(geom, ST_Transform(ST_SetSRID(ST_MakePoint($1, $2), 4326), 3857), 1000) and
-                    cost_road < 20
-                union
-                SELECT  
-                        way_id,
-                        target as node_id,
-                        target_geom as geom
+                        geom
                 FROM edge e
 	            WHERE 
                     ST_DWithin(geom, ST_Transform(ST_SetSRID(ST_MakePoint($1, $2), 4326), 3857), 1000) and
