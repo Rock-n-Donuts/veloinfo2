@@ -196,7 +196,6 @@ function update_url() {
     }, 1000);
 }
 
-
 async function clear() {
     if (start_marker) {
         start_marker.remove();
@@ -216,7 +215,6 @@ async function clear() {
         });
     }
     // Display info panel
-    const bounds = map.getBounds();
     htmx.ajax("GET", "/info_panel/down", "#info");
 }
 
