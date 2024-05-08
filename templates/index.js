@@ -217,7 +217,7 @@ async function clear() {
     }
     // Display info panel
     const bounds = map.getBounds();
-    htmx.ajax("GET", "/info_panel/up/" + bounds._sw.lng + "/" + bounds._sw.lat + "/" + bounds._ne.lng + "/" + bounds._ne.lat, "#info");
+    htmx.ajax("GET", "/info_panel/down", "#info");
 }
 
 function getCookie(name) {
