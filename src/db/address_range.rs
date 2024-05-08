@@ -1,4 +1,3 @@
-use serde::Serialize;
 use sqlx::Postgres;
 
 #[derive(sqlx::FromRow, Debug)]

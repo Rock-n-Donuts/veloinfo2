@@ -9,6 +9,7 @@ pub struct Point {
     pub y: f64,
     pub way_id: i64,
     pub node_id: i64,
+    pub length: f64,
 }
 
 #[derive(Debug, sqlx::FromRow, Serialize, Deserialize, Clone)]
@@ -39,6 +40,7 @@ impl Edge {
                                     e.x1 as x,
                                     e.y1 as y,
                                     way_id,
+                                    st_length(st_transform(geom ,4326)::geography) as length,
                                     node as node_id
                                         FROM pgr_astar(
                                             FORMAT(
