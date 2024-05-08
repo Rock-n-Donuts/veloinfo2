@@ -27,18 +27,21 @@
 
     function showSearchResult(lng, lat) {
         clearResult();
+
         if (start_marker) {
             start_marker.remove();
         }
         start_marker = new maplibregl.Marker({ color: "#00f" }).setLngLat([lng, lat]).addTo(map);
+
+        htmx.ajax('GET', '/point_panel_lng_lat/' + lng + "/" + lat, "#info");
         map.flyTo({
             center: [lng, lat],
         });
     }
 
     function clearResult() {
-        const search_results = document.getElementById("search_results");
-        search_results.innerHTML = "";
-        htmx.ajax('GET', '/info_panel/down', '#info');
+        document.getElementById("search_results").innerHTML = "";
+        document.getElementById("query").value = "";
     }
+
 </script>
