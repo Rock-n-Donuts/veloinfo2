@@ -1,7 +1,9 @@
 <div id="point_panel" class="absolute w-full max-h-[50%] overflow-auto md:w-[500px] bg-white z-20 bottom-0 rounded-lg">
-    <div>Point Panel</div>
+    <div>Point Panel<img id="spinner" class="htmx-indicator z-30 bottom-8 mx-auto inset-x-0" src="/pub/bars.svg" />
+    </div>
 
     <div class="flex flex-row">
+
         <button id="route_button" hx-on:click="route()"
             class="ml-2 bg-teal-300 rounded uppercase p-2 flex flex-row"><img src="/pub/directions.png"
                 class="w-4 h-4 mr-1">itinéraire</button>
