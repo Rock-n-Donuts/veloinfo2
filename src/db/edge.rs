@@ -95,6 +95,7 @@ impl Edge {
                                     e.x1 as x,
                                     e.y1 as y,
                                     way_id,
+                                    st_length(st_transform(geom ,4326)::geography) as length,
                                     node as node_id
                                         FROM pgr_bdastar(
                                             FORMAT(
