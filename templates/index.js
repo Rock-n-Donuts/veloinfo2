@@ -145,7 +145,7 @@ function display_segment_geom(geom) {
                 "line-color": "hsl(172, 100%, 50%)",
                 "line-gap-width": 2,
                 "line-blur": 0,
-                "line-opacity": 0.25
+                "line-opacity": 0.50
             }
         },
             "Road labels");
