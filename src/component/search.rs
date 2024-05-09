@@ -53,17 +53,18 @@ pub async fn post(
         Some(caps) => {
             let number = caps.get(1).unwrap().as_str().parse::<i64>().unwrap();
             let sub_query = caps.get(2).unwrap().as_str().to_string();
-            let search_results = get_with_adress(&number, &sub_query, &state.conn)
-                .await
-                .into_iter()
-                .map(|ar| SearchResult {
-                    number: number.to_string(),
-                    street: ar.street,
-                    city: ar.city,
-                    lat: ar.lat,
-                    lng: ar.lng,
-                })
-                .collect();
+            let search_results =
+                get_with_adress(&number, &sub_query, &query.lng, &query.lat, &state.conn)
+                    .await
+                    .into_iter()
+                    .map(|ar| SearchResult {
+                        number: number.to_string(),
+                        street: ar.street,
+                        city: ar.city,
+                        lat: ar.lat,
+                        lng: ar.lng,
+                    })
+                    .collect();
             SearchResults { search_results }
         }
         None => {

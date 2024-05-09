@@ -137,6 +137,7 @@ psql -h db -U postgres -d carte -c "
                                     CREATE INDEX edge_geom_idx ON edge using gist(geom);
                                     CREATE UNIQUE INDEX edge_id_idx ON edge(id);
 
+                                    drop materialized view if exists address_range;
                                     create materialized view address_range as
                                         select 
                                         	a.geom,
@@ -148,7 +149,20 @@ psql -h db -U postgres -d carte -c "
                                         	(to_tsvector('french', coalesce(an1.street, '') || ' ' || coalesce(an1.city, ''))) as tsvector
                                         from address a
                                         join address_node an1 on a.housenumber1 = an1.node_id
-                                        join address_node an2 on a.housenumber2 = an2.node_id;
+                                        join address_node an2 on a.housenumber2 = an2.node_id
+                                        union
+                                        select 
+                                        	geom,
+                                            CASE
+                                                WHEN MOD(housenumber, 2) = 0 THEN 'even'
+                                                ELSE 'odd'
+                                            END as odd_even,
+                                        	city,
+                                        	street,
+                                        	housenumber as start,
+                                        	housenumber as end,
+                                        	(to_tsvector('french', coalesce(street, '') || ' ' || coalesce(city, ''))) as tsvector
+                                        from address_node an;
 
                                     CREATE INDEX textsearch_idx ON address_range USING GIN (tsvector);
                                     CREATE INDEX address_range_geom_idx ON address_range using gist(geom);
