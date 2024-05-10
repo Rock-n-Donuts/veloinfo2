@@ -4,7 +4,21 @@
             Route panel
         </div>
         <div>
-            Longueur: {{ total_length }} km
+            <div>
+                Longueur: {{ total_length }} km
+            </div>
+            <div>
+                <div>
+                    {% let total_duration = total_length / 15.0 %}
+                    {% let hours = total_duration.floor() %}
+                    {% let minutes = ((total_duration - hours) * 60.0).round() %}
+                    Durée:
+                    {% if hours > 1.0 %}
+                    {{ hours }} heures et
+                    {% endif %}
+                    {{ minutes }} minutes à 15 km/h
+                </div>
+            </div>
             {{ error }}
         </div>
         <button hx-on:click="clear()" hx-target="#info" class="ml-2 bg-teal-300 rounded uppercase p-2">annuler</button>
