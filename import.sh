@@ -166,4 +166,14 @@ psql -h db -U postgres -d carte -c "
 
                                     CREATE INDEX textsearch_idx ON address_range USING GIN (tsvector);
                                     CREATE INDEX address_range_geom_idx ON address_range using gist(geom);
+
+                                    drop materialized view if exists name_query;
+                                    create materialized view name_query as
+                                        select 
+                                        	geom,
+                                        	to_tsvector('french', name) as tsvector
+                                        from name
+
+                                    CREATE INDEX name_query_textsearch_idx ON name_query USING GIN (tsvector);
+                                    CREATE INDEX name_query_geom_idx ON name_query using gist(geom);
                                     "

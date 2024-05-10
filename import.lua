@@ -360,6 +360,17 @@ local address_node = osm2pgsql.define_node_table('address_node', {{
     type = 'integer'
 }})
 
+local name = osm2pgsql.define_node_table('name', {{
+    column = 'geom',
+    type = 'Point'
+}, {
+    column = 'tags',
+    type = 'jsonb'
+}, {
+    column = 'name',
+    type = 'text'
+}})
+
 function osm2pgsql.process_way(object)
     if object.tags.highway == 'cycleway' or object.tags.cycleway == "track" or object.tags["cycleway:left"] == "track" or
         object.tags["cycleway:right"] == "track" or object.tags["cycleway:both"] == "track" or object.tags.bicycle ==
@@ -546,6 +557,13 @@ function osm2pgsql.process_node(object)
             city = object.tags["addr:city"],
             street = object.tags["addr:street"],
             housenumber = object.tags["addr:housenumber"]
+        })
+    end
+    if object.tags.name then
+        name:insert({
+            name = object.tags.name,
+            geom = object:as_point(),
+            tags = object.tags
         })
     end
 end

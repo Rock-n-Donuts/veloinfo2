@@ -5,7 +5,7 @@ use lazy_static::lazy_static;
 use regex::Regex;
 
 use crate::{
-    db::address_range::{get, get_with_adress},
+    db::search_db::{get, get_with_adress},
     VeloinfoState,
 };
 
@@ -26,9 +26,7 @@ pub struct SearchResults {
 
 #[derive(Debug)]
 pub struct SearchResult {
-    pub number: String,
-    pub street: String,
-    pub city: String,
+    pub name: String,
     pub lat: f64,
     pub lng: f64,
 }
@@ -58,9 +56,7 @@ pub async fn post(
                     .await
                     .into_iter()
                     .map(|ar| SearchResult {
-                        number: number.to_string(),
-                        street: ar.street,
-                        city: ar.city,
+                        name: ar.name,
                         lat: ar.lat,
                         lng: ar.lng,
                     })
@@ -72,9 +68,7 @@ pub async fn post(
                 .await
                 .into_iter()
                 .map(|ar| SearchResult {
-                    number: "".to_string(),
-                    street: ar.street,
-                    city: ar.city,
+                    name: ar.name,
                     lat: ar.lat,
                     lng: ar.lng,
                 })
