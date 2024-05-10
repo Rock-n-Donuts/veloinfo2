@@ -172,6 +172,7 @@ psql -h db -U postgres -d carte -c "
                                         select 
                                             name,
                                         	geom,
+                                            tags,
                                         	to_tsvector('french', name) as tsvector
                                         from name
 
