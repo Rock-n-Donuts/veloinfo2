@@ -31,6 +31,7 @@ pub async fn get(
                     WHERE tsvector  @@ websearch_to_tsquery('french', $1)
                 union
                     select 
+                        distinct on (name || ' ' || coalesce(tags::JSONB->>'addr:street', '') || ' ' || coalesce(tags::JSONB->>'addr:city', ''))
                         name || ' ' || coalesce(tags::JSONB->>'addr:street', '') || ' ' || coalesce(tags::JSONB->>'addr:city', '') as name,
                         ST_X(ST_Transform(geom, 4326)) as lng,
                         ST_Y(ST_Transform(geom, 4326)) as lat,
@@ -39,7 +40,7 @@ pub async fn get(
                     from name_query
                     where tsvector  @@ websearch_to_tsquery('french', $1)
             ) t WHERE rn = 1 and name is not null
-            order by geom<-> ST_Transform(ST_SetSRID(ST_MakePoint($2, $3), 4326), 3857)
+            order by geom <-> ST_Transform(ST_SetSRID(ST_MakePoint($2, $3), 4326), 3857)
             limit 20;
            "#,
         )
