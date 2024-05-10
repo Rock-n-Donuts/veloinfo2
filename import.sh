@@ -174,7 +174,7 @@ psql -h db -U postgres -d carte -c "
                                         	geom,
                                             tags,
                                         	to_tsvector('french', name) as tsvector
-                                        from name
+                                        from name;
 
                                     CREATE INDEX name_query_textsearch_idx ON name_query USING GIN (tsvector);
                                     CREATE INDEX name_query_geom_idx ON name_query using gist(geom);
