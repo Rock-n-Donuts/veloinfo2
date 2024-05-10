@@ -170,6 +170,7 @@ psql -h db -U postgres -d carte -c "
                                     drop materialized view if exists name_query;
                                     create materialized view name_query as
                                         select 
+                                            name,
                                         	geom,
                                         	to_tsvector('french', name) as tsvector
                                         from name
