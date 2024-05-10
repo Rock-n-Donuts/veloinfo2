@@ -1,17 +1,20 @@
-use crate::VeloinfoState;
+use crate::{db::search_db, VeloinfoState};
 use askama::Template;
 use axum::extract::{Path, State};
 
 #[derive(Template)]
 #[template(path = "point_panel.html", escape = "none")]
-pub struct PointPanel {}
+pub struct PointPanel {
+    name: String,
+}
 
 pub async fn point_panel_lng_lat(
     Path((lng, lat)): Path<(f64, f64)>,
     state: State<VeloinfoState>,
 ) -> PointPanel {
-    println!("lng: {}", lng);
-    println!("lat: {}", lat);
-    println!("state: {:?}", state);
-    PointPanel {}
+    let name = match search_db::get_any(&lng, &lat, &state.conn).await.first() {
+        Some(ar) => ar.name.clone(),
+        None => "".to_string(),
+    };
+    PointPanel { name }
 }
