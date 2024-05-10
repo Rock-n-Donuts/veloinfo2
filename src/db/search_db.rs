@@ -31,7 +31,6 @@ pub async fn get(
                     WHERE tsvector  @@ websearch_to_tsquery('french', $1)
                 union
                     select 
-                        distinct on (name || ' ' || coalesce(tags::JSONB->>'addr:street', '') || ' ' || coalesce(tags::JSONB->>'addr:city', ''))
                         name || ' ' || coalesce(tags::JSONB->>'addr:street', '') || ' ' || coalesce(tags::JSONB->>'addr:city', '') as name,
                         ST_X(ST_Transform(geom, 4326)) as lng,
                         ST_Y(ST_Transform(geom, 4326)) as lat,

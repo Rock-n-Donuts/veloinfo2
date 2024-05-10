@@ -182,6 +182,14 @@ psql -h db -U postgres -d carte -c "
                                             tags,
                                             to_tsvector('french', name) as tsvector
                                         from building
+                                        where name is not null
+                                        union
+                                        select
+                                            name,
+                                            ST_Centroid(geom),
+                                            tags,
+                                            to_tsvector('french', name) as tsvector
+                                        from landcover
                                         where name is not null;
 
                                     CREATE INDEX name_query_textsearch_idx ON name_query USING GIN (tsvector);
