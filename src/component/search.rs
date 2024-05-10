@@ -41,7 +41,7 @@ pub struct QueryParams {
 }
 
 lazy_static! {
-    static ref ADDRESS_RE: Regex = Regex::new(r"(\d+)(.*)").unwrap();
+    static ref ADDRESS_RE: Regex = Regex::new(r"(\d+) (.*)").unwrap();
 }
 
 #[debug_handler]
