@@ -143,7 +143,6 @@ function display_segment_geom(geom) {
             "paint": {
                 "line-width": 8,
                 "line-color": "hsl(205, 100%, 50%)",
-                "line-gap-width": 2,
                 "line-blur": 0,
                 "line-opacity": 0.50
             }
