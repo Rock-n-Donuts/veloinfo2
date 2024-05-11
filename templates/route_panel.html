@@ -13,7 +13,7 @@
                     {% let hours = total_duration.floor() %}
                     {% let minutes = ((total_duration - hours) * 60.0).round() %}
                     Durée:
-                    {% if hours > 1.0 %}
+                    {% if hours >= 1.0 %}
                     {{ hours }} heures et
                     {% endif %}
                     {{ minutes }} minutes à 15 km/h
