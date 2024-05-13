@@ -3,6 +3,7 @@ use axum::{extract::State, Form};
 use axum_macros::debug_handler;
 use lazy_static::lazy_static;
 use regex::Regex;
+use sqlx::query;
 
 use crate::{
     db::search_db::{get, get_with_adress},
@@ -21,6 +22,7 @@ pub struct Search {
 #[derive(Template, Debug)]
 #[template(path = "search_result.html")]
 pub struct SearchResults {
+    query: String,
     search_results: Vec<SearchResult>,
 }
 
@@ -61,7 +63,10 @@ pub async fn post(
                         lng: ar.lng,
                     })
                     .collect();
-            SearchResults { search_results }
+            SearchResults {
+                query: query.query,
+                search_results,
+            }
         }
         None => {
             let search_results = get(&query.query, &query.lng, &query.lat, &state.conn)
@@ -73,7 +78,10 @@ pub async fn post(
                     lng: ar.lng,
                 })
                 .collect();
-            SearchResults { search_results }
+            SearchResults {
+                query: query.query,
+                search_results,
+            }
         }
     }
 }

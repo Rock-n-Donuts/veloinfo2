@@ -1,3 +1,7 @@
+<div class="text-base">
+    recherche de <span class="font-bold">{{ query }}</span>
+</div>
+
 {% for search_result in search_results %}
 <div hx-on:click="showSearchResult({{search_result.lng}}, {{search_result.lat}})"
     class="cursor-pointer m-2 text-sm font-bold flex">
