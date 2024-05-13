@@ -13,8 +13,8 @@ if ("serviceWorker" in navigator) {
 
 // Set the initial map center and zoom level
 // the url parameters take precedence over the cookies
-var lng = getCookie("lng") ? getCookie("lng") : -72.45272261855519;
-var lat = getCookie("lat") ? getCookie("lat") : 45.924806212523265;
+var lng = getCookie("lng") ? getCookie("lng") : -73.39899762303611;
+var lat = getCookie("lat") ? getCookie("lat") : 45.921066117828786;
 var zoom = getCookie("zoom") ? getCookie("zoom") : 6;
 let params = new URLSearchParams(window.location.search);
 if (params.has("lat") && params.has("lng") && params.has("zoom")) {
