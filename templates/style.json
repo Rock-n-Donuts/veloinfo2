@@ -2879,6 +2879,26 @@
                         ],
                         13,
                         12
+                    ],
+                    21,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "highway"
+                        ],
+                        [
+                            "cycleway"
+                        ],
+                        22,
+                        [
+                            "primary",
+                            "secondary",
+                            "tertiary",
+                            "residential"
+                        ],
+                        21,
+                        17
                     ]
                 ],
                 "text-field": [
