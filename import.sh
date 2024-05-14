@@ -64,10 +64,6 @@ psql -h db -U postgres -d carte -c "
                                                 when tags->>'cycleway:both' = 'track' then 1 / 0.8
                                                 when tags->>'cycleway:left' = 'track' then 1 / 0.8
                                                 when tags->>'cycleway:right' = 'track' then 1 / 0.8
-                                                when tags->>'cycleway' = 'separate' then 1 / 0.8
-                                                when tags->>'cycleway:both' = 'separate' then 1 / 0.8
-                                                when tags->>'cycleway:left' = 'separate' then 1 / 0.8
-                                                when tags->>'cycleway:right' = 'separate' then 1 / 0.8
                                                 when tags->>'cycleway' = 'lane' then 1 / 0.7
                                                 when tags->>'cycleway:both' = 'lane' then 1 / 0.7
                                                 when tags->>'cycleway:left' = 'lane' then 1 / 0.7
@@ -75,6 +71,10 @@ psql -h db -U postgres -d carte -c "
                                                 when tags->>'cycleway:both' = 'shared_lane' then 1 / 0.6
                                                 when tags->>'cycleway:left' = 'shared_lane' then 1 / 0.6
                                                 when tags->>'cycleway:right' = 'shared_lane' then 1 / 0.6
+                                                when tags->>'cycleway' = 'separate' then 1 / 0.2
+                                                when tags->>'cycleway:both' = 'separate' then 1 / 0.2
+                                                when tags->>'cycleway:left' = 'separate' then 1 / 0.2
+                                                when tags->>'cycleway:right' = 'separate' then 1 / 0.2
                                                 when tags->>'cycleway' = 'shared_lane' then 1 / 0.6
                                                 when tags->>'highway' = 'residential' then 1 / 0.6
                                                 when tags->>'highway' = 'tertiary' then 1 / 0.5
