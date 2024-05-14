@@ -1,7 +1,8 @@
-<div class="absolute top-4 z-10 flex justify-center" hx-on:click="clearResult()">
-    <form class="" hx-post="/search" hx-target="#search_results" hx-trigger="input delay:.5s" onsubmit="return false">
+<div class="absolute top-4 z-10 flex justify-center">
+    <form class="">
         <input class="w-52 h-8 rounded-lg outline outline-gray-800 text-center" id="query" name="query" type="text"
-            name="query" placeholder="Rechercher une adresse" value="{{query}}" autofocus />
+            name="query" placeholder="Rechercher une adresse" value="{{query}}" autofocus hx-on:keyup="search()"
+            hx-on:click="displayHistory()" hx-on:focusout="clearResult()" />
         <input type="hidden" name="lng" value="{{lng}}">
         <input type="hidden" name="lat" value="{{lat}}">
         <div id="search_results" class="bg-white flex flex-col justify-center">
@@ -11,28 +12,52 @@
 
 
 <script>
-    if (updateSearchLatLngId)
-        clearTimeout(updateSearchLatLngId);
+    function displayHistory() {
+        let query = document.querySelector("#query");
+        if (query.value === "") { // Vérifier si le champ de recherche est vide
+            let recentTargets = JSON.parse(localStorage.getItem('recentTargets')) || [];
+            let searchResults = document.querySelector("#search_results");
+            searchResults.innerHTML = ""; // Effacer les résultats de recherche existants
+            for (let target of recentTargets) {
+                let div = document.createElement("div");
+                div.innerHTML = target;
+                searchResults.appendChild(div);
+            }
+            htmx.process(searchResults);
+        }
+    }
 
-    lng = document.querySelector("input[name=lng]");
-    lat = document.querySelector("input[name=lat]");
-    lng.value = map.getCenter().lng;
-    lat.value = map.getCenter().lat;
-    var updateSearchLatLngId = setInterval(() => {
-        lng = document.querySelector("input[name=lng]");
-        lat = document.querySelector("input[name=lat]");
-        lng.value = map.getCenter().lng;
-        lat.value = map.getCenter().lat;
-    }, 2000);
-    document.addEventListener("click", clearResult);
 
-    function showSearchResult(lng, lat) {
-        clearResult();
+    function search() {
+        lng = map.getCenter().lng;
+        lat = map.getCenter().lat;
+        htmx.ajax('POST', '/search', { target: "#search_results", values: { query: query.value, lng: lng, lat: lat } });
+    }
+
+    function showSearchResult(lng, lat, event) {
+        // Stocker la cible dans le localStorage
+        let recentTargets = JSON.parse(localStorage.getItem('recentTargets')) || [];
+        let target = event.target.outerHTML;
+
+        // Vérifier si la cible existe déjà dans la liste
+        let index = recentTargets.indexOf(target);
+        if (index !== -1) {
+            // Si oui, supprimer l'ancienne cible de la liste
+            recentTargets.splice(index, 1);
+        } else if (recentTargets.length >= 10) {
+            // Si la liste est pleine et que la cible n'est pas déjà dans la liste, supprimer le plus ancien élément
+            recentTargets.pop();
+        }
+
+        // Ajouter la nouvelle cible au début de la liste
+        recentTargets.unshift(target);
+        localStorage.setItem('recentTargets', JSON.stringify(recentTargets));
 
         if (start_marker) {
             start_marker.remove();
         }
         start_marker = new maplibregl.Marker({ color: "#00f" }).setLngLat([lng, lat]).addTo(map);
+
 
         htmx.ajax('GET', '/point_panel_lng_lat/' + lng + "/" + lat, "#info");
         map.flyTo({
@@ -41,8 +66,10 @@
     }
 
     function clearResult() {
-        document.getElementById("search_results").innerHTML = "";
-        document.getElementById("query").value = "";
+        setTimeout(() => {
+            document.getElementById("search_results").innerHTML = "";
+            document.getElementById("query").value = "";
+        }, 250);
     }
 
 </script>
