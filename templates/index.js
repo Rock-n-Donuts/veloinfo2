@@ -13,9 +13,10 @@ if ("serviceWorker" in navigator) {
 
 // Set the initial map center and zoom level
 // the url parameters take precedence over the cookies
-var lng = getCookie("lng") ? getCookie("lng") : -73.39899762303611;
-var lat = getCookie("lat") ? getCookie("lat") : 45.921066117828786;
-var zoom = getCookie("zoom") ? getCookie("zoom") : 6;
+const position = JSON.parse(localStorage.getItem("position"));
+var lng = position?.lng || -73.39899762303611;
+var lat = position?.lat || 45.921066117828786;
+var zoom = position?.zoom || 6;
 let params = new URLSearchParams(window.location.search);
 if (params.has("lat") && params.has("lng") && params.has("zoom")) {
     lat = parseFloat(params.get("lat"));
@@ -57,10 +58,6 @@ map.on("click", async function (event) {
 });
 
 map.on("move", function (e) {
-    document.cookie = "zoom=" + map.getZoom();
-    document.cookie = "lng=" + map.getCenter().lng;
-    document.cookie = "lat=" + map.getCenter().lat;
-
     update_url();
 });
 
@@ -155,18 +152,6 @@ function display_segment_geom(geom) {
     map.getSource("veloinfo").setUrl("{{martin_url}}/bike_path");
 }
 
-let timeout_info = null;
-async function update_info() {
-    if (timeout_info) {
-        clearTimeout(timeout_info);
-    }
-    timeout_info = setTimeout(async () => {
-        var info_panel = document.getElementById("info_panel_up");
-        if (!info_panel) {
-            return;
-        }
-    }, 1000)
-}
 
 let timeout_url = null;
 function update_url() {
@@ -175,7 +160,12 @@ function update_url() {
     }
     timeout_url = setTimeout(() => {
         window.history.replaceState({}, "", "/?lat=" + map.getCenter().lat + "&lng=" + map.getCenter().lng + "&zoom=" + map.getZoom());
-        update_info();
+        const position = {
+            "lng": + map.getCenter().lng,
+            "lat": + map.getCenter().lat,
+            "zoom": + map.getZoom()
+        }
+        localStorage.setItem("position", JSON.stringify(position));
         if (document.getElementById("info_panel_up")) {
             const bounds = map.getBounds();
             htmx.ajax("GET", "/info_panel/up/" + bounds._sw.lng + "/" + bounds._sw.lat + "/" + bounds._ne.lng + "/" + bounds._ne.lat, "#info");
@@ -203,13 +193,6 @@ async function clear() {
     }
     // Display info panel
     htmx.ajax("GET", "/info_panel/down", "#info");
-}
-
-function getCookie(name) {
-    let matches = document.cookie.match(new RegExp(
-        "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
-    ));
-    return matches ? decodeURIComponent(matches[1]) : undefined;
 }
 
 async function route() {
