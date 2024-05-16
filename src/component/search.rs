@@ -3,7 +3,6 @@ use axum::{extract::State, Form};
 use axum_macros::debug_handler;
 use lazy_static::lazy_static;
 use regex::Regex;
-use sqlx::query;
 
 use crate::{
     db::search_db::{get, get_with_adress},

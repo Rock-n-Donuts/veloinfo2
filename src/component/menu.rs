@@ -1,10 +1,12 @@
 use askama::Template;
-use axum_extra::extract::CookieJar;
+use axum::extract::Path;
 use lazy_static::lazy_static;
+use serde::Deserialize;
 use std::env;
 
 lazy_static! {
-    static ref KEYCLOAK_BROWSER_URL: String = env::var("KEYCLOAK_BROWSER_URL").expect("KEYCLOAK_BROWSER_URL must be set");
+    static ref KEYCLOAK_BROWSER_URL: String =
+        env::var("KEYCLOAK_BROWSER_URL").expect("KEYCLOAK_BROWSER_URL must be set");
     static ref VELOINFO_URL: String = env::var("VELOINFO_URL").expect("VELOINFO_URL must be set");
 }
 
@@ -15,68 +17,25 @@ pub struct Menu {
     lat: f64,
     lng: f64,
     zoom: i32,
-    keycloak_url: String,
-    login: bool,
-    veloinfo_url: String,
 }
 
-impl Menu {
-    pub fn login(lat: f64, lng: f64, zoom: i32) -> Menu {
-        Menu {
-            open: true,
-            lat,
-            lng,
-            zoom,
-            keycloak_url: KEYCLOAK_BROWSER_URL.to_string() + "/protocol/openid-connect",
-            login: true,
-            veloinfo_url: VELOINFO_URL.to_string(),
-        }
+#[derive(Debug, Deserialize)]
+pub struct Position {
+    lat: f64,
+    lng: f64,
+    zoom: f64,
+}
+
+pub async fn menu_open(Path(position): Path<Position>) -> Menu {
+    let lat = position.lat;
+    let lng = position.lng;
+    let zoom = position.zoom.floor() as i32;
+    Menu {
+        open: true,
+        lat,
+        lng,
+        zoom,
     }
-}
-
-pub async fn menu_open(jar: CookieJar) -> (CookieJar, Menu) {
-    let lat = match jar.get("lat") {
-        Some(c) => c.value().parse::<f64>().unwrap_or_default(),
-        None => {
-            return (jar, Menu::login(0.0, 0.0, 0));
-        }
-    };
-    let lng = match jar.get("lng") {
-        Some(c) => c.value().parse::<f64>().unwrap_or_default(),
-        None => {
-            return (jar, Menu::login(0.0, 0.0, 0));
-        }
-    };
-    let zoom = match jar.get("zoom") {
-        Some(c) => c.value().parse::<f64>().unwrap_or_default() as i32,
-        None => {
-            return (jar, Menu::login(0.0, 0.0, 0));
-        }
-    };
-    let userinfo = match jar.get("userinfo") {
-        Some(userinfo) => {
-            userinfo.value()
-        }
-        None => {
-            eprintln!("No userinfo in cookie jar");
-            return (jar, Menu::login(lat, lng, zoom));
-        }
-    };
-
-    println!("userinfo: {:?}", userinfo);
-
-    (
-        jar,
-        Menu {
-            open: true,
-            lat,
-            lng,
-            zoom,
-            keycloak_url: KEYCLOAK_BROWSER_URL.to_string() + "/protocol/openid-connect",
-            login: false,
-            veloinfo_url: VELOINFO_URL.to_string(),
-        },
-    )
 }
 
 pub async fn menu_close() -> Menu {
@@ -88,9 +47,5 @@ pub async fn menu_close() -> Menu {
         lat,
         lng,
         zoom,
-        keycloak_url: KEYCLOAK_BROWSER_URL.to_string() + "/protocol/openid-connect",
-        login: false,
-        veloinfo_url: VELOINFO_URL.to_string(),
     }
 }
-
