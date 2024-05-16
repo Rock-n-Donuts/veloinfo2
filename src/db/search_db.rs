@@ -116,11 +116,11 @@ pub async fn get_with_adress(
                 select distinct on ($2 || ' ' || street || ', ' || COALESCE(city,''))
                     $2 || ' ' || street || ', ' || COALESCE(city,'') as name,
                     CASE
-                        WHEN ST_GeometryType(geom) = 'ST_Point' THEN ST_X(ST_Transform(geom, 4326))
+                        WHEN ST_GeometryType(geom) = 'ST_Point' THEN ST_X(ST_Transform(st_centroid(geom), 4326))
                         ELSE ST_X(ST_Transform(st_centroid(geom), 4326))
                     END as lng,
                     CASE
-                        WHEN ST_GeometryType(geom) = 'ST_Point' THEN ST_Y(ST_Transform(geom, 4326))
+                        WHEN ST_GeometryType(geom) = 'ST_Point' THEN ST_Y(ST_Transform(st_centroid(geom), 4326))
                         ELSE ST_Y(ST_Transform(st_centroid(geom), 4326))
                     END as lat,
                     st_centroid(geom) as geom
