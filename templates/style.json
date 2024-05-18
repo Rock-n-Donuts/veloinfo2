@@ -1517,6 +1517,10 @@
                     "service_construction",
                     "track_construction",
                     "footway"
+                ],
+                [
+                    "!has",
+                    "railway"
                 ]
             ]
         },
@@ -1771,6 +1775,10 @@
                     "service_construction",
                     "track_construction",
                     "footway"
+                ],
+                [
+                    "!has",
+                    "railway"
                 ]
             ]
         },
