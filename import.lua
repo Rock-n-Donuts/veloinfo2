@@ -420,8 +420,8 @@ function osm2pgsql.process_way(object)
         })
     end
 
-    if (object.tags.highway or object.tags.railway) and object.tags.footway ~= "sidewalk" and object.tags.service ~=
-        "parking_aisle" then
+    if (object.tags.highway or object.tags.railway) and object.tags.footway ~= "sidewalk" and object.tags.highway ~=
+        "steps" and object.tags.service ~= "parking_aisle" then
         transportation:insert({
             name = object.tags.name,
             name_fr = object.tags["name:fr"],
@@ -443,9 +443,9 @@ function osm2pgsql.process_way(object)
         })
     end
 
-    if (object.tags.bicycle == "yes" or object.tags.highway or object.tags.bridge) and
-        not (object.tags.highway == "footway" and object.tags.footway == "sidewalk" or object.tags.highway == "footway" and
-            object.tags.crossing == "unmarked") and object.tags.service ~= "parking_aisle" then
+    if object.tags.highway and not (object.tags.highway == "footway" and
+        not (object.tags.bicycle == "yes" or object.tags.bicycle == "designated" or object.tags.bicycle == "dismount")) and
+        object.tags.service ~= "parking_aisle" then
         all_way:insert({
             name = object.tags.name,
             geom = object:as_linestring(),
