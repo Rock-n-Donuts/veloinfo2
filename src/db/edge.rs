@@ -160,10 +160,10 @@ impl Edge {
             r#"        
             SELECT
                 way_id,
-                ST_AsText(ST_Transform(st_pointn(geom, 1), 4326)) as geom,
+                ST_AsText(ST_Transform(st_centroid(geom), 4326)) as geom,
                 node_id,
-                ST_X(st_transform(st_pointn(geom, 1), 4326)) as lng,
-                ST_Y(st_transform(st_pointn(geom, 1), 4326)) as lat
+                ST_X(st_transform(st_centroid(geom), 4326)) as lng,
+                ST_Y(st_transform(st_centroid(geom), 4326)) as lat
             FROM (  
                 SELECT 
                         way_id,
