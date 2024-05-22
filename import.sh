@@ -6,9 +6,6 @@ osm2pgsql -H db -U postgres -d carte -O flex -S import.lua quebec-latest.osm.pbf
 
 psql -h db -U postgres -d carte -c "
                                     drop materialized view if exists bike_path;
-                                    drop materialized view if exists edge;
-                                    drop materialized view if exists last_cycleway_score;
-                                    drop materialized view if exists _all_way_edge;
                                     CREATE MATERIALIZED VIEW bike_path AS
                                         SELECT way_id,
                                                 name,
@@ -32,6 +29,7 @@ psql -h db -U postgres -d carte -c "
                                     CREATE UNIQUE INDEX bike_path_way_id_idx ON bike_path(way_id);
                                     CREATE INDEX edge_geom_gist ON bike_path USING gist(geom);
 
+                                    drop materialized view if exists last_cycleway_score cascade;
                                     CREATE MATERIALIZED VIEW last_cycleway_score
                                     AS
                                         SELECT *
@@ -44,6 +42,7 @@ psql -h db -U postgres -d carte -c "
                                         WHERE t.rn = 1;
                                     CREATE UNIQUE INDEX last_cycleway_score_way_id_idx ON last_cycleway_score(way_id);
                                     
+                                    drop materialized view if exists _all_way_edge;
                                     drop sequence if exists edge_id;
                                     CREATE SEQUENCE edge_id;
                                     create materialized view _all_way_edge as
@@ -96,8 +95,7 @@ psql -h db -U postgres -d carte -c "
                                     create unique index _all_way_edge_id_idx on _all_way_edge (id);
                                     create index _all_way_edge_way_id_idx on _all_way_edge (way_id);
 
-
-
+                                    drop materialized view if exists edge;
                                     CREATE MATERIALIZED VIEW edge 
                                     AS SELECT  
                                         id,
