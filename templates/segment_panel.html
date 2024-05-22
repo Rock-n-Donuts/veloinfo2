@@ -46,7 +46,7 @@
         <div class="flex flex-row overflow-auto">
             {% for photo_id in photo_ids %}
             <img class="h-24 rounded-md p-2 cursor-pointer" src="/images/{{ photo_id }}_thumbnail.jpeg" alt="photo"
-                hx-get="/photo_scroll/{{photo_id}}/{{way_ids}}" hx-swap="outerHTML" hx-target="#photo_scroll">
+                hx-get="/photo_scroll/{{photo_id}}/{{way_ids}}" hx-target="#photo_scroll">
             {% endfor %}
         </div>
         <div id="photo_scroll"></div>
