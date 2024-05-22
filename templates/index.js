@@ -35,7 +35,7 @@ var map = new maplibregl.Map({
 map.addControl(new maplibregl.NavigationControl());
 map.addControl(new maplibregl.GeolocateControl({
     positionOptions: {
-        enableHighAccuracy: false
+        enableHighAccuracy: true
     },
     trackUserLocation: true
 }));
