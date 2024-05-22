@@ -58,6 +58,7 @@ psql -h db -U postgres -d carte -c "
                                             case
                                                 when tags->>'bicycle' = 'no' then 1 / 0.0001
                                                 when tags->>'bicycle' = 'discouraged' then 1 / 0.1
+                                                when tags->>'bicycle' = 'dismount' then 1 / 0.3
                                                 when tags->>'highway' = 'cycleway' then 1 / 1
                                                 when tags->>'cycleway' = 'track' then 1 / 0.9
                                                 when tags->>'cycleway:both' = 'track' then 1 / 0.9
@@ -79,7 +80,6 @@ psql -h db -U postgres -d carte -c "
                                                 when tags->>'highway' = 'secondary' then 1 / 0.5
                                                 when tags->>'highway' = 'secondary_link' then 1 / 0.5
                                                 when tags->>'highway' = 'service' then 1 / 0.3
-                                                when tags->>'bicycle' = 'dismount' then 1 / 0.3
                                                 when tags->>'cycleway' = 'separate' then 1 / 0.2
                                                 when tags->>'cycleway:both' = 'separate' then 1 / 0.2
                                                 when tags->>'cycleway:left' = 'separate' then 1 / 0.2
