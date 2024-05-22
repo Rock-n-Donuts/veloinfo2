@@ -1,4 +1,4 @@
-FROM rust:1.77 as dev
+FROM rust:1.78 as dev
 
 RUN apt-get update && apt-get install -y \
     fish \
