@@ -3223,7 +3223,7 @@
             "type": "symbol",
             "source": "veloinfo_name",
             "source-layer": "name",
-            "minzoom": 18,
+            "minzoom": 17,
             "layout": {
                 "text-font": [
                     "Metropolis Semi Bold",
