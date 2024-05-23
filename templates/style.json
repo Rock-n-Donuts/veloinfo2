@@ -53,6 +53,10 @@
         "veloinfo_all_node": {
             "type": "vector",
             "url": "{{martin_url}}/all_node"
+        },
+        "veloinfo_name": {
+            "type": "vector",
+            "url": "{{martin_url}}/name"
         }
     },
     "layers": [
@@ -3213,6 +3217,54 @@
                 "place",
                 "village"
             ]
+        },
+        {
+            "id": "name",
+            "type": "symbol",
+            "source": "veloinfo_name",
+            "source-layer": "name",
+            "minzoom": 18,
+            "layout": {
+                "text-font": [
+                    "Metropolis Semi Bold",
+                    "Noto Sans Bold"
+                ],
+                "text-size": [
+                    "interpolate",
+                    [
+                        "linear",
+                        1
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    12,
+                    10,
+                    13,
+                    12,
+                    14,
+                    14,
+                    16,
+                    13
+                ],
+                "text-field": "{name}",
+                "visibility": "visible",
+                "text-anchor": "center",
+                "text-offset": [
+                    0.2,
+                    0.2
+                ],
+                "text-max-width": 10,
+                "text-transform": "none",
+                "text-keep-upright": true
+            },
+            "paint": {
+                "text-color": "hsl(204, 11%, 47%)",
+                "text-opacity": 1,
+                "text-halo-blur": 0,
+                "text-halo-color": "hsl(0, 0%, 100%)",
+                "text-halo-width": 1.5
+            }
         },
         {
             "id": "Town labels",
