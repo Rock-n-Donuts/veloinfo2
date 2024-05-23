@@ -33,7 +33,7 @@ pub async fn route(
         return RoutePanel {
             route_json: "[]".to_string(),
             total_length: 0.0,
-            error: "No route found".to_string(),
+            error: format!("No route found from {start:?} to {end:?}"),
         };
     };
     edges.insert(
