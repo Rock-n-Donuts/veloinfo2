@@ -1,19 +1,23 @@
-use std::env;
-
 use super::{
     info_panel::InfopanelContribution, score_circle::ScoreCircle, score_selector::ScoreSelector,
 };
 use crate::db::cycleway::{Cycleway, Node};
 use crate::db::edge::Edge;
+use crate::db::user::User;
 use crate::{db::cyclability_score::CyclabilityScore, VeloinfoState};
 use askama::Template;
 use axum::extract::multipart::Multipart;
 use axum::extract::{Path, State};
+use axum_extra::extract::cookie::Cookie;
+use axum_extra::extract::CookieJar;
+use axum_macros::debug_handler;
 use futures::future::join_all;
 use lazy_static::lazy_static;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use sqlx::Postgres;
+use std::env;
+use uuid::{uuid, Uuid};
 
 #[derive(Template)]
 #[template(path = "segment_panel.html", escape = "none")]
@@ -28,6 +32,7 @@ pub struct SegmentPanel {
     photo_ids: Vec<i32>,
     geom_json: String,
     fit_bounds: bool,
+    user_name: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -46,23 +51,72 @@ lazy_static! {
     static ref IMAGE_DIR: String = env::var("IMAGE_DIR").unwrap();
 }
 
+#[debug_handler]
 pub async fn segment_panel_post(
     State(state): State<VeloinfoState>,
+    jar: CookieJar,
     mut multipart: Multipart,
-) -> SegmentPanel {
+) -> (CookieJar, SegmentPanel) {
+    println!("segment_panel_post");
+    jar.iter().for_each(|c| println!("cookie {:?}", c));
+    let user = match jar.get("uuid") {
+        Some(uuid) => {
+            println!("uuid {:?}", uuid.value().to_string());
+            let uuid = match Uuid::parse_str(uuid.value().to_string().as_str()) {
+                Ok(uuid) => uuid,
+                Err(e) => {
+                    eprintln!("Error while parsing uuid: {}", e);
+                    Uuid::now_v7()
+                }
+            };
+            let mut user = User::get(&uuid, &state.conn).await;
+            println!("user a {:?}", user);
+            if let None = user {
+                User::insert(&uuid, &"".to_string(), &state.conn).await;
+                user = User::get(&uuid, &state.conn).await;
+                println!("user b {:?}", user);
+            }
+            user
+        }
+        None => {
+            println!("uuid not found");
+            None
+        }
+    };
+
     let mut score = -1.;
     let mut comment = "".to_string();
     let mut way_ids = "".to_string();
     let mut photo = None;
+    let mut user_name = "".to_string();
     while let Some(field) = multipart.next_field().await.unwrap() {
         let name = field.name().unwrap();
         match name {
-            "score" => score = field.text().await.unwrap().parse::<f64>().unwrap(),
-            "comment" => comment = field.text().await.unwrap(),
-            "way_ids" => way_ids = field.text().await.unwrap(),
-            "photo" => photo = Some(field.bytes().await.unwrap()),
+            "score" => {
+                score = field
+                    .text()
+                    .await
+                    .unwrap_or("0".to_string())
+                    .parse::<f64>()
+                    .unwrap()
+            }
+            "comment" => comment = field.text().await.unwrap_or("".to_string()),
+            "way_ids" => way_ids = field.text().await.unwrap_or("".to_string()),
+            "photo" => {
+                photo = match field.bytes().await {
+                    Ok(b) => Some(b),
+                    Err(e) => {
+                        println!("Error getting bytes {:?}", e);
+                        None
+                    }
+                }
+            }
+            "user_name" => user_name = field.text().await.unwrap_or("".to_string()),
             _ => (),
         }
+    }
+    if let Some(user) = user {
+        User::update(&user.id, &user_name, &state.conn).await;
     }
     let way_ids_i64 = RE_NUMBER
         .find_iter(way_ids.as_str())
@@ -88,18 +142,22 @@ pub async fn segment_panel_post(
         Ok(id) => id,
         Err(e) => {
             eprintln!("Error while inserting score: {}", e);
-            return SegmentPanel {
-                way_ids: way_ids.clone(),
-                score_circle: ScoreCircle { score },
-                segment_name: "".to_string(),
-                score_selector: ScoreSelector::get_score_selector(score),
-                comment: "".to_string(),
-                edit: false,
-                history: vec![],
-                photo_ids: vec![],
-                geom_json: "".to_string(),
-                fit_bounds: false,
-            };
+            return (
+                jar,
+                SegmentPanel {
+                    way_ids: way_ids.clone(),
+                    score_circle: ScoreCircle { score },
+                    segment_name: "".to_string(),
+                    score_selector: ScoreSelector::get_score_selector(score),
+                    comment: "".to_string(),
+                    edit: false,
+                    history: vec![],
+                    photo_ids: vec![],
+                    geom_json: "".to_string(),
+                    fit_bounds: false,
+                    user_name,
+                },
+            );
         }
     };
 
@@ -113,13 +171,38 @@ pub async fn segment_panel_post(
             .unwrap();
     }
 
-    segment_panel(state, way_ids).await
+    (jar, segment_panel(state, way_ids).await)
 }
 
 pub async fn segment_panel_edit(
     State(state): State<VeloinfoState>,
     Path(way_ids): Path<String>,
-) -> SegmentPanel {
+    mut jar: CookieJar,
+) -> (CookieJar, SegmentPanel) {
+    let user_name = match jar.get("uuid") {
+        Some(uuid) => {
+            println!("uuid {:?}", uuid.value().to_string());
+            let uuid = match Uuid::parse_str(uuid.value().to_string().as_str()) {
+                Ok(uuid) => uuid,
+                Err(e) => {
+                    eprintln!("Error while parsing uuid: {}", e);
+                    let uuid = Uuid::now_v7();
+                    jar = jar.add(Cookie::new("uuid", uuid.to_string()));
+                    uuid
+                }
+            };
+            match User::get(&uuid, &state.conn).await {
+                Some(user) => user.name,
+                None => "".to_string(),
+            }
+        }
+        None => {
+            println!("uuid not found");
+            let uuid = Uuid::now_v7();
+            jar = jar.add(Cookie::build(("uuid", uuid.to_string())).path("/"));
+            "".to_string()
+        }
+    };
     let way_ids_i64 = RE_NUMBER
         .find_iter(way_ids.as_str())
         .map(|m| m.as_str().parse::<i64>().unwrap())
@@ -172,9 +255,10 @@ pub async fn segment_panel_edit(
         photo_ids,
         geom_json,
         fit_bounds: false,
+        user_name,
     };
 
-    segment_panel
+    (jar, segment_panel)
 }
 
 pub async fn segment_panel_get(
@@ -250,6 +334,7 @@ pub async fn segment_panel(state: VeloinfoState, way_ids: String) -> SegmentPane
         photo_ids,
         geom_json: serde_json::to_string(&geom).unwrap_or("".to_string()),
         fit_bounds: false,
+        user_name: "".to_string(),
     }
 }
 
@@ -374,6 +459,7 @@ async fn segment_panel_score_id(conn: &sqlx::Pool<Postgres>, id: i32, edit: bool
         photo_ids,
         geom_json,
         fit_bounds: true,
+        user_name: "".to_string(),
     }
 }
 
@@ -433,6 +519,7 @@ pub async fn segment_panel_lng_lat(
         photo_ids,
         geom_json: serde_json::to_string(&node.geom).unwrap_or("".to_string()),
         fit_bounds: false,
+        user_name: "".to_string(),
     };
 
     info_panel
