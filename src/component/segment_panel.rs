@@ -58,22 +58,23 @@ pub async fn segment_panel_post(
     mut multipart: Multipart,
 ) -> (CookieJar, SegmentPanel) {
     jar.iter().for_each(|c| println!("cookie {:?}", c));
-    let user = match jar.get("uuid") {
+    let user_id = match jar.get("uuid") {
         Some(uuid) => {
-            println!("uuid {:?}", uuid.value().to_string());
             let uuid = match Uuid::parse_str(uuid.value().to_string().as_str()) {
-                Ok(uuid) => uuid,
+                Ok(uuid) => {
+                    let mut user = User::get(&uuid, &state.conn).await;
+                    if let None = user {
+                        User::insert(&uuid, &"".to_string(), &state.conn).await;
+                        user = User::get(&uuid, &state.conn).await;
+                    }
+                    Some(uuid)
+                }
                 Err(e) => {
                     eprintln!("Error while parsing uuid: {}", e);
-                    Uuid::now_v7()
+                    None
                 }
             };
-            let mut user = User::get(&uuid, &state.conn).await;
-            if let None = user {
-                User::insert(&uuid, &"".to_string(), &state.conn).await;
-                user = User::get(&uuid, &state.conn).await;
-            }
-            user
+            uuid
         }
         None => None,
     };
@@ -109,8 +110,8 @@ pub async fn segment_panel_post(
             _ => (),
         }
     }
-    if let Some(user) = user {
-        User::update(&user.id, &user_name, &state.conn).await;
+    if let Some(user_id) = user_id {
+        User::update(&user_id, &user_name, &state.conn).await;
     }
     let way_ids_i64 = RE_NUMBER
         .find_iter(way_ids.as_str())
@@ -129,6 +130,7 @@ pub async fn segment_panel_post(
             Some(_photo) => Some(IMAGE_DIR.to_string() + "/{}_thumbnail.jpeg"),
             None => None,
         },
+        user_id,
         &state.conn,
     )
     .await
@@ -395,7 +397,7 @@ async fn segment_panel_score_id(conn: &sqlx::Pool<Postgres>, id: i32, edit: bool
             eprintln!("Error while fetching score: {}", e);
             CyclabilityScore {
                 id: 0,
-                name: vec![],
+                name: Some(vec![]),
                 score: -1.,
                 comment: None,
                 way_ids: vec![],
@@ -403,6 +405,7 @@ async fn segment_panel_score_id(conn: &sqlx::Pool<Postgres>, id: i32, edit: bool
                 photo_path: None,
                 photo_path_thumbnail: None,
                 geom: vec![],
+                user_id: None,
             }
         }
     };

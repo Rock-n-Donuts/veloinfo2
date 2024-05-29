@@ -1,5 +1,6 @@
 use super::score_circle::ScoreCircle;
 use crate::db::cyclability_score::CyclabilityScore;
+use crate::db::user::User;
 use crate::VeloinfoState;
 use askama::Template;
 use axum::extract::{Path, State};
@@ -29,6 +30,7 @@ pub struct InfopanelContribution {
     comment: String,
     score_id: i32,
     photo_path_thumbnail: Option<String>,
+    user_name: String,
 }
 
 impl InfopanelContribution {
@@ -61,6 +63,13 @@ impl InfopanelContribution {
                 comment: score.comment.clone().unwrap_or("".to_string()),
                 score_id: score.id,
                 photo_path_thumbnail: score.photo_path_thumbnail.clone(),
+                user_name: match score.user_id {
+                    Some(user_id) => match User::get(&user_id, conn).await {
+                        Some(user) => user.name,
+                        None => "".to_string(),
+                    },
+                    None => "".to_string(),
+                },
             }
         }))
         .await
@@ -86,6 +95,13 @@ impl InfopanelContribution {
                 comment: score.comment.clone().unwrap_or("".to_string()),
                 score_id: score.id,
                 photo_path_thumbnail: score.photo_path_thumbnail.clone(),
+                user_name: match score.user_id {
+                    Some(user_id) => match User::get(&user_id, conn).await {
+                        Some(user) => user.name,
+                        None => "".to_string(),
+                    },
+                    None => "".to_string(),
+                },
             }
         }))
         .await
@@ -117,24 +133,35 @@ impl InfopanelContribution {
                 comment: score.comment.clone().unwrap_or("".to_string()),
                 score_id: score.id,
                 photo_path_thumbnail: score.photo_path_thumbnail.clone(),
+                user_name: match score.user_id {
+                    Some(user_id) => match User::get(&user_id, conn).await {
+                        Some(user) => user.name,
+                        None => "".to_string(),
+                    },
+                    None => "".to_string(),
+                },
             }
         }))
         .await
     }
 }
 
-async fn get_name(names: &Vec<Option<String>>) -> String {
-    names.iter().fold("".to_string(), |acc, name| {
-        let blank_name = "non inconnu".to_string();
-        let name = match name {
-            Some(name) => name,
-            None => &blank_name,
-        };
-        if acc.find(name) != None {
-            return acc;
-        }
-        format!("{} {}", acc, name)
-    })
+async fn get_name(names: &Option<Vec<Option<String>>>) -> String {
+    if let Some(names) = names {
+        names.iter().fold("".to_string(), |acc, name| {
+            let blank_name = "non inconnu".to_string();
+            let name = match name {
+                Some(name) => name,
+                None => &blank_name,
+            };
+            if acc.find(name) != None {
+                return acc;
+            }
+            format!("{} {}", acc, name)
+        })
+    } else {
+        "".to_string()
+    }
 }
 
 pub async fn info_panel_down() -> InfoPanelTemplate {

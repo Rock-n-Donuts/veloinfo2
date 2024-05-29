@@ -1,11 +1,12 @@
 use chrono::{DateTime, Local};
 use regex::Regex;
 use sqlx::{Postgres, Row};
+use uuid::Uuid;
 
 #[derive(sqlx::FromRow, Debug)]
 pub struct CyclabilityScore {
     pub id: i32,
-    pub name: Vec<Option<String>>,
+    pub name: Option<Vec<Option<String>>>,
     pub score: f64,
     pub comment: Option<String>,
     pub way_ids: Vec<i64>,
@@ -13,12 +14,13 @@ pub struct CyclabilityScore {
     pub photo_path: Option<String>,
     pub photo_path_thumbnail: Option<String>,
     pub geom: Vec<[f64; 2]>,
+    pub user_id: Option<Uuid>,
 }
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct CyclabilityScoreDb {
     pub id: i32,
-    pub name: Vec<Option<String>>,
+    pub name: Option<Vec<Option<String>>>,
     pub score: f64,
     pub comment: Option<String>,
     pub way_ids: Vec<i64>,
@@ -26,6 +28,7 @@ pub struct CyclabilityScoreDb {
     pub photo_path: Option<String>,
     pub photo_path_thumbnail: Option<String>,
     pub geom: String,
+    pub user_id: Option<Uuid>,
 }
 
 impl CyclabilityScore {
@@ -45,7 +48,8 @@ impl CyclabilityScore {
                         cs.created_at, 
                         cs.photo_path, 
                         cs.photo_path_thumbnail,
-                        ST_AsText(ST_Transform(geom, 4326)) as geom
+                        ST_AsText(ST_Transform(geom, 4326)) as geom,
+                        cs.user_id
                from cyclability_score cs
                where geom && ST_Transform(st_makeenvelope($1, $2, $3, $4, 4326), 3857)
                order by cs.created_at desc
@@ -74,7 +78,8 @@ impl CyclabilityScore {
                       way_ids, 
                       created_at, 
                       photo_path, 
-                      photo_path_thumbnail
+                      photo_path_thumbnail,
+                      user_id
                from cyclability_score
                where way_ids = $1
                order by created_at desc
@@ -107,7 +112,8 @@ impl CyclabilityScore {
                       way_ids, 
                       created_at, 
                       photo_path, 
-                      photo_path_thumbnail
+                      photo_path_thumbnail,
+                      user_id
                from cyclability_score s
                join cycleway_way on way_id = any(way_ids)
                where id = $1"#,
@@ -131,7 +137,8 @@ impl CyclabilityScore {
                     way_ids, 
                     created_at, 
                     photo_path, 
-                    photo_path_thumbnail
+                    photo_path_thumbnail,
+                    user_id
                from cyclability_score s
                where way_ids = $1
                order by created_at desc"#,
@@ -165,15 +172,16 @@ impl CyclabilityScore {
         way_ids: &Vec<i64>,
         photo_path: &Option<String>,
         photo_path_thumbnail: &Option<String>,
+        user_id: Option<Uuid>,
         conn: &sqlx::Pool<Postgres>,
     ) -> Result<i32, sqlx::Error> {
         let id: i32 = sqlx::query(
             r#"INSERT INTO cyclability_score 
-                    (way_ids, score, comment, photo_path, photo_path_thumbnail, name, geom) 
-                    SELECT $1, $2, $3, $4, $5, array_agg(cw.name), ST_Union(cw.geom)
+                    (way_ids, score, comment, photo_path, photo_path_thumbnail, name, geom, user_id) 
+                    SELECT $1, $2, $3, $4, $5, array_agg(cw.name), ST_Union(cw.geom), $6
                     from cycleway_way cw
                     where cw.way_id = any($1)
-                    group by $1, $2, $3, $4, $5
+                    group by $1, $2, $3, $4, $5, $6
                     RETURNING id"#,
         )
         .bind(way_ids)
@@ -181,6 +189,7 @@ impl CyclabilityScore {
         .bind(comment)
         .bind(&photo_path)
         .bind(&photo_path_thumbnail)
+        .bind(&user_id)
         .fetch_one(conn)
         .await?
         .get(0);
@@ -244,6 +253,7 @@ impl From<&CyclabilityScoreDb> for CyclabilityScore {
             photo_path: response.photo_path.clone(),
             photo_path_thumbnail: response.photo_path_thumbnail.clone(),
             geom: points,
+            user_id: response.user_id,
         }
     }
 }
