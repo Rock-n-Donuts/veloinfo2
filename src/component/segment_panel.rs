@@ -57,7 +57,6 @@ pub async fn segment_panel_post(
     jar: CookieJar,
     mut multipart: Multipart,
 ) -> (CookieJar, SegmentPanel) {
-    println!("segment_panel_post");
     jar.iter().for_each(|c| println!("cookie {:?}", c));
     let user = match jar.get("uuid") {
         Some(uuid) => {
@@ -70,18 +69,13 @@ pub async fn segment_panel_post(
                 }
             };
             let mut user = User::get(&uuid, &state.conn).await;
-            println!("user a {:?}", user);
             if let None = user {
                 User::insert(&uuid, &"".to_string(), &state.conn).await;
                 user = User::get(&uuid, &state.conn).await;
-                println!("user b {:?}", user);
             }
             user
         }
-        None => {
-            println!("uuid not found");
-            None
-        }
+        None => None,
     };
 
     let mut score = -1.;
