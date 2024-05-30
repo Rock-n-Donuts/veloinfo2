@@ -183,7 +183,11 @@ pub async fn segment_panel_edit(
                 Err(e) => {
                     eprintln!("Error while parsing uuid: {}", e);
                     let uuid = Uuid::now_v7();
-                    jar = jar.add(Cookie::new("uuid", uuid.to_string()));
+                    jar = jar.add(
+                        Cookie::build(("uuid", uuid.to_string()))
+                            .path("/")
+                            .permanent(),
+                    );
                     uuid
                 }
             };
@@ -195,7 +199,11 @@ pub async fn segment_panel_edit(
         None => {
             println!("uuid not found");
             let uuid = Uuid::now_v7();
-            jar = jar.add(Cookie::build(("uuid", uuid.to_string())).path("/"));
+            jar = jar.add(
+                Cookie::build(("uuid", uuid.to_string()))
+                    .path("/")
+                    .permanent(),
+            );
             "".to_string()
         }
     };
