@@ -1,7 +1,7 @@
 <div class="absolute top-4 z-10 flex justify-center">
     <form class="">
         <input class="w-52 h-8 rounded-lg outline outline-gray-800 text-center" id="query" name="query" type="text"
-            name="query" placeholder="Rechercher une adresse" value="{{query}}" autofocus hx-on:keyup="search()"
+            name="query" placeholder="Rechercher" value="{{query}}" autofocus hx-on:keyup="search()"
             hx-on:click="displayHistory()" hx-on:focusout="clearResult()" />
         <input type="hidden" name="lng" value="{{lng}}">
         <input type="hidden" name="lat" value="{{lat}}">
